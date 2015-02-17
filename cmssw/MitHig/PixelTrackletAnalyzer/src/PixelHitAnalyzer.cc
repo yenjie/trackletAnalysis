@@ -283,7 +283,7 @@ PixelHitAnalyzer::PixelHitAnalyzer(const edm::ParameterSet& iConfig)
    vertexSrc_ = iConfig.getParameter<vector<string> >("vertexSrc");
    etaMult_ = iConfig.getUntrackedParameter<double>  ("nHitsRegion",1.);
    trackSrc_ = iConfig.getParameter<edm::InputTag>("trackSrc");
-   L1gtReadout_ = iConfig.getParameter<edm::InputTag>("L1gtReadout");
+   L1gtReadout_ = iConfig.getUntrackedParameter<edm::InputTag>("L1gtReadout",edm::InputTag("gtDigis"));
    TowerSrc_ =   iConfig.getUntrackedParameter<edm::InputTag>("towersSrc",edm::InputTag("towerMaker"));
    hltResName_ = iConfig.getUntrackedParameter<edm::InputTag>("hltTrgResults",edm::InputTag("TriggerResults"));
    beamSpotProducer_  = iConfig.getUntrackedParameter<edm::InputTag>("towersSrc",edm::InputTag("offlineBeamSpot"));   
