@@ -62,7 +62,7 @@ class Parameters {
   bool l1ABitVsBx[500][5];
   bool l1TBitVsBx[500][5];
   bool fl1[maxEntry],fl2[maxEntry],fl3[maxEntry];
-
+  float beamSpotX,beamSpotY,beamSpotZ;
   float vx[maxEntry];
   float vy[maxEntry];
   float vz[maxEntry];
@@ -151,8 +151,8 @@ cutOnClusterSize = 0, double runNum = 0,double nLumi = 0)
   } else {
      //x0 = 0.2468185+smearX;
      //y0 = 0.3983917+smearY;
-     x0 = 0.2417+smearX;
-     y0 = 0.3855+smearY;
+     x0 = 0.032+smearX;
+     y0 = 0.0+smearY;
   }
 
 
@@ -346,7 +346,12 @@ void getPixelTreeBranch(TTree *t, Parameters &par)
   t->SetBranchAddress("rF2",par.rF2);
   t->SetBranchAddress("nhitsF2",&par.nhitsF2);
 
+  t->SetBranchAddress("vx",par.vx);
+  t->SetBranchAddress("vy",par.vy);
   t->SetBranchAddress("vz",par.vz);
+  t->SetBranchAddress("beamSpotX",&par.beamSpotX);
+  t->SetBranchAddress("beamSpotY",&par.beamSpotY);
+  t->SetBranchAddress("beamSpotZ",&par.beamSpotZ);
   t->SetBranchAddress("nv",&par.nv);
   t->SetBranchAddress("npart",&par.npart);
   t->SetBranchAddress("eta",&par.eta);
