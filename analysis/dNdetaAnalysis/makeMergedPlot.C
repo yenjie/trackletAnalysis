@@ -8,7 +8,7 @@
 #include "UA5Plot.h"
 #include "ResultPlots.h"
 #include "GraphErrorsBand.h"
-#define dndetaRange 20
+#define dndetaRange 7
 
 
 void correctBin(TH1F* h,double* a1,double*a2)
@@ -115,9 +115,9 @@ uncert = 3.8,int par=0,string title= "")
    double acceptance2[12]={1        ,1.11661,1.01825,0.995795,0.990697,0.991587,0.994311,0.994696,0.987352,0.984903,0.986908 ,1.12377};
    double acceptance3[12]={1        ,1.32239,1.03311,0.996744,0.985756,0.992889,1.00236,0.994132,0.983021,0.972563,0.930894,1};
 
-   clearBin(h12);
-   clearBin2(h23);
-   clearBin2(h13);
+//   clearBin(h12);
+   clearBin(h23);
+   clearBin(h13);
 /*
    correctBin(h12,acceptance12);
    correctBin(h13,acceptance13);
@@ -168,8 +168,8 @@ uncert = 3.8,int par=0,string title= "")
       avg += h12->GetBinContent(i);
       avg += h13->GetBinContent(i);
       avg += h23->GetBinContent(i);
-      if (i!=2&&i!=3&&i!=11&&i!=10) avg/=3.0; else avg/=1.0;
- //     if (i!=2&&i!=11) avg/=3.0; else avg/=1.0;
+//      if (i!=2&&i!=3&&i!=11&&i!=10) avg/=3.0; else avg/=1.0;
+      if (i!=2&&i!=11) avg/=3.0; else avg/=1.0;
       double avgErr = avg*uncert/100.;
       
       hAvg->SetBinContent(i,avg);

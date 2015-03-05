@@ -31,8 +31,8 @@
 
 #include "selectionCut.h"
 
-#define canvasSizeX 300
-#define canvasSizeY 300
+#define canvasSizeX 600
+#define canvasSizeY 600
 
 #define plotDEta true
 

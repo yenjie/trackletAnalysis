@@ -19,7 +19,7 @@ void plotDelta(char* infile,int type = 1)
    selectionCut myCut(0);
    TCut dataCut = myCut.Cut;
    
-   TCanvas *c = new TCanvas("c","#Delta#eta",400,400);
+   TCanvas *c = new TCanvas("c","#Delta#eta",600,600);
    c->SetLogy();
    TH1F *h = new TH1F("h","",200,-5,5);
    if (type) myTree->Draw("deta>>h",dataCut); else myNtuple->Draw("deta>>h");
@@ -36,7 +36,7 @@ void plotDelta(char* infile,int type = 1)
    c->SaveAs("plot/delta/FigDeltaEta.C");
    
 
-   TCanvas *c2 = new TCanvas("c2","#Delta#phi",400,400);
+   TCanvas *c2 = new TCanvas("c2","#Delta#phi",600,600);
    c2->SetLogy();
    TH1F *h2 = new TH1F("h2","",157,-3.14,3.14);
    if (type) myTree->Draw("dphi>>h2"); else myNtuple->Draw("dphi>>h2");
@@ -51,7 +51,7 @@ void plotDelta(char* infile,int type = 1)
    c2->SaveAs("plot/delta/FigDeltaPhi.gif");
    c2->SaveAs("plot/delta/FigDeltaPhi.C");
 
-   TCanvas *c3 = new TCanvas("c3","Scatter",400,400);
+   TCanvas *c3 = new TCanvas("c3","Scatter",600,600);
    c3->SetLogz();
    TH2F *h3 = new TH2F("h3","",50,-3.14,3.14,50,-5,5);
    if (type) myTree->Draw("deta:dphi>>h3",""); else myNtuple->Draw("deta:dphi>>h3");
@@ -68,7 +68,7 @@ void plotDelta(char* infile,int type = 1)
    c3->SaveAs("plot/delta/FigPlotScatterPlot.gif");
    c3->SaveAs("plot/delta/FigPlotScatterPlot.C");
 
-   TCanvas *c4 = new TCanvas("c4","#Delta#phi",400,400);
+   TCanvas *c4 = new TCanvas("c4","#Delta#phi",600,600);
    c4->SetLogy();
    TH1F *h4 = new TH1F("h4","",157,-3.14,3.14);
    if (type) myTree->Draw("dphi>>h4","abs(deta)<1&&nhit1>50"); else myNtuple->Draw("dphi>>h4");
@@ -77,7 +77,7 @@ void plotDelta(char* infile,int type = 1)
    h4->SetYTitle("Arbitrary Normalization");
    h4->Draw();
 
-   TCanvas *c5 = new TCanvas("c5","nhad>10",400,400);
+   TCanvas *c5 = new TCanvas("c5","nhad>10",600,600);
    c5->SetLogy();
    TH1F *h5 = new TH1F("h5","",157,-3.14,3.14);
    if (type) myTree->Draw("dphi>>h5","abs(deta)>1&&nhit1>50"); else myNtuple->Draw("dphi>>h5");

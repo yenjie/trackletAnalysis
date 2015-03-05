@@ -10,27 +10,35 @@
 
 using namespace std;
 
-void analyze_trackletTree(char * infile, char * outfile = "output.root", long startEntry = 0, long endEntry = 1000000000,
-                          int addL1Bck = 0, int addL2Bck = 0, int addL3Bck = 0,
-   		          bool reWeight = 0,         // reweight to Run 123596 vtx distribution
-                          bool useRandomVertex= 0,
-			  bool cutOnClusterSize = 0,
-			  bool mimicPixelCounting = 0, 
-			  int makeVzCut = 0,
-			  double splitProb = 0, double dropProb = 0, 
-			  double nPileUp = 0,
-			  double beamHaloRatio = 0.0,
-			  bool putBeamHalo = false, char * beamHaloFile =
-    			             "DataSample/PixelTree-Run123151-Full.root",
-                          double smearVertex = 0,
-			  bool putPixelTree = 0,
-			  bool useKKVertex = 0,
-			  bool useNSD = 0,
-			  bool checkDuplicateEvent = 0,
-			  bool reweightMultiplicity = 0
+void analyze_trackletTree(char * infile = "PixelTree.root",	// Input Pixel Tree file 
+                          char * outfile = "output.root", 	// Ouptut Tracklet Tree
+			  long startEntry = 0, 			// Starting Entry number in the Pixel Tree
+			  long endEntry = 1000000000,		// Ending Entry number in the Pixel Tree
+                          int addL1Bck = 0, 			// Add N random background to first pixel layer
+			  int addL2Bck = 0, 			// Add N random background to second pixel layer
+			  int addL3Bck = 0,			// Add N random background to third pixel layer
+   		          bool reWeight = 0,         		// reweight to Run 123596 vtx distribution
+                          bool useRandomVertex= 0,		// Use random vertex (instead of the reco one)
+			  bool cutOnClusterSize = 0,		// Cut on clusterSize to reduce background
+			  bool mimicPixelCounting = 0, 		// Create a pixel counting tree instead of tracklet tree
+			  int makeVzCut = 0,			// Cut on Vz
+			  double splitProb = 0, 		// Splitting probability of the pixel hit
+			  double dropProb = 0, 			// Emulate efficiency loss
+			  double nPileUp = 0,			// Artifically overlap event to mimic pile-up
+			  double beamHaloRatio = 0.0,		// Adding beam Halo
+			  bool putBeamHalo = false,		//  
+			  char * beamHaloFile =			//
+                                 "DataSample/PixelTree-Run123151-Full.root",
+                          double smearVertex = 0,		// Add additional smearing to vertex position
+			  bool putPixelTree = 0,		// Add pixel tree in the output
+			  bool useKKVertex = 0,			// Use vertex from other recoVtx collection
+			  bool useNSD = 0,			// 1: Perform NSD study, 0: Perform inelastic study
+			  bool checkDuplicateEvent = 0,		// Check if we have duplicates in the sample (slow)
+			  bool reweightMultiplicity = 0		// Reweight the multiplicity distribution
 			  )
 {
-  // Set Random Seed
+
+  // Set Random Seed ==================================================================================
   TTimeStamp myTime;
   gRandom->SetSeed(myTime.GetNanoSec());
   cout <<"Randomize "<<gRandom->Rndm()<<endl;
@@ -302,7 +310,7 @@ void analyze_trackletTree(char * infile, char * outfile = "output.root", long st
     tdata23.vz[0] = par.vz[0];
     tdata13.vz[0] = par.vz[0];
     
-    // add background 
+    // add background hits
     
     int bckHits=0;
     if (addL1Bck!=0||addL2Bck!=0||addL3Bck!=0){
