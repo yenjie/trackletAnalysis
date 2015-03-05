@@ -1,13 +1,3 @@
-/*
-#include <iostream>
-#include <vector>
-#include "TTree.h"
-#include "TH1D.h"
-#include "TH3F.h"
-#include "Math/Vector3D.h"
-#include "TMath.h"
-*/
-
 #include <TH2.h>
 #include <TH3.h>
 #include <TNtuple.h>
@@ -36,7 +26,7 @@ void analyze_trackletTree(char * infile, char * outfile = "output.root", long st
 			  bool putPixelTree = 0,
 			  bool useKKVertex = 0,
 			  bool useNSD = 0,
-			  bool checkDoubleEvent = 0,
+			  bool checkDuplicateEvent = 0,
 			  bool reweightMultiplicity = 0
 			  )
 {
@@ -206,24 +196,27 @@ void analyze_trackletTree(char * infile, char * outfile = "output.root", long st
        if (reWeight) cout <<"Reweighted!!!!!!!"<<endl;    
     }       
 
-    bool flagDoubleEvent = 0;
+    bool flagDuplicateEvent = 0;
 
-    if (checkDoubleEvent)
+    if (checkDuplicateEvent)
     {
        for (int j=0;j<events[par.nLumi].size();j++)
        {
           if (par.nEv==events[par.nLumi][j]) {
-	     flagDoubleEvent = 1;
+	     flagDuplicateEvent = 1;
 	     continue;
 	  }
        }
-       if (!flagDoubleEvent) events[par.nLumi].push_back(par.nEv);
+       if (!flagDuplicateEvent) events[par.nLumi].push_back(par.nEv);
     }
 
-    if (flagDoubleEvent) continue;
-//    if (par.nRun!=124023||(par.nRun==124033&&(par.nLumi<41||par.nLumi>96))) continue;
-//    if (par.nRun!=132440||(par.nRun==132440&&(par.nLumi<141||par.nLumi>200))) continue;
+    if (flagDuplicateEvent) continue;
+    
+    //if (par.nRun!=124023||(par.nRun==124033&&(par.nLumi<41||par.nLumi>96))) continue;
+
     bool reWeightDropFlag = 0;
+    
+    // Reweight MC vertex distribution to be the same as data
     if (reWeight) {
        reWeightDropFlag = 0;
        double myVz = par.vz[1];
@@ -246,11 +239,9 @@ void analyze_trackletTree(char * infile, char * outfile = "output.root", long st
 
 //       double DataPdf = TMath::Gaus(myVz,-0.4623,2.731,1);
        double Ratio = DataPdf / MCPdf;
-       //cout <<MCPdf<<" "<<DataPdf<<" "<<Ratio<<endl;
        double x=gRandom->Rndm()*2.5;
 
        if (x> Ratio) reWeightDropFlag=1;
-       //cout <<x<<" "<<Ratio<<" "<<reWeightDropFlag<<endl;
     }
     
     if (reWeightDropFlag) continue;
@@ -261,7 +252,9 @@ void analyze_trackletTree(char * infile, char * outfile = "output.root", long st
     if (par.nLumi<69||par.nLumi>144) continue;
     */
 
-    // Filter NSD events ==========================================================
+    // Filter NSD events ==============================================================
+    // Only works for PYTHIA6. Need to be updated if we use PYTHIA8 or other generators
+    // ================================================================================
     if ((par.evtType==92||par.evtType==93)&&useNSD) continue;
     
     // Filter HF coincidence
