@@ -26,7 +26,6 @@
 
 // For plotting
 #include "UA5Plot.h"
-//#include "PythiaPlot.h"
 #include "GraphErrorsBand.h"
 
 #include "selectionCut.h"
@@ -135,7 +134,6 @@ int plotFinalResult(int TrackletType,char* filename,
    if (useCorrectionFile&&doAcceptanceCorrection) fAcceptance = getAcceptanceFile(TrackletType);
    
    TFile *fCorrectionExternal = new TFile(Form("correction/correction-%d-PHOJET-7TeV-HF1.root",TrackletType));
-//   TFile *fCorrectionExternal = new TFile(Form("correction/correction-%d-ATLAS-7TeV-HF1.root",TrackletType));
    
    TH3F *hAlphaA;
    TH3F *hAlphaB;
@@ -153,7 +151,6 @@ int plotFinalResult(int TrackletType,char* filename,
    const int nVzBin  =20;// myCut.nVzBin;
    int VzRangeL =myCut.VzRangeL;
    int VzRangeH =myCut.VzRangeH;
-//   double TrackletBins[nTrackletBin+1] = {-5,2,4,6,8,10,15,20,25,30,35,40,45,50,300};
 
    double TrackletBins[nTrackletBin+1] = {-5,1,2,3,4,5,6,7,8,9,10,15,20,25,30,35,40,45,60,90,300};
    double EtaBins[nEtaBin+1];
@@ -181,7 +178,6 @@ int plotFinalResult(int TrackletType,char* filename,
   // TCut NSDCut = "";
    TCut NSDCut = "evtType!=92&&evtType!=93"; cout <<"PYTHIA MC NSD definition"<<endl;
 //   TCut NSDCut = "1"; cout <<"PYTHIA MC INEL definition"<<endl;
-
 //   TCut NSDCut = "!(evtType!=92&&evtType!=93)"; cout <<"PYTHIA MC SD definition"<<endl; // SD
 //   TCut NSDCut = "evtType!=5&&evtType!=6"; cout <<"PHOJET MC definition"<<endl; // NSD
    if (!isMC) NSDCut="";
@@ -297,8 +293,7 @@ int plotFinalResult(int TrackletType,char* filename,
 	 double maxEta = EtaBins[i+1];
 	 double maxEdge = VzBins[j+1]-rho2 / tan(atan(exp(maxEta-0.1))*2);
 	 double minEdge = VzBins[j]-rho2 / tan(atan(exp(minEta+0.1))*2);
-//	 double maxEdge = VzBins[j+1]-rho2 / tan(atan(exp(maxEta))*2);
-//	 double minEdge = VzBins[j]-rho2 / tan(atan(exp(minEta))*2);
+
 	 if (verbose) cout <<minEta <<" "<<maxEta<<" "<<VzBins[j]<<" "<<maxEdge<<" "<<minEdge;
 	 
          for (int k=0;k<nTrackletBin;k++) {
@@ -350,7 +345,7 @@ int plotFinalResult(int TrackletType,char* filename,
       hDataAcc = (TH2F*)fAcceptance->FindObjectAny("hDataAcc");
    }
      
-   // Beta calculation ============================================================================================================
+   // Beta calculation (background fraction)================================================================================================
    for (int x=1;x<=nEtaBin;x++) {
       for (int y=1;y<=nTrackletBin;y++) {
          for (int z=1;z<=nVzBin;z++) {
@@ -398,7 +393,7 @@ int plotFinalResult(int TrackletType,char* filename,
       }
    }   
 
-   // alpha calculation ===================================================================================
+   // alpha calculation (efficiency correction) ===============================================================================
    if (!useCorrectionFile) {   
       for (int x=1;x<=nEtaBin;x++) {
          for (int y=1;y<=nTrackletBin;y++) {
@@ -978,11 +973,6 @@ int plotFinalResult(int TrackletType,char* filename,
    hMeasuredTrigEffCorrected->SetName("hMeasuredTrigEffCorrected");      
    TH1F *hTruthTrigEffCorrected = (TH1F*)hTruthEtanTracklet->ProjectionX();
    hTruthTrigEffCorrected->SetName("hTruthTrigEffCorrected");      
-
-/*
-   formatHist(hMeasuredTrigEffCorrected,2,nEvt/nEtaBin*6,1.1);
-   hMeasuredTrigEffCorrected->Divide(hAcceptance->ProjectionX());  // calibrate the acceptance
-*/
 
    formatHist(hMeasuredTrigEffCorrected,2,1./nEtaBin*6,1.1);
    formatHist(hTruthTrigEffCorrected,4,1./nEtaBin*6,1.1);
