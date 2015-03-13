@@ -383,7 +383,18 @@ PixelHitAnalyzer::fillVertices(const edm::Event& iEvent){
 	    pev_.vz[pev_.nv] =  -99; 
          }
       } else {
-            pev_.vz[pev_.nv] = -99;
+         pev_.vz[pev_.nv] = -99;
+         edm::SimVertexContainer::const_iterator simVtxItr= SimVtx->begin();
+        // for (unsigned int iv=0; iv<SimVtx->size(); iv++) {
+         for (unsigned int iv=0; iv<=0; iv++) {
+	    //itr->momentum();
+	    simVtxItr++;
+            pev_.vx[0]=simVtxItr->position().X();
+            pev_.vy[0]=simVtxItr->position().Y();
+            pev_.vz[0]=simVtxItr->position().Z();
+            cout <<pev_.vx[0]<<" "<<pev_.vy[0]<<" "<<pev_.vz[0]<<" "<<simVtxItr->position().T()<<endl;
+	 }
+	 cout <<"============"<<endl;
       }
 
       pev_.nv++;
