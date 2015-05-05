@@ -230,7 +230,7 @@ vector<Tracklet> recoFastTracklets(vector<RecoHit> hits, int verbose_ = 0) {
 vector<Tracklet> cleanTracklets(vector<Tracklet> input, int matchNumber, SelectionCriteria cuts) {
    vector<Tracklet> output;
    // for (int i=0; i<input.size(); i++)
-   //   double a = input[i].dR2();
+   //    double a = input[i].dR2();
 
    if (cuts.useDeltaPhi_) {
       if (cuts.useDeltaRho_)
@@ -281,9 +281,8 @@ vector<Tracklet> cleanTracklets(vector<Tracklet> input, int matchNumber, Selecti
    }
    if (cuts.verbose_) {
       cout << "Output:" << endl;
-      // for (unsigned int i = 0; i < output.size(); i++) {
-      //   cout <<output[i].deta()<<" "<<output[i].getIt1()<<" "<<output[i].getIt2()<<endl;
-      // }
+      // for (unsigned int i=0; i<output.size(); i++)
+      //    cout << output[i].deta() << " " << output[i].getIt1() << " " << output[i].getIt2() << endl;
    }
    return output;
 }
@@ -298,6 +297,63 @@ double sumTrackletVector(vector<Tracklet> x) {
    for (int i=0; i<(int)x.size(); i++)
       total += fabs(x[i].deta());
    return total;
+}
+
+double TrackletVertexUnbin(vector<RecoHit> layer1, vector<RecoHit> layer2, double histDeltaZ, double dPhiCut, bool fillZ = true) {
+   double maxNz = 0;
+   double maxTotalZ = 0;
+   double maxRMS = 10e10;
+   double nRecoZ = 0;
+
+   vector<double> vectorZ;
+   for(int ihit = 0; ihit< (int)layer1.size(); ++ihit) {
+      double r1 = layer1[ihit].r;
+      double phi1 = layer1[ihit].phi;
+      double z1 = r1/tan(atan(exp(-layer1[ihit].eta))*2);
+
+      for(int ihit2 = 0; ihit2< (int)layer2.size(); ++ihit2) {
+         double r2 = layer2[ihit2].r;
+         double phi2 = layer2[ihit2].phi;
+         if (fabs(calcDphi(phi1,phi2))>dPhiCut) continue;
+         double z2 = r2/tan(atan(exp(-layer2[ihit2].eta))*2);
+
+         double z = z1-(z2-z1)/(r2-r1)*r1;
+         if (fabs(z)<20) {
+            if (fillZ){
+               nRecoZ++;
+               vectorZ.push_back(z);
+            }
+         }
+      }
+   }
+
+   sort(vectorZ.begin(), vectorZ.end());
+   for (int i=0; i<(int)vectorZ.size(); i++) {
+      double nz = 0;
+      double totalZ = 0;
+      double rms = 0;
+
+      TH1F* h = new TH1F("h", "", 100, vectorZ[i]-histDeltaZ, vectorZ[i]+histDeltaZ);
+      for (int j=0; j<(int)vectorZ.size(); j++) {
+         if ((fabs(vectorZ[j]-vectorZ[i]))<histDeltaZ) {
+            nz++;
+            totalZ+=vectorZ[j];
+            h->Fill(vectorZ[j]);
+         }
+      }
+      rms=h->GetRMS();
+      delete h;
+      if (nz>maxNz || (nz==maxNz && rms<maxRMS)) {
+         maxNz=nz;
+         maxTotalZ=totalZ;
+         maxRMS=rms;
+      }
+   }
+
+   if (nRecoZ==0)
+      return -99;
+   else
+      return maxTotalZ/maxNz;
 }
 
 void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {

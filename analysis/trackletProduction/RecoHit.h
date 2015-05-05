@@ -112,16 +112,14 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
    /*
    while (smearX!=0) {
    double x = gRandom->Rndm()*2-1;
-      if (gRandom->Rndm()<TMath::Gaus(x, 0, 0.01, 1)) {
+      if (gRandom->Rndm()<TMath::Gaus(x, 0, 0.01, 1))
          smearX = x;
-      }
    }
 
    while (smearY!=0) {
       double x = gRandom->Rndm()*2-1;
-      if (gRandom->Rndm()<TMath::Gaus(x, 0, 0.01, 1)) {
+      if (gRandom->Rndm()<TMath::Gaus(x, 0, 0.01, 1))
          smearY = x;
-      }
    }
    */
    double x0, y0;
@@ -158,8 +156,8 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
    if (layer == 1) {
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
          // Reject
-         if (par.phi1[ihit]>-1.395 && par.phi1[ihit]<-1.105 && par.eta1[ihit]>1.085 && par.eta1[ihit]<1.725) continue;
-         if (par.phi1[ihit]>1.57 && par.phi1[ihit]<1.77 && par.eta1[ihit]>-0.27 && par.eta1[ihit]<-0.02) continue;
+         // if (par.phi1[ihit]>-1.395 && par.phi1[ihit]<-1.105 && par.eta1[ihit]>1.085 && par.eta1[ihit]<1.725) continue;
+         // if (par.phi1[ihit]>1.57 && par.phi1[ihit]<1.77 && par.eta1[ihit]>-0.27 && par.eta1[ihit]<-0.02) continue;
          // if (par.fl1[ihit]) continue;
          RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit]);
          if (gRandom->Rndm()<dropProb) continue;
@@ -170,7 +168,7 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
    } else if (layer == 2) {
       for (int ihit = 0; ihit < par.nhits2; ++ihit) {
          // for Run 124120 && 12402x
-         if (par.phi2[ihit]>2.98 && par.phi2[ihit]<3.2 && par.eta2[ihit]>-2.1 && par.eta2[ihit]<-1.71) continue;
+         // if (par.phi2[ihit]>2.98 && par.phi2[ihit]<3.2 && par.eta2[ihit]>-2.1 && par.eta2[ihit]<-1.71) continue;
          // if (par.fl2[ihit]) continue;
          RecoHit tmp(par.eta2[ihit], par.phi2[ihit], par.r2[ihit], par.cs2[ihit]);
          if (gRandom->Rndm()<dropProb) continue;
