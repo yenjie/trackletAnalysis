@@ -14,7 +14,8 @@ process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 # Timing service
 process.Timing = cms.Service("Timing") 
 
-process.GlobalTag.globaltag = 'MCRUN2_74_V1::All'
+# MC Globaltag for 2015 dN/deta analysis
+process.GlobalTag.globaltag = 'MCRUN2_74_V6B::All'
 
 process.pixelVertexFromClusters = cms.EDProducer('PixelVertexProducerClusters')
 
@@ -62,7 +63,7 @@ process.ana = cms.EDAnalyzer('PixelHitAnalyzer',
                              )
 
 process.TFileService = cms.Service('TFileService',
-                                   fileName = cms.string('PixelTree-4.root')
+                                   fileName = cms.string('PixelTree.root')
                                    )
 
 
