@@ -71,7 +71,7 @@
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
 
 // Heavyion
-//#include "DataFormats/HeavyIonEvent/interface/Centrality.h"
+#include "DataFormats/HeavyIonEvent/interface/Centrality.h"
 //#include "DataFormats/HeavyIonEvent/interface/CentralityProvider.h"
 
 
@@ -158,6 +158,7 @@ struct PixelEvent{
    int pdg[MAXPARTICLES];
    int chg[MAXPARTICLES];
    int evtType;
+   float xi;
    //float x[MAXPARTICLES];
    //float y[MAXPARTICLES];
    //float z[MAXPARTICLES];
@@ -216,7 +217,9 @@ class PixelHitAnalyzer : public edm::EDAnalyzer {
    void fillL1Bits(const edm::Event& iEvent);
    void fillHLTBits(const edm::Event& iEvent);
    void fillHF(const edm::Event& iEvent);
-//   void fillCentrality(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+   void fillCentrality(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+
+   static bool pairCompare(pair<double,HepMC::FourVector> i, pair<double,HepMC::FourVector> j);
    
    template <typename TYPE>
    void                          getProduct(const std::string name, edm::Handle<TYPE> &prod,
@@ -232,7 +235,7 @@ class PixelHitAnalyzer : public edm::EDAnalyzer {
 
    bool doMC_;
    bool doHF_;
-//   bool doCentrality_;
+   bool doCentrality_;
    bool doTrackingParticle_;
    bool doPixel_;
    bool doBeamSpot_;
@@ -243,6 +246,7 @@ class PixelHitAnalyzer : public edm::EDAnalyzer {
    edm::InputTag beamSpotProducer_;
 
    edm::InputTag L1gtReadout_; 
+   edm::InputTag CentralityTag_; 
    double etaMult_;
 
    const TrackerGeometry* geo_;
@@ -275,7 +279,7 @@ PixelHitAnalyzer::PixelHitAnalyzer(const edm::ParameterSet& iConfig)
 
 {
    doMC_             = iConfig.getUntrackedParameter<bool>  ("doMC",true);
-//   doCentrality_             = iConfig.getUntrackedParameter<bool>  ("doCentrality",true);
+   doCentrality_             = iConfig.getUntrackedParameter<bool>  ("doCentrality",false);
    doHF_             = iConfig.getUntrackedParameter<bool>  ("doHF",true);
    doTrackingParticle_             = iConfig.getUntrackedParameter<bool>  ("doTrackingParticle",false);
    doPixel_             = iConfig.getUntrackedParameter<bool>  ("doPixel",true);
@@ -287,6 +291,7 @@ PixelHitAnalyzer::PixelHitAnalyzer(const edm::ParameterSet& iConfig)
    TowerSrc_ =   iConfig.getUntrackedParameter<edm::InputTag>("towersSrc",edm::InputTag("towerMaker"));
    hltResName_ = iConfig.getUntrackedParameter<edm::InputTag>("hltTrgResults",edm::InputTag("TriggerResults"));
    beamSpotProducer_  = iConfig.getUntrackedParameter<edm::InputTag>("towersSrc",edm::InputTag("offlineBeamSpot"));   
+   CentralityTag_ = iConfig.getUntrackedParameter<edm::InputTag>("CentralityTag",edm::InputTag("pACentrality"));
 
    // if it's not MC, don't do TrackingParticle
    if (doMC_ == false) doTrackingParticle_ = false;
@@ -329,25 +334,25 @@ PixelHitAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    pev_.nRun = (int)iEvent.id().run();
    pev_.nLumi = (int)iEvent.luminosityBlock();
    pev_.nBX = (int)iEvent.bunchCrossing();
-
+   pev_.xi = -1;
    pev_.nv = 0;
 
    if (doMC_) fillParticles(iEvent);
-   cout <<"Fill Vtx"<<endl;
+//   cout <<"Fill Vtx"<<endl;
    fillVertices(iEvent);
-   cout <<"Fill BeamSpot"<<endl;
+//   cout <<"Fill BeamSpot"<<endl;
    fillBeamSpot(iEvent);
-   cout <<"Fill Hits"<<endl;
+//   cout <<"Fill Hits"<<endl;
    if (doPixel_) fillHits(iEvent);
 //   fillPixelTracks(iEvent);
-   cout <<"Fill L1"<<endl;
+//   cout <<"Fill L1"<<endl;
    fillL1Bits(iEvent);
-   cout <<"Fill HLT"<<endl;
+//   cout <<"Fill HLT"<<endl;
    fillHLTBits(iEvent);
-   cout <<"Fill HF"<<endl;
+//   cout <<"Fill HF"<<endl;
    fillHF(iEvent);
 //   cout <<"Fill Centrality"<<endl;
-//   if (doCentrality_) fillCentrality(iEvent, iSetup);
+   if (doCentrality_) fillCentrality(iEvent, iSetup);
    map<int,int>::iterator begin = tpmap_.begin();
    map<int,int>::iterator end = tpmap_.end();
 
@@ -392,9 +397,9 @@ PixelHitAnalyzer::fillVertices(const edm::Event& iEvent){
             pev_.vx[0]=simVtxItr->position().X();
             pev_.vy[0]=simVtxItr->position().Y();
             pev_.vz[0]=simVtxItr->position().Z();
-            cout <<pev_.vx[0]<<" "<<pev_.vy[0]<<" "<<pev_.vz[0]<<" "<<simVtxItr->position().T()<<endl;
+            //cout <<pev_.vx[0]<<" "<<pev_.vy[0]<<" "<<pev_.vz[0]<<" "<<simVtxItr->position().T()<<endl;
 	 }
-	 cout <<"============"<<endl;
+	 //cout <<"============"<<endl;
       }
 
       pev_.nv++;
@@ -640,6 +645,52 @@ PixelHitAnalyzer::fillParticles(const edm::Event& iEvent)
          if (fabs(pev_.eta[pev_.nparticle])>3) continue;
 	 pev_.nparticle++;
    }
+   
+   // xi calculation
+   pev_.xi = -1;
+
+   vector<pair<double,HepMC::FourVector> > particles;
+   for(HepMC::GenEvent::particle_const_iterator p = evt->particles_begin(); p!= evt->particles_end(); p++) {
+     if((*p)->status() == 1) {
+       double e  = (*p)->momentum().e();
+       double pz = (*p)->momentum().pz();
+       double y = 1./2*log((e+pz)/(e-pz));
+       particles.push_back(pair<double,HepMC::FourVector> (y, (*p)->momentum()) );
+     }
+   }
+
+   sort(particles.begin(), particles.end(), pairCompare);
+
+   double detamax = 0.;
+   vector<pair<double,HepMC::FourVector> >::const_iterator plast;
+   for(vector<pair<double,HepMC::FourVector> >::const_iterator p = particles.begin(); p!= particles.end() - 1; p++) {
+     double deta = (p+1)->first - p->first;
+     if(deta > detamax) { detamax = deta; plast = p; }
+   }
+
+   HepMC::FourVector sum_low, sum_hig;
+   for(vector<pair<double,HepMC::FourVector> >::iterator p = particles.begin(); p!= particles.end(); p++) {
+     if(p <= plast) {
+        sum_low.setPx(sum_low.px() + p->second.px());
+        sum_low.setPy(sum_low.py() + p->second.py());
+        sum_low.setPz(sum_low.pz() + p->second.pz());
+        sum_low.setE (sum_low.e()  + p->second.e() );
+     }
+     else {
+        sum_hig.setPx(sum_hig.px() + p->second.px());
+        sum_hig.setPy(sum_hig.py() + p->second.py());
+        sum_hig.setPz(sum_hig.pz() + p->second.pz());
+        sum_hig.setE (sum_hig.e()  + p->second.e() );
+     }
+   }
+
+   double m_low = sum_low.m();
+   double m_hig = sum_hig.m();
+
+   double Mx = (m_low > m_hig ? m_low : m_hig);
+
+   pev_.xi = Mx*Mx / (13e+3*13e+3); // 13 TeV
+
 }
 /*
 //--------------------------------------------------------------------------------------------------
@@ -743,6 +794,7 @@ PixelHitAnalyzer::beginJob()
   pixelTree_->Branch("phi",pev_.phi,"phi[npart]/F");
   pixelTree_->Branch("pdg",pev_.pdg,"pdg[npart]/I");
   pixelTree_->Branch("chg",pev_.chg,"chg[npart]/I");
+  pixelTree_->Branch("xi",&pev_.xi,"xi/F");
 
   /* Not needed anymore 
   pixelTree_->Branch("x",pev_.x,"x[npart]/F");
@@ -891,44 +943,71 @@ void PixelHitAnalyzer::fillHLTBits(const edm::Event &iEvent)
 }
 
 //--------------------------------------------------------------------------------------------------
-/*
+
 void PixelHitAnalyzer::fillCentrality(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  if(!centrality_){
-     centrality_ = new CentralityProvider(iSetup);
-     cout <<"Initialize Centrality Table"<<endl;
-  }
+
+  edm::Handle<reco::Centrality> centrality;
+  iEvent.getByLabel(CentralityTag_, centrality);
+
+/*
+  hiNpix = centrality->multiplicityPixel();
+  hiNpixelTracks = centrality->NpixelTracks();
+  hiNtracks = centrality->Ntracks();
+  hiNtracksPtCut = centrality->NtracksPtCut();
+  hiNtracksEtaCut = centrality->NtracksEtaCut();
+  hiNtracksEtaPtCut = centrality->NtracksEtaPtCut();
+
+  hiHF = centrality->EtHFtowerSum();
+  hiHFplus = centrality->EtHFtowerSumPlus();
+  hiHFminus = centrality->EtHFtowerSumMinus();
+  hiHFplusEta4 = centrality->EtHFtruncatedPlus();
+  hiHFminusEta4 = centrality->EtHFtruncatedMinus();
+  hiHFhit = centrality->EtHFhitSum();
+  hiHFhitPlus = centrality->EtHFhitSumPlus();
+  hiHFhitMinus = centrality->EtHFhitSumMinus();
+
+  hiZDC = centrality->zdcSum();
+  hiZDCplus = centrality->zdcSumPlus();
+  hiZDCminus = centrality->zdcSumMinus();
+
+  hiEEplus = centrality->EtEESumPlus();
+  hiEEminus = centrality->EtEESumMinus();
+  hiEE = centrality->EtEESum();
+  hiEB = centrality->EtEBSum();
+  hiET = centrality->EtMidRapiditySum();
 
   centrality_->newEvent(iEvent,iSetup);
-
-  double hf = centrality_->raw()->EtHFhitSum();
-  pev_.hf = hf;
-  pev_.hftp = (double)centrality_->raw()->EtHFtowerSumPlus();
-  pev_.hftm = (double)centrality_->raw()->EtHFtowerSumMinus();
-  pev_.zdcp = (double)centrality_->raw()->zdcSumPlus();
-  pev_.zdcm = (double)centrality_->raw()->zdcSumMinus();
- 
-  pev_.hfp = (double)centrality_->raw()->EtHFhitSumPlus();
-  pev_.hfm = (double)centrality_->raw()->EtHFhitSumMinus();
-  pev_.etMid = (double)centrality_->raw()->EtMidRapiditySum();
-  pev_.eb = (double)centrality_->raw()->EtEBSum();
-  pev_.eep = (double)centrality_->raw()->EtEESumPlus();
-  pev_.eem = (double)centrality_->raw()->EtEESumMinus();
-  pev_.cBin = (int)centrality_->getBin();
-  pev_.nbins = (int)centrality_->getNbins(); 
-  pev_.binsize = (int)(100/centrality_->getNbins() );
-  pev_.nparti = (double)centrality_->NpartMean();
-  pev_.npartiSigma = (double)centrality_->NpartSigma();
-  pev_.ncoll = (double)centrality_->NcollMean();
-  pev_.ncollSigma = (double)centrality_->NcollSigma();
-  pev_.nhard = (double)centrality_->NhardMean();
-  pev_.nhardSigma = (double)centrality_->NhardSigma();
-  pev_.b = (double)centrality_->bMean();
-  pev_.bSigma = (double)centrality_->bSigma();
-  pev_.pixel = (double)centrality_->raw()->multiplicityPixel();
-  
-}
 */
+  pev_.hf = centrality->EtHFhitSum();
+  pev_.hftp = (double)centrality->EtHFtowerSumPlus();
+  pev_.hftm = (double)centrality->EtHFtowerSumMinus();
+  pev_.zdcp = (double)centrality->zdcSumPlus();
+  pev_.zdcm = (double)centrality->zdcSumMinus();
+ 
+  pev_.hfp = (double)centrality->EtHFhitSumPlus();
+  pev_.hfm = (double)centrality->EtHFhitSumMinus();
+  pev_.etMid = (double)centrality->EtMidRapiditySum();
+  pev_.eb = (double)centrality->EtEBSum();
+  pev_.eep = (double)centrality->EtEESumPlus();
+  pev_.eem = (double)centrality->EtEESumMinus();
+/*
+  pev_.cBin = (int)centrality->getBin();
+  pev_.nbins = (int)centrality->getNbins(); 
+  pev_.binsize = (int)(100/centrality->getNbins() );
+  pev_.nparti = (double)centrality->NpartMean();
+  pev_.npartiSigma = (double)centrality->NpartSigma();
+  pev_.ncoll = (double)centrality->NcollMean();
+  pev_.ncollSigma = (double)centrality->NcollSigma();
+  pev_.nhard = (double)centrality->NhardMean();
+  pev_.nhardSigma = (double)centrality->NhardSigma();
+  pev_.b = (double)centrality->bMean();
+  pev_.bSigma = (double)centrality->bSigma();
+*/
+  pev_.pixel = (double)centrality->multiplicityPixel();
+
+}
+
 
 void PixelHitAnalyzer::fillHF(const edm::Event& iEvent)
 {
@@ -996,6 +1075,13 @@ inline bool PixelHitAnalyzer::getProductSafe(const std::string name, edm::Handle
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 PixelHitAnalyzer::endJob() {
+}
+
+// --------------------------------------------------------------------------------------------------
+bool
+PixelHitAnalyzer::pairCompare(pair<double,HepMC::FourVector> i, pair<double,HepMC::FourVector> j)
+{
+  return (i.first < j.first);
 }
 
 //define this as a plug-in

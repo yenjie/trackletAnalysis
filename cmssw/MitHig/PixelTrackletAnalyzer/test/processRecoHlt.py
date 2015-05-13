@@ -39,34 +39,62 @@ process.source = cms.Source("PoolSource",
     )
 )
 
+# Centrality
+process.load("RecoHI.HiCentralityAlgos.pACentrality_cfi") 
+process.pACentrality.producePixelTracks = cms.bool(False)
+#process.pACentrality.produceTracks = cms.bool(False)
 
-#process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
-#                                                   moduleSeeds = cms.PSet(simMuonRPCDigis = cms.untracked.uint32(49835),
-#                                                                          simEcalUnsuppressedDigis = cms.untracked.uint32(49835),
-#                                                                          simSiStripDigis = cms.untracked.uint32(49835),
-#                                                                          mix = cms.untracked.uint32(49835),
-#                                                                          simHcalUnsuppressedDigis = cms.untracked.uint32(49835),
-#                                                                          simMuonCSCDigis = cms.untracked.uint32(49835),
-#                                                                          VtxSmeared = cms.untracked.uint32(49835),
-#                                                                          g4SimHits = cms.untracked.uint32(49835),
-#                                                                          simMuonDTDigis = cms.untracked.uint32(49835),
-#                                                                          simSiPixelDigis = cms.untracked.uint32(49835)
-#                                                                          ),
-#                                                   sourceSeed = cms.untracked.uint32(49835)
-#                                                   )
 
+# Centrality Binning
+process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi") 
+process.centralityBin.Centrality = cms.InputTag("pACentrality")
+process.centralityBin.centralityVariable = cms.string("HFtowers")
+process.centralityBin.nonDefaultGlauberModel = cms.string("HydjetDrum5")
+
+# Add the HeavyIon Record: it is for PbPb cent binning, so we shoud not
+# trust the centrality bin and only use the variables from the centrality
+# provider
+
+process.GlobalTag.toGet.extend([
+   cms.PSet(record = cms.string("HeavyIonRcd"),
+   tag = cms.string("CentralityTable_HFtowers200_HydjetDrum5_v740x01_mc"),
+   connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_31X_PHYSICSTOOLS"),
+   label = cms.untracked.string("HFtowersHydjetDrum5")
+   ),
+])
 
 process.ana = cms.EDAnalyzer('PixelHitAnalyzer',
                              vertexSrc = cms.vstring('offlinePrimaryVerticesWithBS'),
                              trackSrc = cms.InputTag('generalTracks'),
-                             doTracking = cms.untracked.bool(False)
+                             doTracking = cms.untracked.bool(False),
+                             doCentrality = cms.untracked.bool(True)
                              )
+
+#process.load("HeavyIonsAnalysis.EventAnalysis.hievtanalyzer_mc_cfi")
+process.load("HLTrigger.HLTanalyzers.HLTBitAnalyser_cfi")
+
+process.hltbitanalysis.UseTFileService = cms.untracked.bool(True)
+process.hltanalysis = process.hltbitanalysis.clone(
+    l1GtReadoutRecord    = cms.InputTag("gtDigis"),
+    l1GctHFBitCounts     = cms.InputTag("gctDigis"),
+    l1GctHFRingSums      = cms.InputTag("gctDigis"),
+    l1extramu            = cms.string('l1extraParticles'),
+    l1extramc            = cms.string('l1extraParticles'),
+    hltresults           = cms.InputTag("TriggerResults","","HLT"),
+)
 
 process.TFileService = cms.Service('TFileService',
                                    fileName = cms.string('PixelTree.root')
                                    )
 
 
-process.analyze = cms.Path(process.siPixelRecHits*process.ana)
+process.analyze = cms.Path(
+       process.siPixelRecHits*
+#       process.hiSelectedVertex*
+       process.pACentrality*
+       process.centralityBin*
+       process.hltanalysis*
+#       process.hiEvtAnalyzer*
+       process.ana)
 
 
