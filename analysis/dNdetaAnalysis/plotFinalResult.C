@@ -1,7 +1,7 @@
 // Plot final results
 #define canvasSizeX 600
 #define canvasSizeY 600
-#define dndetaRange 4.0
+#define dndetaRange 9.0
 #define SDFactor 1
 
 // Standard library
@@ -65,18 +65,18 @@ TFile* getCorrectionFile(string correctionFileName, int TrackletType) {
 // Main Routine
 // ============================================================================
 int plotFinalResult(int TrackletType, const char* filename,
-                    const char* myPlotTitle = "PYTHIA8_Monash13", // Title of the plot
-                    bool useCorrectionFile = 0,                   // use Correction file
-                    string correctionName = "PYTHIA8_Monash13",   // Correction file name
-                    int LumiL = 0,                                // nLumi lower cut
-                    int LumiH = 1000,                             // nLumi higher cut
-                    int verbose = 0,                              // set verbose level
-                    int makePlot = 0,                             // make alpha plots
-                    bool putUA5 = 0,                              // overlap UA5 result
-                    bool doAcceptanceCorrection = 0,              // do acceptance correction
-                    bool doBetaCorrection = 0,                    // do beta correction
-                    int doMult2 = 0,                              // multiplicity
-                    bool doTriggerCorrection = 1,                 // do trigger eff correction
+                    const char* myPlotTitle = "PYTHIA8_Monash13",   // Title of the plot
+                    bool useCorrectionFile = 0,                     // use Correction file
+                    string correctionName = "PYTHIA8_Monash13",     // Correction file name
+                    int LumiL = 0,                                  // nLumi lower cut
+                    int LumiH = 1000,                               // nLumi higher cut
+                    int verbose = 0,                                // set verbose level
+                    int makePlot = 0,                               // make alpha plots
+                    bool putUA5 = 0,                                // overlap UA5 result
+                    bool doAcceptanceCorrection = 0,                // do acceptance correction
+                    bool doBetaCorrection = 0,                      // do beta correction
+                    int doMult2 = 0,                                // multiplicity
+                    bool doTriggerCorrection = 1,                   // do trigger eff correction
                     int UseExternalSDEff = 0,
                     bool useDR = 0)
 {
@@ -156,9 +156,8 @@ int plotFinalResult(int TrackletType, const char* filename,
       sideBandRegionEtaSignalRegion = "dR>0.1&&dR<0.2";
    }
 
-
-   // TCut NSDCut = "1"; cout << "MC INEL definition" << endl;
-   TCut NSDCut = "(evtType==103||evtType==104)"; cout << "PYTHIA8 MC SD definition" << endl;
+   TCut NSDCut = "1"; cout << "MC INEL definition" << endl;
+   // TCut NSDCut = "(evtType==103||evtType==104)"; cout << "PYTHIA8 MC SD definition" << endl;
    // TCut NSDCut = "(evtType!=103&&evtType!=104)"; cout << "PYTHIA8 MC NSD definition" << endl;
    if (!isMC) NSDCut = "";
    // evtSelection += NSDCut;
@@ -247,9 +246,9 @@ int plotFinalResult(int TrackletType, const char* filename,
    hVz->Fit("gaus");
    hVz->SetXTitle("v_{z} (cm)");
    // hVz->Draw();
-   // cVz->SaveAs(Form("plot/vz/plotVz-%s-%d.gif", myPlotTitle, TrackletType));
-   // cVz->SaveAs(Form("plot/vz/plotVz-%s-%d.eps", myPlotTitle, TrackletType));
-   // cVz->SaveAs(Form("plot/vz/plotVz-%s-%d.C", myPlotTitle, TrackletType));
+   // cVz->SaveAs(Form("figs/vz/plotVz-%s-%d.gif", myPlotTitle, TrackletType));
+   // cVz->SaveAs(Form("figs/vz/plotVz-%s-%d.eps", myPlotTitle, TrackletType));
+   // cVz->SaveAs(Form("figs/vz/plotVz-%s-%d.C", myPlotTitle, TrackletType));
    cout << "Number of events: " << nevent << endl;
 
    // Determine the acceptance region to avoid large correction factors
@@ -451,7 +450,7 @@ int plotFinalResult(int TrackletType, const char* filename,
       hTrigEffNoCut->Sumw2();
       hTrigEff->Divide(hTrigEffNoCut);
       // hTrigEff->Draw();
-      // cTrigEff->SaveAs(Form("plot/TrigEff-%s-%d.gif", myPlotTitle, TrackletType));
+      // cTrigEff->SaveAs(Form("figs/TrigEff-%s-%d.gif", myPlotTitle, TrackletType));
 
       // Calculate SD'/IN'
       // TCanvas *cSDFrac = new TCanvas("cSDFrac", "SD Fraction After Cut", canvasSizeX, canvasSizeY);
@@ -461,7 +460,7 @@ int plotFinalResult(int TrackletType, const char* filename,
       hSD->Sumw2();
       hSDFrac->Divide(hSD);
       // hSDFrac->Draw();
-      // cSDFrac->SaveAs(Form("plot/SDFrac-%s-%d.gif", myPlotTitle, TrackletType));
+      // cSDFrac->SaveAs(Form("figs/SDFrac-%s-%d.gif", myPlotTitle, TrackletType));
 
       // Calculate Vertexed dN/deta
       // TCanvas *cdNdEtaVertexed = new TCanvas("cdNdEtaVertexed", "dNdEta after vertexing", canvasSizeX, canvasSizeY);
@@ -494,7 +493,7 @@ int plotFinalResult(int TrackletType, const char* filename,
       hTriggerCorrection->Scale(1./neventWOSelection);
       hTriggerCorrection->Divide(hdNdetaWithEvtCut);
       // hTriggerCorrection->Draw();
-      // cTriggerCorrection->SaveAs(Form("plot/Xi-%s-%d.gif", myPlotTitle, TrackletType));
+      // cTriggerCorrection->SaveAs(Form("figs/Xi-%s-%d.gif", myPlotTitle, TrackletType));
    }
 
    // Make beta and alpha plot
@@ -538,9 +537,9 @@ int plotFinalResult(int TrackletType, const char* filename,
          }
          l1->Draw();
          l3->Draw();
-         cc->SaveAs(Form("plot/betaPlot/betaPlot-%s-%d-%d.gif", myPlotTitle, z, TrackletType));
-         // cc->SaveAs(Form("plot/betaPlot/betaPlot-%s-%d-%d.C", myPlotTitle, z, TrackletType));
-         // cc->SaveAs(Form("plot/betaPlot/betaPlot-%s-%d-%d.eps", myPlotTitle, z, TrackletType));
+         cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.gif", myPlotTitle, z, TrackletType));
+         // cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.C", myPlotTitle, z, TrackletType));
+         // cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.eps", myPlotTitle, z, TrackletType));
          cc->Close();
       }
 
@@ -585,9 +584,9 @@ int plotFinalResult(int TrackletType, const char* filename,
          }
          l1->Draw();
          l3->Draw();
-         cc->SaveAs(Form("plot/alphaPlot/alphaPlot-%s-%d-%d.gif", myPlotTitle, z, TrackletType));
-         // cc->SaveAs(Form("plot/alphaPlot/alphaPlot-%s-%d-%d.C", myPlotTitle, z, TrackletType));
-         // cc->SaveAs(Form("plot/alphaPlot/alphaPlot-%s-%d-%d.eps", myPlotTitle, z, TrackletType));
+         cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.gif", myPlotTitle, z, TrackletType));
+         // cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.C", myPlotTitle, z, TrackletType));
+         // cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.eps", myPlotTitle, z, TrackletType));
          cc->Close();
       }
    }
@@ -958,14 +957,15 @@ int plotFinalResult(int TrackletType, const char* filename,
    l1->Draw();
    // TText* text = new TText(-2.6, 5, "CMS Preliminary");
    // text->Draw();
-   cDNdEta->SaveAs(Form("plot/result/result-%s-%d.pdf", myPlotTitle, TrackletType));
-   // cDNdEta->SaveAs(Form("plot/result/result-%s-%d.eps", myPlotTitle, TrackletType));
-   // cDNdEta->SaveAs(Form("plot/result/result-%s-%d.C", myPlotTitle, TrackletType));
+   cDNdEta->SaveAs(Form("figs/result/result-%s-%d.pdf", myPlotTitle, TrackletType));
+   // cDNdEta->SaveAs(Form("figs/result/result-%s-%d.eps", myPlotTitle, TrackletType));
+   // cDNdEta->SaveAs(Form("figs/result/result-%s-%d.C", myPlotTitle, TrackletType));
 
    // Compare with Truth ======================================================
    TCanvas *cDNdEtaCompare = new TCanvas("cDNdEtaCompare", "Compare", canvasSizeX, canvasSizeY);
-   hMeasuredFinal->SetAxisRange(0, 9.0, "y");
-   hMeasuredFinal->Draw("e");
+   // hMeasuredFinal->SetAxisRange(0, 9.0, "y");
+   hUncorrected->Draw();
+   hMeasuredFinal->Draw("e same");
 
    hTruthWOSelection->Draw("hist same");
 
@@ -1006,7 +1006,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    l2->AddEntry(hMeasuredFinal, "Final result", "pl");
    l2->Draw();
    cDNdEtaCompare->Update();
-   cDNdEtaCompare->SaveAs(Form("plot/compare/compare-%s-%i.png", myPlotTitle, TrackletType));
+   cDNdEtaCompare->SaveAs(Form("figs/compare/compare-%s-%i.png", myPlotTitle, TrackletType));
 
    if (isMC) {
       // Ratio between measured and truth =====================================
@@ -1037,9 +1037,9 @@ int plotFinalResult(int TrackletType, const char* filename,
       line1->Draw();
       // TText* text2 = new TText(-2.6, 1.165, "CMS Preliminary");
       // text2->Draw();
-      cRatio->SaveAs(Form("plot/ratio/ratio-%s-%d.pdf", myPlotTitle, TrackletType));
-      // cRatio->SaveAs(Form("plot/ratio/ratio-%s-%d.eps", myPlotTitle, TrackletType));
-      // cRatio->SaveAs(Form("plot/ratio/ratio-%s-%d.C", myPlotTitle, TrackletType));
+      cRatio->SaveAs(Form("figs/ratio/ratio-%s-%d.pdf", myPlotTitle, TrackletType));
+      // cRatio->SaveAs(Form("figs/ratio/ratio-%s-%d.eps", myPlotTitle, TrackletType));
+      // cRatio->SaveAs(Form("figs/ratio/ratio-%s-%d.C", myPlotTitle, TrackletType));
 
       // TCanvas *cDNdnTracklet = new TCanvas("cDNdnTracklet", "Measured vs mult", canvasSizeX, canvasSizeY);
       TH1F *hTruthHit = (TH1F*)hHadronAccepted->Project3D("y");
@@ -1077,6 +1077,7 @@ int plotFinalResult(int TrackletType, const char* filename,
          if (verbose && !fAlphaErr[i][j]) cout << "no alphaErr! " << i << " " << j << endl;
       }
    }
+   fEmptyEvt->Write();
 
    cDNdEta->Write();
    outf->Write();

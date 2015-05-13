@@ -107,23 +107,9 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
                   bool cutOnClusterSize = 0, double runNum = 0, double nLumi = 0)
 {
    vector<RecoHit> hits;
-   static Bool_t firstCall = 0;
-   double smearX = 0, smearY = 0;
-   /*
-   while (smearX!=0) {
-   double x = gRandom->Rndm()*2-1;
-      if (gRandom->Rndm()<TMath::Gaus(x, 0, 0.01, 1))
-         smearX = x;
-   }
+   static bool firstCall = 0;
 
-   while (smearY!=0) {
-      double x = gRandom->Rndm()*2-1;
-      if (gRandom->Rndm()<TMath::Gaus(x, 0, 0.01, 1))
-         smearY = x;
-   }
-   */
    double x0, y0;
-
    // The beamspot for each run
    if (runNum == 123596) {
       x0 = 0.174562;
@@ -147,10 +133,10 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       x0 = 0.095; // roughly
       y0 = 0.002; // roughly
    } else {
-      // x0 = 0.2468185+smearX;
-      // y0 = 0.3983917+smearY;
-      x0 = 0.032 + smearX;
-      y0 = 0.0 + smearY;
+      // x0 = 0.2468185;
+      // y0 = 0.3983917;
+      x0 = 0.032;
+      y0 = 0.0;
    }
 
    if (layer == 1) {
@@ -203,9 +189,8 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
             // if (dphi > cuts.dPhiCut) k=0;
          }
       }
-
       if (flag==1) continue;
-      // recalculate eta and phi
+
       double x = hits[ihit].r*cos(hits[ihit].phi);
       double y = hits[ihit].r*sin(hits[ihit].phi);
       double z = hits[ihit].r/tan(atan(exp(-hits[ihit].eta))*2);
@@ -217,18 +202,18 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       // Run 124022-24 (old)
       // x0 = 0.192372
       // y0 = 0.162306
-      // ROOT::Math::XYZVector tmpVector(x-0.192372, y-0.162306, z-vz); //refitted
+      // ROOT::Math::XYZVector tmpVector(x-0.192372, y-0.162306, z-vz);
       // Run 124023
       // ROOT::Math::XYZVector tmpVector(x-0.193056, y-0.168689, z-vz);
       // Run 124120
-      // ROOT::Math::XYZVector tmpVector(x-0.11811, y-0.0244726, z-vz); //refitted
+      // ROOT::Math::XYZVector tmpVector(x-0.11811, y-0.0244726, z-vz);
       // ROOT::Math::XYZVector tmpVector(x-0.205124, y-0.164012, z-vz);
       // ROOT::Math::XYZVector tmpVector(x, y, z-vz);
       // ROOT::Math::XYZVector tmpVector(x, y, z-vz);
       // Run 132440
-      // ROOT::Math::XYZVector tmpVector(x-0.09335, y-0.007392, z-vz); //vtx fit ?? (temporarily)
+      // ROOT::Math::XYZVector tmpVector(x-0.09335, y-0.007392, z-vz);
       // MC 7000GeV Frank
-      // ROOT::Math::XYZVector tmpVector(x-0.2468185, y-0.3983917, z-vz); //vtx fit ?? (temporarily)
+      // ROOT::Math::XYZVector tmpVector(x-0.2468185, y-0.3983917, z-vz);
 
       if (vz!=0 && firstCall==0) {
          cout << "Beamspot X0 = " << x0 << " Y0 = " << y0 << endl;
@@ -239,12 +224,12 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       RecoHit tmpHit(tmpVector.eta(), tmpVector.phi(), tmpVector.rho(), hits[ihit].cs);
       double eta = tmpVector.eta();
 
-      if (cutOnClusterSize && fabs(eta)< 0.5 &&                  hits[ihit].cs < 1) continue;
-      if (cutOnClusterSize && fabs(eta)<=1.0 && fabs(eta)>0.5 && hits[ihit].cs < 2) continue;
-      if (cutOnClusterSize && fabs(eta)<=1.5 && fabs(eta)>1.0 && hits[ihit].cs < 3) continue;
-      if (cutOnClusterSize && fabs(eta)<=2.0 && fabs(eta)>1.5 && hits[ihit].cs < 4) continue;
-      if (cutOnClusterSize && fabs(eta)<=2.5 && fabs(eta)>2.0 && hits[ihit].cs < 6) continue;
-      if (cutOnClusterSize && fabs(eta)<=5.0 && fabs(eta)>2.5 && hits[ihit].cs < 9) continue;
+      if (cutOnClusterSize && fabs(eta)<=0.5 &&                  hits[ihit].cs<1) continue;
+      if (cutOnClusterSize && fabs(eta)<=1.0 && fabs(eta)>0.5 && hits[ihit].cs<2) continue;
+      if (cutOnClusterSize && fabs(eta)<=1.5 && fabs(eta)>1.0 && hits[ihit].cs<3) continue;
+      if (cutOnClusterSize && fabs(eta)<=2.0 && fabs(eta)>1.5 && hits[ihit].cs<4) continue;
+      if (cutOnClusterSize && fabs(eta)<=2.5 && fabs(eta)>2.0 && hits[ihit].cs<6) continue;
+      if (cutOnClusterSize && fabs(eta)<=5.0 && fabs(eta)>2.5 && hits[ihit].cs<9) continue;
       cleanedHits.push_back(tmpHit);
    }
 }
