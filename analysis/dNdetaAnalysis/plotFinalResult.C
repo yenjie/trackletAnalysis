@@ -31,19 +31,11 @@
 #include "UA5Plot.h"
 #include "GraphErrorsBand.h"
 
-#include "selectionCut.h"
-
 void formatHist(TH1* h, int col = 1, double norm = 1, double msize = 1);
 
 // ============================================================================
 // Read Stored correction factors
 // ============================================================================
-
-// Correction factor setting:
-// 1 = 900 GeV
-// 2 = 10 TeV
-// 3 = 900 GeV (half of the sample)
-// 4 = 10 TeV (half of the sample)
 
 TFile* getAcceptanceFile(int TrackletType) {
    TFile* fAcceptance;
@@ -68,6 +60,7 @@ int plotFinalResult(int TrackletType, const char* filename,
                     const char* myPlotTitle = "PYTHIA8_Monash13",   // Title of the plot
                     bool useCorrectionFile = 0,                     // use Correction file
                     string correctionName = "PYTHIA8_Monash13",     // Correction file name
+                    int selection = 0,                              // MC selection
                     int LumiL = 0,                                  // nLumi lower cut
                     int LumiH = 1000,                               // nLumi higher cut
                     int verbose = 0,                                // set verbose level
@@ -125,10 +118,8 @@ int plotFinalResult(int TrackletType, const char* filename,
       hAlphaB = (TH3F*)myFile->FindObjectAny("hAlphaB");
    }
 
-   selectionCut myCut(isMC, LumiL, LumiH);
-   int VzRangeL = myCut.VzRangeL;
-   int VzRangeH = myCut.VzRangeH;
-   TCut evtSelection = myCut.Cut;
+   int VzRangeL = -20;
+   int VzRangeH = 20;
 
    // Definition of Vz, Eta, Hit bins
    const int nTrackletBin = 12;
@@ -156,11 +147,35 @@ int plotFinalResult(int TrackletType, const char* filename,
       sideBandRegionEtaSignalRegion = "dR>0.1&&dR<0.2";
    }
 
-   TCut NSDCut = "1"; cout << "MC INEL definition" << endl;
-   // TCut NSDCut = "(evtType==103||evtType==104)"; cout << "PYTHIA8 MC SD definition" << endl;
-   // TCut NSDCut = "(evtType!=103&&evtType!=104)"; cout << "PYTHIA8 MC NSD definition" << endl;
-   if (!isMC) NSDCut = "";
-   // evtSelection += NSDCut;
+   TString vtxCut = "abs(vz[1])<20";
+   TCut MCSelection;
+   TString offlineSelection;
+   TCut evtSelection;
+
+   switch (selection) {
+      case 0:
+         MCSelection = "1";
+         offlineSelection = "(nHFp>0 || nHFn>0)";
+         printf("---------- INELASTIC definition\n");
+         break;
+      case 1:
+         MCSelection = "(evtType!=103&&evtType!=104)";
+         offlineSelection = "(nHFp>0 && nHFn>0)";
+         printf("---------------- NSD definition\n");
+         break;
+      case 2:
+         MCSelection = "(passDS==1)";
+         offlineSelection = "(nHFp>0 && nHFn>0)";
+         printf("----------------- DS definition\n");
+         break;
+      case 3:
+         MCSelection = "(passSingleTrack==1)";
+         offlineSelection = "(nHFp>0 || nHFn>0)";
+         printf("------- Single Track definition\n");
+         break;
+   }
+   evtSelection = TCut(vtxCut + "&&" + offlineSelection);
+   if (!isMC) MCSelection = "1";
 
    // Output file =============================================================
    TFile* outf = new TFile (Form("correction-%i-%s.root", TrackletType, myPlotTitle), "recreate");
@@ -228,9 +243,10 @@ int plotFinalResult(int TrackletType, const char* filename,
    TF1* fEmptyEvt;
 
    // Number of events
-   int nevent = TrackletTree->Draw("vz[1]", evtSelection&&NSDCut, "goff");
-   int neventWOSelection = TrackletTree->Draw("vz[1]", NSDCut, "goff");
-   if (nevent == 0) {
+   int nevent = TrackletTree->Draw("vz[1]", evtSelection&&MCSelection, "goff");
+   int neventWOSelection = TrackletTree->Draw("vz[1]", MCSelection, "goff");
+   cout << "Number of events: " << nevent << endl;
+   if (nevent < 1) {
       cout << "No event survived. Abort." << endl;
       return 0;
    }
@@ -249,12 +265,10 @@ int plotFinalResult(int TrackletType, const char* filename,
    // cVz->SaveAs(Form("figs/vz/plotVz-%s-%d.gif", myPlotTitle, TrackletType));
    // cVz->SaveAs(Form("figs/vz/plotVz-%s-%d.eps", myPlotTitle, TrackletType));
    // cVz->SaveAs(Form("figs/vz/plotVz-%s-%d.C", myPlotTitle, TrackletType));
-   cout << "Number of events: " << nevent << endl;
 
    // Determine the acceptance region to avoid large correction factors
    // End point in z (cm)
-   // double endpoint2 = 26.66;
-   double endpoint2 = 30.0;
+   double endpoint2 = 30.0; // 26.66 (old)
    double rho = 7.6; // Second layer rho
    double etaLimit = 2.5;
    if (TrackletType % 10 == 3) {
@@ -292,7 +306,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    hHadron->SetYTitle("N_{hit}^{Layer1} |#eta|<3");
 
    TrackletTree->Project("hHadron", Form("vz[1]:%s:eta", multiplicity), "abs(eta)<3"&&evtSelection);
-   TrackletTree->Project("hHadronWOSelection", Form("vz[1]:%s:eta", multiplicity), "abs(eta)<3"&&NSDCut);
+   TrackletTree->Project("hHadronWOSelection", Form("vz[1]:%s:eta", multiplicity), "abs(eta)<3"&&MCSelection);
    hHadron->Sumw2();
    hHadronWOSelection->Sumw2();
 
@@ -427,8 +441,8 @@ int plotFinalResult(int TrackletType, const char* filename,
             formatHist(alphaPlots[i][j], 2, 1);
             funAlpha[i][j] = new TF1(Form("funAlpha%dVz%d", i, j), "[1]/(x+[3]+0.5)+[2]/(x+0.5)/(x+0.5)+[0]", 0, 100);
             funAlphaErr[i][j] = new TF1(Form("funAlphaErr%dVz%d", i, j), "[0]+[1]/(x+0.5)+[2]*exp([3]*x)", 0, 100);
-            double etaMin = i*0.5-3;
-            double etaMax = i*0.5-3+0.5;
+            double etaMin = i*0.2-3;
+            double etaMax = i*0.2-3+0.2;
             alphaPlots[i][j]->Fit(Form("funAlpha%dVz%d", i, j), "M E Q", "", 0, 200);
             alphaPlots[i][j]->SetXTitle("N_{Hits}");
             alphaPlots[i][j]->SetYTitle(Form("#alpha %.1f < #eta < %.1f", etaMin, etaMax));
@@ -444,9 +458,9 @@ int plotFinalResult(int TrackletType, const char* filename,
 
       // Vertex and event selection efficiency
       // TCanvas *cTrigEff = new TCanvas("cTrigEff", "TrigEff", canvasSizeX, canvasSizeY);
-      TrackletTree->Project("hTrigEff", Form("%s", multiplicity), TCut(myCut.evtSelection)&&"vz[1]>-99"&&NSDCut);
+      TrackletTree->Project("hTrigEff", Form("%s", multiplicity), TCut(offlineSelection)&&"vz[1]>-99"&&MCSelection);
       hTrigEff->Sumw2();
-      TrackletTree->Project("hTrigEffNoCut", Form("%s", multiplicity), NSDCut&&"vz[1]>-99");
+      TrackletTree->Project("hTrigEffNoCut", Form("%s", multiplicity), MCSelection&&"vz[1]>-99");
       hTrigEffNoCut->Sumw2();
       hTrigEff->Divide(hTrigEffNoCut);
       // hTrigEff->Draw();
@@ -454,7 +468,7 @@ int plotFinalResult(int TrackletType, const char* filename,
 
       // Calculate SD'/IN'
       // TCanvas *cSDFrac = new TCanvas("cSDFrac", "SD Fraction After Cut", canvasSizeX, canvasSizeY);
-      TrackletTree->Project("hSDFrac", Form("%s", multiplicity), evtSelection&&!(NSDCut));
+      TrackletTree->Project("hSDFrac", Form("%s", multiplicity), evtSelection&&!(MCSelection));
       hSDFrac->Sumw2();
       TrackletTree->Project("hSD", Form("%s", multiplicity), evtSelection);
       hSD->Sumw2();
@@ -464,8 +478,8 @@ int plotFinalResult(int TrackletType, const char* filename,
 
       // Calculate Vertexed dN/deta
       // TCanvas *cdNdEtaVertexed = new TCanvas("cdNdEtaVertexed", "dNdEta after vertexing", canvasSizeX, canvasSizeY);
-      TrackletTree->Project("hDNDEtaVertexed", "eta", TCut("vz[1]>-99")&&(NSDCut));
-      int nEvtAfterVtx = TrackletTree->Draw("nhit1", TCut("vz[1]>-99")&&(NSDCut), "goff");
+      TrackletTree->Project("hDNDEtaVertexed", "eta", TCut("vz[1]>-99")&&(MCSelection));
+      int nEvtAfterVtx = TrackletTree->Draw("nhit1", TCut("vz[1]>-99")&&(MCSelection), "goff");
       hDNDEtaVertexed->SetXTitle("#eta Truth after Vtx");
       hDNDEtaVertexed->SetYTitle("dN/#eta");
       hDNDEtaVertexed->Scale(2./nEvtAfterVtx);
@@ -473,8 +487,8 @@ int plotFinalResult(int TrackletType, const char* filename,
 
       // Calculate NoVertexed dN/deta
       // TCanvas *cdNdEtaNoVertexed = new TCanvas("cdNdEtaNoVertexed", "dNdEta after vertexing", canvasSizeX, canvasSizeY);
-      int nEvtBeforeVtx = TrackletTree->Draw("nhit1", (NSDCut), "goff");
-      TrackletTree->Project("hDNDEtaNoVertexed", "eta", (NSDCut));
+      int nEvtBeforeVtx = TrackletTree->Draw("nhit1", (MCSelection), "goff");
+      TrackletTree->Project("hDNDEtaNoVertexed", "eta", (MCSelection));
       hDNDEtaNoVertexed->SetXTitle("#eta Truth before Vtx");
       hDNDEtaNoVertexed->SetYTitle("dN/#eta");
       hDNDEtaNoVertexed->Scale(2./nEvtBeforeVtx);
@@ -497,99 +511,98 @@ int plotFinalResult(int TrackletType, const char* filename,
    }
 
    // Make beta and alpha plot
-   if (0) {
    // if (makePlot) {
-      // Beta plot
-      for (int z=1; z<=nVzBin; z++) {
-         TLegend * l1 = new TLegend(0.63, 0.75, 0.93, 0.93);
-         l1->SetFillStyle(0);
-         l1->SetFillColor(0);
-         l1->SetBorderSize(0);
-         l1->SetTextSize(0.04);
+   //    // Beta plot
+   //    for (int z=1; z<=nVzBin; z++) {
+   //       TLegend * l1 = new TLegend(0.63, 0.75, 0.93, 0.93);
+   //       l1->SetFillStyle(0);
+   //       l1->SetFillColor(0);
+   //       l1->SetBorderSize(0);
+   //       l1->SetTextSize(0.04);
 
-         TLegend * l3 = new TLegend(0.26, 0.75, 0.56, 0.93);
-         l3->SetFillStyle(0);
-         l3->SetFillColor(0);
-         l3->SetBorderSize(0);
-         l3->SetTextSize(0.04);
+   //       TLegend * l3 = new TLegend(0.26, 0.75, 0.56, 0.93);
+   //       l3->SetFillStyle(0);
+   //       l3->SetFillColor(0);
+   //       l3->SetBorderSize(0);
+   //       l3->SetTextSize(0.04);
 
-         TCanvas *cc = new TCanvas(Form("cBetaPlot%d", z), "", canvasSizeX, canvasSizeY);
-         for (int x=2; x<nEtaBin; x++) {
-            int color = x-1;
-            int mtype = 4;
-            if (color>nEtaBin/2-1) {
-               color = nEtaBin-1-color;
-               mtype = 20;
-            }
-            formatHist(betaPlots[x-1][z-1], color);
-            if (betaPlots[x-1][z-1]->GetEntries()) {
-               betaPlots[x-1][z-1]->SetMarkerStyle(mtype);
-               betaPlots[x-1][z-1]->SetAxisRange(0, 0.5, "Y");
-               betaPlots[x-1][z-1]->Draw("L hist same");
-               betaPlots[x-1][z-1]->Draw("e same");
-               betaPlots[x-1][z-1]->SetYTitle("#beta");
-               betaPlots[x-1][z-1]->SetXTitle(Form("N_{Hits} (%.0f #leq V_{z} < %.0f cm)", VzBins[z-1], VzBins[z]));
-               if (x-1<nEtaBin/2)
-                  l3->AddEntry(betaPlots[x-1][z-1], Form("%.1f #leq #eta<%.1f", EtaBins[x-1], EtaBins[x]), "pl");
-               else
-                  l1->AddEntry(betaPlots[x-1][z-1], Form("%.1f #leq #eta<%.1f", EtaBins[x-1], EtaBins[x]), "pl");
-            }
-         }
-         l1->Draw();
-         l3->Draw();
-         cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.gif", myPlotTitle, z, TrackletType));
-         // cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.C", myPlotTitle, z, TrackletType));
-         // cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.eps", myPlotTitle, z, TrackletType));
-         cc->Close();
-      }
+   //       TCanvas *cc = new TCanvas(Form("cBetaPlot%d", z), "", canvasSizeX, canvasSizeY);
+   //       for (int x=2; x<nEtaBin; x++) {
+   //          int color = x-1;
+   //          int mtype = 4;
+   //          if (color>nEtaBin/2-1) {
+   //             color = nEtaBin-1-color;
+   //             mtype = 20;
+   //          }
+   //          formatHist(betaPlots[x-1][z-1], color);
+   //          if (betaPlots[x-1][z-1]->GetEntries()) {
+   //             betaPlots[x-1][z-1]->SetMarkerStyle(mtype);
+   //             betaPlots[x-1][z-1]->SetAxisRange(0, 0.5, "Y");
+   //             betaPlots[x-1][z-1]->Draw("L hist same");
+   //             betaPlots[x-1][z-1]->Draw("e same");
+   //             betaPlots[x-1][z-1]->SetYTitle("#beta");
+   //             betaPlots[x-1][z-1]->SetXTitle(Form("N_{Hits} (%.0f #leq V_{z} < %.0f cm)", VzBins[z-1], VzBins[z]));
+   //             if (x-1<nEtaBin/2)
+   //                l3->AddEntry(betaPlots[x-1][z-1], Form("%.1f #leq #eta<%.1f", EtaBins[x-1], EtaBins[x]), "pl");
+   //             else
+   //                l1->AddEntry(betaPlots[x-1][z-1], Form("%.1f #leq #eta<%.1f", EtaBins[x-1], EtaBins[x]), "pl");
+   //          }
+   //       }
+   //       l1->Draw();
+   //       l3->Draw();
+   //       cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.gif", myPlotTitle, z, TrackletType));
+   //       // cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.C", myPlotTitle, z, TrackletType));
+   //       // cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.eps", myPlotTitle, z, TrackletType));
+   //       cc->Close();
+   //    }
 
-      for (int z=1; z<=nVzBin; z++) {
-         TLegend * l1 = new TLegend(0.63, 0.55, 0.93, 0.93);
-         l1->SetFillStyle(0);
-         l1->SetFillColor(0);
-         l1->SetBorderSize(0);
-         l1->SetTextSize(0.04);
+   //    for (int z=1; z<=nVzBin; z++) {
+   //       TLegend * l1 = new TLegend(0.63, 0.55, 0.93, 0.93);
+   //       l1->SetFillStyle(0);
+   //       l1->SetFillColor(0);
+   //       l1->SetBorderSize(0);
+   //       l1->SetTextSize(0.04);
 
-         TLegend * l3 = new TLegend(0.26, 0.55, 0.56, 0.93);
-         l3->SetFillStyle(0);
-         l3->SetFillColor(0);
-         l3->SetBorderSize(0);
-         l3->SetTextSize(0.04);
+   //       TLegend * l3 = new TLegend(0.26, 0.55, 0.56, 0.93);
+   //       l3->SetFillStyle(0);
+   //       l3->SetFillColor(0);
+   //       l3->SetBorderSize(0);
+   //       l3->SetTextSize(0.04);
 
-         TCanvas *cc = new TCanvas(Form("cAlphaPlot%d", z), "", canvasSizeX, canvasSizeY);
-         cc->SetLogy();
-         for (int x=2; x<nEtaBin; x++) {
-            int color = x-1;
-            int mtype = 4;
-            if (color>nEtaBin/2-1) {
-               color = nEtaBin-1-color;
-               mtype = 20;
-            }
-            formatHist(alphaPlots[x-1][z-1], color);
-            if (alphaPlots[x-1][z-1]->GetEntries()) {
-               alphaPlots[x-1][z-1]->SetMarkerStyle(mtype);
-               alphaPlots[x-1][z-1]->SetYTitle("#alpha");
-               alphaPlots[x-1][z-1]->SetXTitle(Form("N_{Hits} (%.0f #leq V_{z} < %.0f cm)", VzBins[z-1], VzBins[z]));
-               alphaPlots[x-1][z-1]->SetStats(0);
-               alphaPlots[x-1][z-1]->GetYaxis()->SetMoreLogLabels(1);
-               alphaPlots[x-1][z-1]->SetAxisRange(0.9, 12, "Y");
-               alphaPlots[x-1][z-1]->GetYaxis()->SetNoExponent(1);
-               alphaPlots[x-1][z-1]->Draw("L hist same");
-               alphaPlots[x-1][z-1]->Draw("hist error p same");
-               if (x-1<nEtaBin/2)
-                  l3->AddEntry(alphaPlots[x-1][z-1], Form("%.1f #leq #eta<%.1f", EtaBins[x-1], EtaBins[x]), "pl");
-               else
-                  l1->AddEntry(alphaPlots[x-1][z-1], Form("%.1f #leq #eta<%.1f", EtaBins[x-1], EtaBins[x]), "pl");
-            }
-         }
-         l1->Draw();
-         l3->Draw();
-         cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.gif", myPlotTitle, z, TrackletType));
-         // cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.C", myPlotTitle, z, TrackletType));
-         // cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.eps", myPlotTitle, z, TrackletType));
-         cc->Close();
-      }
-   }
+   //       TCanvas *cc = new TCanvas(Form("cAlphaPlot%d", z), "", canvasSizeX, canvasSizeY);
+   //       cc->SetLogy();
+   //       for (int x=2; x<nEtaBin; x++) {
+   //          int color = x-1;
+   //          int mtype = 4;
+   //          if (color>nEtaBin/2-1) {
+   //             color = nEtaBin-1-color;
+   //             mtype = 20;
+   //          }
+   //          formatHist(alphaPlots[x-1][z-1], color);
+   //          if (alphaPlots[x-1][z-1]->GetEntries()) {
+   //             alphaPlots[x-1][z-1]->SetMarkerStyle(mtype);
+   //             alphaPlots[x-1][z-1]->SetYTitle("#alpha");
+   //             alphaPlots[x-1][z-1]->SetXTitle(Form("N_{Hits} (%.0f #leq V_{z} < %.0f cm)", VzBins[z-1], VzBins[z]));
+   //             alphaPlots[x-1][z-1]->SetStats(0);
+   //             alphaPlots[x-1][z-1]->GetYaxis()->SetMoreLogLabels(1);
+   //             alphaPlots[x-1][z-1]->SetAxisRange(0.9, 12, "Y");
+   //             alphaPlots[x-1][z-1]->GetYaxis()->SetNoExponent(1);
+   //             alphaPlots[x-1][z-1]->Draw("L hist same");
+   //             alphaPlots[x-1][z-1]->Draw("hist error p same");
+   //             if (x-1<nEtaBin/2)
+   //                l3->AddEntry(alphaPlots[x-1][z-1], Form("%.1f #leq #eta<%.1f", EtaBins[x-1], EtaBins[x]), "pl");
+   //             else
+   //                l1->AddEntry(alphaPlots[x-1][z-1], Form("%.1f #leq #eta<%.1f", EtaBins[x-1], EtaBins[x]), "pl");
+   //          }
+   //       }
+   //       l1->Draw();
+   //       l3->Draw();
+   //       cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.gif", myPlotTitle, z, TrackletType));
+   //       // cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.C", myPlotTitle, z, TrackletType));
+   //       // cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.eps", myPlotTitle, z, TrackletType));
+   //       cc->Close();
+   //    }
+   // }
 
    // Apply correction ========================================================
    // ofstream alphaCode;
@@ -852,11 +865,13 @@ int plotFinalResult(int TrackletType, const char* filename,
       if (TrigEff!=0) nEvt += hnTracklet->GetBinContent(y)/TrigEff*(1-SDFrac*SDFactor);
       for (int x=1; x<=nEtaBin; x++) {
          for (int z=1; z<=nVzBin; z++) {
-            if (hAcceptance->GetBinContent(x, z)!=0)
+            if (hAcceptance->GetBinContent(x, z)!=0) {
                if (TrigEff!=0)
                   hnTracklet3D->SetBinContent(x, y, z, hnTracklet3D->GetBinContent(x, y, z)/TrigEff*(1-SDFrac*SDFactor));
-            else
+            }
+            else {
                hnTracklet3D->SetBinContent(x, y, z, 0);
+            }
          }
       }
    }
@@ -942,7 +957,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    // TGraph *gErrorBand = GetErrorBand((TH1F*)hMeasuredFinal, systematicError10TeV, systematicError10TeV, 0.25);
    // gErrorBand->Draw("F");
 
-   TH1F* hUA5(0);
+   // TH1F* hUA5(0);
    // if (putUA5) {
    //    hUA5 = getUA5NSD();
    //    hUA5->Draw("p same");

@@ -365,9 +365,6 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("nHFp", &tdata.nHFp, "nHFp/I");
    trackletTree->Branch("nHits", &tdata.nHits, "nHits/I");
 
-   trackletTree->Branch("nHltBit", &tdata.nHltBit, "nHltBit/I");
-   trackletTree->Branch("hltBit", tdata.hltBit, "hltBit[nHltBit]/O");
-
    trackletTree->Branch("nL1ABit", &tdata.nL1ABit, "nL1ABit/I");
    trackletTree->Branch("l1ABit", tdata.l1ABit, "l1ABit[nL1ABit]/O");
    trackletTree->Branch("nL1TBit", &tdata.nL1TBit, "nL1TBit/I");
@@ -403,9 +400,11 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("evtType", &tdata.evtType, "evtType/I");
    trackletTree->Branch("pro2", &tdata.pro2, "evtType/F");
 
-   trackletTree->Branch("vtxqual", &tdata.vtxqual, "vtxqual/F");
-   trackletTree->Branch("npxhits", &tdata.npxhits, "npxhits/F");
-   trackletTree->Branch("vtxQualCut", &tdata.vtxQualCut, "vtxQualCut/F");
+   trackletTree->Branch("xi", &tdata.xi, "xi/F");
+   trackletTree->Branch("passDS", &tdata.passDS, "passDS/O");
+   trackletTree->Branch("passSingleTrack", &tdata.passSingleTrack, "passSingleTrack/O");
+   trackletTree->Branch("ntrks", &tdata.ntrks, "ntrks/I");
+   trackletTree->Branch("ntrksCut", &tdata.ntrksCut, "ntrksCut/I");
 
    trackletTree->SetAlias("dR", "sqrt(deta*deta+dphi*dphi)");
    trackletTree->SetAlias("dRR", "sqrt(deta*deta+dphi*dphi+(r1-r2)*(r1-r2))") ;
