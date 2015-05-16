@@ -159,6 +159,8 @@ struct PixelEvent{
    int chg[MAXPARTICLES];
    int evtType;
    float xi;
+   bool passDS;
+   bool passSingleTrack;
    //float x[MAXPARTICLES];
    //float y[MAXPARTICLES];
    //float z[MAXPARTICLES];
@@ -626,11 +628,19 @@ PixelHitAnalyzer::fillParticles(const edm::Event& iEvent)
    int evtType = evt->signal_process_id();
    
    pev_.evtType = evtType;
+   pev_.passDS = 0;
+   pev_.passSingleTrack = 0;
    
    HepMC::GenEvent::particle_const_iterator begin = evt->particles_begin();
    HepMC::GenEvent::particle_const_iterator end = evt->particles_end();
+   
+   int nPos=0;
+   int nNeg=0;
    for(HepMC::GenEvent::particle_const_iterator it = begin; it != end; ++it){
       if((*it)->status() != 1) continue;
+         if ((*it)->momentum().eta()>3&&(*it)->momentum().eta()<5&&(*it)->momentum().e()>3) nPos++;
+         if ((*it)->momentum().eta()>-5&&(*it)->momentum().eta()<-3&&(*it)->momentum().e()>3) nNeg++;
+	 
 	 tpmap_[(*it)->barcode()] = pev_.nparticle;
 	 pev_.pdg[pev_.nparticle] = (*it)->pdg_id();
 	 pev_.eta[pev_.nparticle] = (*it)->momentum().eta();
@@ -638,6 +648,7 @@ PixelHitAnalyzer::fillParticles(const edm::Event& iEvent)
 	 pev_.pt[pev_.nparticle] = (*it)->momentum().perp();
 	 const ParticleData * part = pdt->particle(pev_.pdg[pev_.nparticle]);
 	 pev_.chg[pev_.nparticle] = (int)part->charge();
+	 if (fabs((*it)->momentum().eta())<0.8&&(*it)->momentum().perp()>0.4&&pev_.chg[pev_.nparticle]!=0) pev_.passSingleTrack=1;
          //pev_.x[pev_.nparticle] = (*it)->production_vertex()->position().x();
          //pev_.y[pev_.nparticle] = (*it)->production_vertex()->position().y();
          //pev_.z[pev_.nparticle] = (*it)->production_vertex()->position().z();
@@ -645,6 +656,8 @@ PixelHitAnalyzer::fillParticles(const edm::Event& iEvent)
          if (fabs(pev_.eta[pev_.nparticle])>3) continue;
 	 pev_.nparticle++;
    }
+   
+   if (nPos>0&&nNeg>0) pev_.passDS=1;
    
    // xi calculation
    pev_.xi = -1;
@@ -795,6 +808,8 @@ PixelHitAnalyzer::beginJob()
   pixelTree_->Branch("pdg",pev_.pdg,"pdg[npart]/I");
   pixelTree_->Branch("chg",pev_.chg,"chg[npart]/I");
   pixelTree_->Branch("xi",&pev_.xi,"xi/F");
+  pixelTree_->Branch("passDS",&pev_.passDS,"passDS/O");
+  pixelTree_->Branch("passSingleTrack",&pev_.passSingleTrack,"passSingleTrack/O");
 
   /* Not needed anymore 
   pixelTree_->Branch("x",pev_.x,"x[npart]/F");
