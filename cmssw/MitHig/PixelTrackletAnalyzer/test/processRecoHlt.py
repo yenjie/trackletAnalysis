@@ -65,7 +65,7 @@ process.GlobalTag.toGet.extend([
 
 process.ana = cms.EDAnalyzer('PixelHitAnalyzer',
                              vertexSrc = cms.vstring('offlinePrimaryVerticesWithBS'),
-                             trackSrc = cms.InputTag('generalTracks'),
+                             trackSrc = cms.untracked.InputTag('generalTracks'),
                              doTracking = cms.untracked.bool(False),
                              doCentrality = cms.untracked.bool(True)
                              )
