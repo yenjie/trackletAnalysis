@@ -115,6 +115,9 @@ struct PixelEvent{
    float vx[MAXVTX];
    float vy[MAXVTX];
    float vz[MAXVTX];
+   float vxError[MAXVTX];
+   float vyError[MAXVTX];
+   float vzError[MAXVTX];
 
    float beamSpotX;
    float beamSpotY;
@@ -219,6 +222,7 @@ class PixelHitAnalyzer : public edm::EDAnalyzer {
    void fillL1Bits(const edm::Event& iEvent);
    void fillHLTBits(const edm::Event& iEvent);
    void fillHF(const edm::Event& iEvent);
+   void fillTracks(const edm::Event& iEvent, const edm::EventSetup& iSetup);
    void fillCentrality(const edm::Event& iEvent, const edm::EventSetup& iSetup);
 
    static bool pairCompare(pair<double,HepMC::FourVector> i, pair<double,HepMC::FourVector> j);
@@ -240,6 +244,7 @@ class PixelHitAnalyzer : public edm::EDAnalyzer {
    bool doCentrality_;
    bool doTrackingParticle_;
    bool doPixel_;
+   bool doTrack_;
    bool doBeamSpot_;
 
    vector<string> vertexSrc_;
@@ -285,10 +290,11 @@ PixelHitAnalyzer::PixelHitAnalyzer(const edm::ParameterSet& iConfig)
    doHF_             = iConfig.getUntrackedParameter<bool>  ("doHF",true);
    doTrackingParticle_             = iConfig.getUntrackedParameter<bool>  ("doTrackingParticle",false);
    doPixel_             = iConfig.getUntrackedParameter<bool>  ("doPixel",true);
+   doTrack_             = iConfig.getUntrackedParameter<bool>  ("doTrack",true);
    doBeamSpot_             = iConfig.getUntrackedParameter<bool>  ("doBeamSpot",true);
    vertexSrc_ = iConfig.getParameter<vector<string> >("vertexSrc");
    etaMult_ = iConfig.getUntrackedParameter<double>  ("nHitsRegion",1.);
-   trackSrc_ = iConfig.getParameter<edm::InputTag>("trackSrc");
+   trackSrc_ =    iConfig.getUntrackedParameter<edm::InputTag>("trackSrc",edm::InputTag("generalTracks"));
    L1gtReadout_ = iConfig.getUntrackedParameter<edm::InputTag>("L1gtReadout",edm::InputTag("gtDigis"));
    TowerSrc_ =   iConfig.getUntrackedParameter<edm::InputTag>("towersSrc",edm::InputTag("towerMaker"));
    hltResName_ = iConfig.getUntrackedParameter<edm::InputTag>("hltTrgResults",edm::InputTag("TriggerResults"));
@@ -339,6 +345,8 @@ PixelHitAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    pev_.xi = -1;
    pev_.nv = 0;
 
+   if (doTrack_) fillTracks(iEvent, iSetup);
+
    if (doMC_) fillParticles(iEvent);
 //   cout <<"Fill Vtx"<<endl;
    fillVertices(iEvent);
@@ -346,7 +354,7 @@ PixelHitAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    fillBeamSpot(iEvent);
 //   cout <<"Fill Hits"<<endl;
    if (doPixel_) fillHits(iEvent);
-//   fillPixelTracks(iEvent);
+   fillTracks(iEvent, iSetup);
 //   cout <<"Fill L1"<<endl;
    fillL1Bits(iEvent);
 //   cout <<"Fill HLT"<<endl;
@@ -359,6 +367,42 @@ PixelHitAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    map<int,int>::iterator end = tpmap_.end();
 
    pixelTree_->Fill();
+}
+
+//--------------------------------------------------------------------------------------------------
+void
+PixelHitAnalyzer::fillTracks(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+  Handle<vector<Track> > etracks;
+  iEvent.getByLabel(trackSrc_, etracks);
+  reco::BeamSpot beamSpot;
+  edm::Handle<reco::BeamSpot> recoBeamSpotHandle;
+  iEvent.getByLabel(beamSpotProducer_,recoBeamSpotHandle);
+  beamSpot = *recoBeamSpotHandle;
+
+  pev_.ntrks=0;
+  pev_.ntrksCut=0;
+  for(unsigned it=0; it<etracks->size(); ++it){
+    const reco::Track & etrk = (*etracks)[it];
+    reco::TrackRef trackRef=reco::TrackRef(etracks,it);
+    pev_.ntrks++;
+
+    if (etrk.pt()<0.4||fabs(etrk.eta())>0.8) continue;
+//    if(fiducialCut_ && hitDeadPXF(etrk)) continue; // if track hits the dead region, igonore it;
+
+    if(etrk.quality(reco::TrackBase::qualityByName("highPurity")) != 1) continue;
+
+
+    math::XYZPoint v1(pev_.vx[1],pev_.vy[1], pev_.vz[1]);
+    double dz=etrk.dz(v1);
+    double dzError=sqrt(etrk.dzError()*etrk.dzError()+pev_.vzError[1]*pev_.vzError[1]);
+    double dxy=etrk.dxy(v1);
+    double dxyError=sqrt(etrk.dxyError()*etrk.dxyError()+pev_.vxError[1]*pev_.vxError[1]+pev_.vyError[1]*pev_.vyError[1]);
+
+   if (fabs(dz/dzError)>3||fabs(dxy/dxyError)>3) continue; 
+   
+    pev_.ntrksCut++;
+  }
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -385,11 +429,18 @@ PixelHitAnalyzer::fillVertices(const edm::Event& iEvent){
          }
       
          if(vertices->size()>0&&fabs((*vertices)[greatestvtx].position().z())<30000){
-   	    pev_.vz[pev_.nv] = (*vertices)[greatestvtx].position().z();
+   	    pev_.vx[pev_.nv] = (*vertices)[greatestvtx].position().x();
+   	    pev_.vy[pev_.nv] = (*vertices)[greatestvtx].position().y();
+	    pev_.vz[pev_.nv] = (*vertices)[greatestvtx].position().z();
+	    
          }else{
+	    pev_.vx[pev_.nv] =  -99; 
+	    pev_.vy[pev_.nv] =  -99; 
 	    pev_.vz[pev_.nv] =  -99; 
          }
       } else {
+         pev_.vx[pev_.nv] = -99;
+         pev_.vy[pev_.nv] = -99;
          pev_.vz[pev_.nv] = -99;
          edm::SimVertexContainer::const_iterator simVtxItr= SimVtx->begin();
         // for (unsigned int iv=0; iv<SimVtx->size(); iv++) {
@@ -430,11 +481,17 @@ PixelHitAnalyzer::fillVertices(const edm::Event& iEvent){
 	 pev_.vx[pev_.nv] = (*recoVertices)[greatestvtx].position().x();
 	 pev_.vy[pev_.nv] = (*recoVertices)[greatestvtx].position().y();
 	 pev_.vz[pev_.nv] = (*recoVertices)[greatestvtx].position().z();
+	 pev_.vxError[pev_.nv] = (*recoVertices)[greatestvtx].xError();
+	 pev_.vyError[pev_.nv] = (*recoVertices)[greatestvtx].yError();
+	 pev_.vzError[pev_.nv] = (*recoVertices)[greatestvtx].zError();
       }else{
 	 pev_.vx[pev_.nv] =  -99;
 	 pev_.vy[pev_.nv] =  -99;
 	 pev_.vz[pev_.nv] =  -99;
-      }
+	 pev_.vxError[pev_.nv] = 0;
+	 pev_.vyError[pev_.nv] = 0;
+	 pev_.vzError[pev_.nv] = 0;
+       }
       pev_.nv++;
    }
 
@@ -901,6 +958,7 @@ PixelHitAnalyzer::beginJob()
 //--------------------------------------------------------------------------------------------------
 void
 PixelHitAnalyzer::fillPixelTracks(const edm::Event& iEvent){
+/*
   // First fish the pixel tracks out of the event
   edm::Handle<reco::TrackCollection> trackCollection;
   edm::InputTag trackCollName = trackSrc_; 
@@ -913,7 +971,9 @@ PixelHitAnalyzer::fillPixelTracks(const edm::Event& iEvent){
   }
   pev_.ntrksCut = trks.size();  
   pev_.ntrks = tracks.size();  
+*/
 }
+
 
 //--------------------------------------------------------------------------------------------------
 void PixelHitAnalyzer::fillL1Bits(const edm::Event &iEvent)
