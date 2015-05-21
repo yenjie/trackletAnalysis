@@ -199,7 +199,7 @@ void analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel 
    csfitf->SetParLimits(0, 1.8882, 1.8882);
 
    // Main loop ===============================================================
-   for (int i=startEntry; i<t->GetEntries()&&i<endEntry; i=i+1+doPileUp) {
+   for (int i=startEntry; i<t->GetEntries()/10.&&i<endEntry; i=i+1+doPileUp) {
       t->GetEntry(i);
       if (i % 1000 == 0) {
          cout << "Run " << par.nRun << " Event " << i << " "
@@ -486,7 +486,8 @@ void analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel 
       // ===========================
       // vz[1] is always the selected algorithm
 
-      if (useKKVertex) trackletVertex = par.vz[1];
+      //if (useKKVertex) trackletVertex = par.vz[1];
+      if (useKKVertex) trackletVertex= 0;
       double smear = 0;
       if (smearVertex!=0) {
          if (i==1) cout << "Vertex smeared!" << endl;
