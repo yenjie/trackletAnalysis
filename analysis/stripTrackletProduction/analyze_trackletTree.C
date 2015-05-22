@@ -51,7 +51,7 @@ void analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel 
                           bool putBeamHalo = false,              // Adding beam Halo
                           double beamHaloRatio = 0.0,
                           const char* beamHaloFile = "BeamHalo.root",
-                          bool useKKVertex = 1,                  // Use vertex from other recoVtx collection
+                          bool useKKVertex = 0,                  // Use vertex from other recoVtx collection
                           bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
                           bool mimicPixelCounting = 0,           // Create a pixel counting tree instead of tracklet tree
                           bool checkDuplicateEvent = 0)          // Check if we have duplicates in the sample (slow)
@@ -199,7 +199,7 @@ void analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel 
    csfitf->SetParLimits(0, 1.8882, 1.8882);
 
    // Main loop ===============================================================
-   for (int i=startEntry; i<t->GetEntries()/10.&&i<endEntry; i=i+1+doPileUp) {
+   for (int i=startEntry; i<t->GetEntries()&&i<endEntry; i=i+1+doPileUp) {
       t->GetEntry(i);
       if (i % 1000 == 0) {
          cout << "Run " << par.nRun << " Event " << i << " "

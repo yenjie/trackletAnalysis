@@ -246,8 +246,8 @@ vector<Tracklet> cleanTracklets(vector<Tracklet> input, int matchNumber, Selecti
          cout << "Not supported option!!" << endl;
          // sort(input.begin(), input.end(), compareDeltaEtaRho);
       } else {
-//         sort(input.begin(), input.end(), compareDeltaEta);
-         sort(input.begin(), input.end(), compareDeltaPhi);
+         sort(input.begin(), input.end(), compareDeltaEta);
+//         sort(input.begin(), input.end(), compareDeltaPhi);
       }
    }
 
