@@ -123,10 +123,11 @@ int plotFinalResult(int TrackletType, const char* filename,
 
    // Definition of Vz, Eta, Hit bins
    const int nTrackletBin = 12;
-   const int nEtaBin = 30;
+   const int nEtaBin = 12;
    const int nVzBin = 10;
 
-   double TrackletBins[nTrackletBin+1] = {-5, 1, 10, 15, 20, 25, 30, 36, 42, 50, 60, 72, 300};
+//   double TrackletBins[nTrackletBin+1] = {-5, 1, 10, 15, 20, 25, 30, 36, 42, 50, 60, 72, 300};
+   double TrackletBins[nTrackletBin+1] = {-5*4, 1*4, 10*4, 15*4, 20*4, 25*4, 30*4, 36*4, 42*4, 50*4, 60*4, 72*4, 300*4};
    double EtaBins[nEtaBin+1];
    for (int i=0; i<=nEtaBin; i++)
       EtaBins[i] = (double)i*6.0/(double)nEtaBin-3.0;
@@ -135,9 +136,9 @@ int plotFinalResult(int TrackletType, const char* filename,
       VzBins[i] = (double)i*(VzRangeH-VzRangeL)/(double)nVzBin+VzRangeL;
 
    // Signal and Sideband regions =============================================
-   double signalRegionCut = 1.0;   // dphi cut for signal region
-   double sideBandRegionCut = 2.0; // dphi cut for side-band region
-   double detaCut = 100;           // deta cut
+   double signalRegionCut = 1;   // dphi cut for signal region
+   double sideBandRegionCut = 2; // dphi cut for side-band region
+   double detaCut = 0.1;           // deta cut
 
    TCut signalRegion                  = Form("abs(dphi)<%f&&abs(deta)<%f", signalRegionCut, detaCut);
    TCut sideBandRegionEtaSignalRegion = Form("abs(dphi)>%f&&abs(dphi)<%f&&abs(deta)<%f", signalRegionCut, sideBandRegionCut, detaCut);
@@ -317,11 +318,11 @@ int plotFinalResult(int TrackletType, const char* filename,
 
    // Prepare Tracklet Three-Dimensional Histogram ============================
    // Signal region && evtSelection
-   TrackletTree->Project("hEverything", Form("vz[1]:%s:(eta1+eta2)/2.", multiplicity), signalRegion&&evtSelection);
+   TrackletTree->Project("hEverything", Form("vz[1]:%s:eta1", multiplicity), signalRegion&&evtSelection);
    hEverything->Sumw2();
 
    // Side-band region && evtSelection
-   TrackletTree->Project("hReproducedBackground", Form("vz[1]:%s:(eta1+eta2)/2.", multiplicity), sideBandRegionEtaSignalRegion&&evtSelection);
+   TrackletTree->Project("hReproducedBackground", Form("vz[1]:%s:eta1", multiplicity), sideBandRegionEtaSignalRegion&&evtSelection);
    hReproducedBackground->Sumw2();
 
    // Read Acceptance =========================================================
