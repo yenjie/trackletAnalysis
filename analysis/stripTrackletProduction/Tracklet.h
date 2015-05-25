@@ -233,8 +233,6 @@ vector<Tracklet> recoFastTracklets(vector<RecoHit> hits, int verbose_ = 0) {
 
 vector<Tracklet> cleanTracklets(vector<Tracklet> input, int matchNumber, SelectionCriteria cuts) {
    vector<Tracklet> output;
-   // for (int i=0; i<input.size(); i++)
-   //    double a = input[i].dR2();
 
    if (cuts.useDeltaPhi_) {
       if (cuts.useDeltaRho_)
@@ -247,7 +245,7 @@ vector<Tracklet> cleanTracklets(vector<Tracklet> input, int matchNumber, Selecti
          // sort(input.begin(), input.end(), compareDeltaEtaRho);
       } else {
          sort(input.begin(), input.end(), compareDeltaEta);
-//         sort(input.begin(), input.end(), compareDeltaPhi);
+         // sort(input.begin(), input.end(), compareDeltaPhi);
       }
    }
 
@@ -264,13 +262,6 @@ vector<Tracklet> cleanTracklets(vector<Tracklet> input, int matchNumber, Selecti
    }
    if (cuts.verbose_) cout << "Printing Hits" << endl;
    for (unsigned int i=0; i<input.size(); i++) {
-      if (cuts.useDeltaPhi_) {
-         if (cuts.verbose_)
-            cout << "Eta 1 : " << input[i].eta1() << "  ; Eta 2 : " << input[i].eta2() << " ;  Delta R : " << input[i].dR() << endl;
-      } else {
-         if (cuts.verbose_)
-            cout << "Eta 1 : " << input[i].eta1() << "  ; Eta 2 : " << input[i].eta2() << " ;  Delta Eta : " << input[i].deta() << endl;
-      }
       int i1 = input[i].getIt1();
       int i2 = input[i].getIt2();
 
@@ -283,11 +274,6 @@ vector<Tracklet> cleanTracklets(vector<Tracklet> input, int matchNumber, Selecti
       if (used1[i1]==0 && used2[i2]<matchNumber) {
          if (cuts.checkSecondLayer_) used2[i2]++;
       }
-   }
-   if (cuts.verbose_) {
-      cout << "Output:" << endl;
-      // for (unsigned int i=0; i<output.size(); i++)
-      //    cout << output[i].deta() << " " << output[i].getIt1() << " " << output[i].getIt2() << endl;
    }
    return output;
 }
@@ -394,6 +380,7 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("cs2", tdata.cs2, "cs2[nTracklets]/F");
    trackletTree->Branch("deta", tdata.deta, "deta[nTracklets]/F");
    trackletTree->Branch("dphi", tdata.dphi, "dphi[nTracklets]/F");
+   trackletTree->Branch("recoPU", &tdata.recoPU, "recoPU/I");
 
    trackletTree->Branch("npart", &tdata.npart, "npart/I");
    trackletTree->Branch("eta", tdata.eta, "eta[npart]/F");
@@ -404,6 +391,8 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("pt", tdata.pt, "pt[npart]/F");
    trackletTree->Branch("evtType", &tdata.evtType, "evtType/I");
    trackletTree->Branch("pro2", &tdata.pro2, "evtType/F");
+
+   trackletTree->Branch("nPU", &tdata.nPU, "nPU/I");
 
    trackletTree->Branch("xi", &tdata.xi, "xi/F");
    trackletTree->Branch("passDS", &tdata.passDS, "passDS/O");

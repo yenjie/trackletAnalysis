@@ -1,5 +1,5 @@
-#define maxEntry 20000
-#define maxEntry2 30000
+#define maxEntry 4000
+#define maxEntry2 16000
 
 #include <vector>
 #include <algorithm>
@@ -18,7 +18,7 @@ class RecoHit {
          r = _r;
          cs = _cs;
       };
-      RecoHit(double _eta, double _phi, double _r, double _cs, double _l) {
+      RecoHit(double _eta, double _phi, double _r, double _cs, int _l) {
          eta = _eta;
          phi = _phi;
          r = _r;
@@ -31,7 +31,7 @@ class RecoHit {
       double eta;
       double phi;
       double r;
-      double layer;
+      int layer;
       double cs;   // cluster size
       double ch;   // cluster charge
 };
@@ -64,8 +64,9 @@ class Parameters {
       float eta1[maxEntry], phi1[maxEntry], r1[maxEntry], cs1[maxEntry], ch1[maxEntry];
       float eta2[maxEntry], phi2[maxEntry], r2[maxEntry], cs2[maxEntry], ch2[maxEntry];
       float eta3[maxEntry], phi3[maxEntry], r3[maxEntry], cs3[maxEntry], ch3[maxEntry];
+      float eta4[maxEntry], phi4[maxEntry], r4[maxEntry], cs4[maxEntry], ch4[maxEntry];
       float eta[maxEntry], phi[maxEntry], pt[maxEntry];
-      int nhits1, nhits2, nhits3, mult, nv, npart, evtType, chg[maxEntry], pdg[maxEntry];
+      int nhits1, nhits2, nhits3, nhits4, mult, nv, npart, evtType, chg[maxEntry], pdg[maxEntry];
       float xi;
       bool passDS, passSingleTrack;
       int ntrks, ntrksCut;
@@ -90,6 +91,7 @@ class TrackletData {
       float xi;
       bool passDS, passSingleTrack;
       int ntrks, ntrksCut;
+      int nPU, recoPU;
 };
 
 bool compareEta(RecoHit a, RecoHit b) {
@@ -113,41 +115,12 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
 
    double x0, y0;
    // The beamspot for each run
-   if (runNum == 123596) {
-      x0 = 0.174562;
-      y0 = 0.144887;
-   } else if (runNum == 124022 || runNum == 124024) { // rough value
-      x0 = 0.193056;
-      y0 = 0.168689;
-   } else if (runNum == 124023) {
-      x0 = 0.193056;
-      y0 = 0.168689;
-   } else if (runNum == 124120) {
-      x0 = 0.205124;
-      y0 = 0.164012;
-   } else if (runNum == 132422) { // no info
-      x0 = 0;
-      y0 = 0;
-   } else if (runNum == 132440) { // varying
-      x0 = 0.09419;  // + nLumi*6.033e-7;
-      y0 = 0.007286; // - nLumi*3.087e-6;
-   } else if (runNum == 133242) {
-      x0 = 0.095; // roughly
-      y0 = 0.002; // roughly
-   } else {
-      // x0 = 0.2468185;
-      // y0 = 0.3983917;
-      x0 = 0.032;
-      y0 = 0.0;
-   }
+   x0 = 0.032;
+   y0 = 0.0;
 
    if (layer == 1) {
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
-         // Reject
-         // if (par.phi1[ihit]>-1.395 && par.phi1[ihit]<-1.105 && par.eta1[ihit]>1.085 && par.eta1[ihit]<1.725) continue;
-         // if (par.phi1[ihit]>1.57 && par.phi1[ihit]<1.77 && par.eta1[ihit]>-0.27 && par.eta1[ihit]<-0.02) continue;
-         // if (par.fl1[ihit]) continue;
-         RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit]);
+         RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], 1);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
          // put artifical split hits
@@ -155,10 +128,7 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       }
    } else if (layer == 2) {
       for (int ihit = 0; ihit < par.nhits2; ++ihit) {
-         // for Run 124120 && 12402x
-         // if (par.phi2[ihit]>2.98 && par.phi2[ihit]<3.2 && par.eta2[ihit]>-2.1 && par.eta2[ihit]<-1.71) continue;
-         // if (par.fl2[ihit]) continue;
-         RecoHit tmp(par.eta2[ihit], par.phi2[ihit], par.r2[ihit], par.cs2[ihit]);
+         RecoHit tmp(par.eta2[ihit], par.phi2[ihit], par.r2[ihit], par.cs2[ihit], 2);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
          // put artifical split hits
@@ -166,8 +136,15 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       }
    } else if (layer == 3) {
       for (int ihit = 0; ihit < par.nhits3; ++ihit) {
-         // if (par.fl3[ihit]) continue;
-         RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit]);
+         RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit], 3);
+         if (gRandom->Rndm()<dropProb) continue;
+         hits.push_back(tmp);
+         // put artifical split hits
+         if (gRandom->Rndm()<splitProb) hits.push_back(tmp);
+      }
+   } else if (layer == 4) {
+      for (int ihit = 0; ihit < par.nhits4; ++ihit) {
+         RecoHit tmp(par.eta4[ihit], par.phi4[ihit], par.r4[ihit], par.cs4[ihit], 4);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
          // put artifical split hits
@@ -203,32 +180,12 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
          z += gRandom->Gaus(0, 0.005);
       }
 
-      // ROOT::Math::XYZVector tmpVector(x-vx, y-vy, z-vz);
-      // ROOT::Math::XYZVector tmpVector(x-0.192598, y-0.150772, z-vz);
-      // Run 123596
-      // ROOT::Math::XYZVector tmpVector(x-0.174562, y-0.144887, z-vz);
-      // Run 124022-24 (old)
-      // x0 = 0.192372
-      // y0 = 0.162306
-      // ROOT::Math::XYZVector tmpVector(x-0.192372, y-0.162306, z-vz);
-      // Run 124023
-      // ROOT::Math::XYZVector tmpVector(x-0.193056, y-0.168689, z-vz);
-      // Run 124120
-      // ROOT::Math::XYZVector tmpVector(x-0.11811, y-0.0244726, z-vz);
-      // ROOT::Math::XYZVector tmpVector(x-0.205124, y-0.164012, z-vz);
-      // ROOT::Math::XYZVector tmpVector(x, y, z-vz);
-      // ROOT::Math::XYZVector tmpVector(x, y, z-vz);
-      // Run 132440
-      // ROOT::Math::XYZVector tmpVector(x-0.09335, y-0.007392, z-vz);
-      // MC 7000GeV Frank
-      // ROOT::Math::XYZVector tmpVector(x-0.2468185, y-0.3983917, z-vz);
-
       if (vz!=0 && firstCall==0) {
          cout << "Beamspot X0 = " << x0 << " Y0 = " << y0 << endl;
          firstCall = 1;
       }
 
-      ROOT::Math::XYZVector tmpVector(x-x0, y-y0, z-vz); // vtx fit (temporary)
+      ROOT::Math::XYZVector tmpVector(x-x0, y-y0, z-vz);
       RecoHit tmpHit(tmpVector.eta(), tmpVector.phi(), tmpVector.rho(), hits[ihit].cs);
       double eta = tmpVector.eta();
 
@@ -271,7 +228,7 @@ void combineRecHit(vector<RecoHit> &c, vector<RecoHit> a, vector<RecoHit> b) {
       c.push_back(b[i]);
 }
 
-void getPixelTreeBranch(TTree *t, Parameters &par) {
+void getPixelTreeBranch(TTree* t, Parameters &par) {
    t->SetBranchAddress("nRun", &par.nRun);
    t->SetBranchAddress("nEv", &par.nEv);
    t->SetBranchAddress("nLumi", &par.nLumi);
@@ -290,17 +247,26 @@ void getPixelTreeBranch(TTree *t, Parameters &par) {
    t->SetBranchAddress("phi1", par.phi1);
    t->SetBranchAddress("r1", par.r1);
    t->SetBranchAddress("cs1", par.cs1);
+   t->SetBranchAddress("ch1", par.ch1);
    t->SetBranchAddress("eta2", par.eta2);
    t->SetBranchAddress("phi2", par.phi2);
    t->SetBranchAddress("r2", par.r2);
    t->SetBranchAddress("cs2", par.cs2);
+   t->SetBranchAddress("ch2", par.ch2);
    t->SetBranchAddress("eta3", par.eta3);
    t->SetBranchAddress("phi3", par.phi3);
    t->SetBranchAddress("r3", par.r3);
    t->SetBranchAddress("cs3", par.cs3);
+   t->SetBranchAddress("ch3", par.ch3);
+   t->SetBranchAddress("eta4", par.eta4);
+   t->SetBranchAddress("phi4", par.phi4);
+   t->SetBranchAddress("r4", par.r4);
+   t->SetBranchAddress("cs4", par.cs4);
+   t->SetBranchAddress("ch4", par.ch4);
    t->SetBranchAddress("nhits1", &par.nhits1);
    t->SetBranchAddress("nhits2", &par.nhits2);
    t->SetBranchAddress("nhits3", &par.nhits3);
+   t->SetBranchAddress("nhits4", &par.nhits4);
 
    t->SetBranchAddress("vx", par.vx);
    t->SetBranchAddress("vy", par.vy);
