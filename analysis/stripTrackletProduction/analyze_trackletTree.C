@@ -43,7 +43,7 @@ Double_t csfit(Double_t *x, Double_t *par) {
 int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel Tree file
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          long startEntry = 0,                   // Starting Entry number in the Pixel Tree
-                         long endEntry = 2000,            // Ending Entry number in the Pixel Tree
+                         long endEntry = 1000000000,            // Ending Entry number in the Pixel Tree
                          int addL1Bck = 0,                      // Add random background to first pixel layer
                          int addL2Bck = 0,                      // Add random background to second pixel layer
                          int addL3Bck = 0,                      // Add random background to third pixel layer
@@ -60,7 +60,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          double beamHaloRatio = 0.0,
                          const char* beamHaloFile = "BeamHalo.root",
                          bool useKKVertex = 0,                  // Use vertex from other recoVtx collection
-                         bool useAllLayerForVertex = 1,         // Use 12,13,14,23,24 combinations for vtx reco
                          bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
                          bool mimicPixelCounting = 0,           // Create a pixel counting tree instead of tracklet tree
                          bool checkDuplicateEvent = 0)          // Check if we have duplicates in the sample (slow)
@@ -343,156 +342,55 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       int recoPU = 0;
       double trackletVertex = -99;
 
-      vector<RecoHit> layerRaw1;
-      prepareHits(layerRaw1, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layerRaw2;
-      prepareHits(layerRaw2, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layerRaw3;
-      prepareHits(layerRaw3, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layerRaw4;
-      prepareHits(layerRaw4, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      vector<RecoHit> allhits;
+      prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(allhits, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
       if (pileUp!=0) {
          nPileUp = gRandom->Poisson(pileUp);
          for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
-            prepareHits(layerRaw1, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(layerRaw2, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(allhits, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
          }
          t->GetEntry(i);
       }
 
+      std::sort(allhits.begin(), allhits.end(), sortphi);
+      for (unsigned int m=0; m<allhits.size() && allhits[m].phi<0.08-_PI; m++) {
+         allhits.push_back(allhits[m]);
+         allhits.back().phi += 2*_PI;
+      }
+      RecoHit bar(0, 4, 0, 0, 1);
+      allhits.push_back(bar);
+
       std::vector<Vertex> vertices;
-      for (unsigned int h1 = 0; h1<layerRaw1.size(); h1++) {
-         double r1 = layerRaw1[h1].r;
-         double z1 = r1/tan(2*atan(exp(-layerRaw1[h1].eta)));
-         for (unsigned int h2 = 0; h2<layerRaw2.size(); h2++) {
-            if (dphi(layerRaw1[h1].phi, layerRaw2[h2].phi) > 0.08)
-               continue;
-            Vertex vertex;
-            double r2 = layerRaw2[h2].r;
-            double z2 = r2/tan(2*atan(exp(-layerRaw2[h2].eta)));
-            vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
-            if (fabs(vertex.vz)<20.0) {
-               vertices.push_back(vertex);
+      std::deque<RecoHit> trackcands[4];
+      for (unsigned int a=0; a<allhits.size(); a++) {
+         for (int q=0; q<4; q++) {
+            while (!trackcands[q].empty() && allhits[a].phi>trackcands[q].front().phi+0.08) {
+               for (int w=0; w<4; w++) {
+                  if (w == q) continue;
+                  for (std::deque<RecoHit>::iterator it = trackcands[w].begin(); it != trackcands[w].end(); it++) {
+                     Vertex vertex;
+                     double r1 = trackcands[q].front().r;
+                     double z1 = r1/tan(2*atan(exp(-trackcands[q].front().eta)));
+                     double r2 = (*it).r;
+                     double z2 = r2/tan(2*atan(exp(-(*it).eta)));
+                     vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
+                     if (fabs(vertex.vz)<20.0)
+                        vertices.push_back(vertex);
+                  }
+               }
+               trackcands[q].pop_front();
             }
          }
+         trackcands[allhits[a].layer-1].push_back(allhits[a]);
       }
-
-      if (useAllLayerForVertex) {
-         for (unsigned int h1 = 0; h1<layerRaw1.size(); h1++) {
-            double r1 = layerRaw1[h1].r;
-            double z1 = r1/tan(2*atan(exp(-layerRaw1[h1].eta)));
-            for (unsigned int h2 = 0; h2<layerRaw3.size(); h2++) {
-               if (dphi(layerRaw1[h1].phi, layerRaw3[h2].phi) > 0.08)
-                  continue;
-               Vertex vertex;
-               double r2 = layerRaw3[h2].r;
-               double z2 = r2/tan(2*atan(exp(-layerRaw3[h2].eta)));
-               vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
-               if (fabs(vertex.vz)<20.0) {
-                  vertices.push_back(vertex);
-               }
-            }
-         }
-
-         for (unsigned int h1 = 0; h1<layerRaw1.size(); h1++) {
-            double r1 = layerRaw1[h1].r;
-            double z1 = r1/tan(2*atan(exp(-layerRaw1[h1].eta)));
-            for (unsigned int h2 = 0; h2<layerRaw4.size(); h2++) {
-               if (dphi(layerRaw1[h1].phi, layerRaw4[h2].phi) > 0.08)
-                  continue;
-               Vertex vertex;
-               double r2 = layerRaw4[h2].r;
-               double z2 = r2/tan(2*atan(exp(-layerRaw4[h2].eta)));
-               vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
-               if (fabs(vertex.vz)<20.0) {
-                  vertices.push_back(vertex);
-               }
-            }
-         }
-
-         for (unsigned int h1 = 0; h1<layerRaw2.size(); h1++) {
-            double r1 = layerRaw2[h1].r;
-            double z1 = r1/tan(2*atan(exp(-layerRaw2[h1].eta)));
-            for (unsigned int h2 = 0; h2<layerRaw3.size(); h2++) {
-               if (dphi(layerRaw2[h1].phi, layerRaw3[h2].phi) > 0.08)
-                  continue;
-               Vertex vertex;
-               double r2 = layerRaw3[h2].r;
-               double z2 = r2/tan(2*atan(exp(-layerRaw3[h2].eta)));
-               vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
-               if (fabs(vertex.vz)<20.0) {
-                  vertices.push_back(vertex);
-               }
-            }
-         }
-
-         for (unsigned int h1 = 0; h1<layerRaw2.size(); h1++) {
-            double r1 = layerRaw2[h1].r;
-            double z1 = r1/tan(2*atan(exp(-layerRaw2[h1].eta)));
-            for (unsigned int h2 = 0; h2<layerRaw4.size(); h2++) {
-               if (dphi(layerRaw2[h1].phi, layerRaw4[h2].phi) > 0.08)
-                  continue;
-               Vertex vertex;
-               double r2 = layerRaw4[h2].r;
-               double z2 = r2/tan(2*atan(exp(-layerRaw4[h2].eta)));
-               vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
-               if (fabs(vertex.vz)<20.0) {
-                  vertices.push_back(vertex);
-               }
-            }
-         }
-
-         for (unsigned int h1 = 0; h1<layerRaw3.size(); h1++) {
-             double r1 = layerRaw3[h1].r;
-             double z1 = r1/tan(2*atan(exp(-layerRaw3[h1].eta)));
-             for (unsigned int h2 = 0; h2<layerRaw4.size(); h2++) {
-               if (dphi(layerRaw3[h1].phi, layerRaw4[h2].phi) > 0.08)
-                  continue;
-               Vertex vertex;
-               double r2 = layerRaw4[h2].r;
-               double z2 = r2/tan(2*atan(exp(-layerRaw4[h2].eta)));
-               vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
-               if (fabs(vertex.vz)<20.0) {
-                  vertices.push_back(vertex);
-               }
-            }
-         }
-
-      }
-
-      // vector<RecoHit> allhits;
-      // prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      // prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-
-      // std::sort(allhits.begin(), allhits.end(), sortphi);
-      // for (int m=0; m<allhits.size() && allhits[m].eta<0.08-_PI; m++) {
-      //    allhits.push_back(allhits[m]);
-      //    allhits.back().eta += 2*_PI;
-      // }
-
-      // std::queue<RecoHit> trackcands[2];
-      // for (unsigned int a=0; a<allhits.size(); a++) {
-      //    trackcands[allhits[a].layer-1].push(allhits[a]);
-      //    for (int q=0; q<2; q++) {
-      //       while (!trackcands[q].empty() && allhits[a].phi>trackcands[q].front().phi+0.08)
-      //          trackcands[q].pop();
-      //    }
-      //    if (!trackcands[0].empty() && !trackcands[1].empty()) {
-      //       Vertex vertex;
-      //       double r1 = trackcands[0].front().r;
-      //       double z1 = r1/tan(2*atan(exp(-trackcands[0].front().eta)));
-      //       double r2 = trackcands[1].front().r;
-      //       double z2 = r2/tan(2*atan(exp(-trackcands[1].front().eta)));
-      //       vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
-      //       if (fabs(vertex.vz)<20.0) {
-      //          vertices.push_back(vertex);
-      //       }
-      //       trackcands[0].pop();
-      //       trackcands[1].pop();
-      //    }
-      // }
 
       if (vertices.size()) {
          std::sort(vertices.begin(), vertices.end(), sortvz);
@@ -1207,7 +1105,7 @@ double dphi(double phi1, double phi2) {
 }
 
 bool sortphi(RecoHit h1, RecoHit h2) {
-   return h1.eta < h2.eta;
+   return h1.phi < h2.phi;
 }
 
 bool sortvz(Vertex v1, Vertex v2) {
