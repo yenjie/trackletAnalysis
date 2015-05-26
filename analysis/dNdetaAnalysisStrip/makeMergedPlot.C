@@ -1,5 +1,5 @@
 #define dndetaRange 8
-#define _NETABIN 30
+#define _NETABIN 12
 
 #include <iostream>
 #include <fstream>
@@ -8,7 +8,6 @@
 #include <TH1F.h>
 #include <TLegend.h>
 #include <TNtuple.h>
-#include "UA5Plot.h"
 #include "GraphErrorsBand.h"
 
 void clearNBins(int n, TH1F* h) {
@@ -20,7 +19,7 @@ void clearNBins(int n, TH1F* h) {
    }
 }
 
-int makeMergedPlot(const char* name = "PYTHIA_Monash13", int zerobins = 5, int UA5 = 0) {
+int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    TFile *inf12 = new TFile(Form("correction/correction-12-%s.root", name));
    TH1F *h12 = (TH1F*)inf12->FindObjectAny("hMeasuredFinal");
    TH1F* hMC = (TH1F*)inf12->FindObjectAny("hTruthWOSelection");
@@ -31,9 +30,21 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", int zerobins = 5, int U
    TH1F *h13 = (TH1F*)inf13->FindObjectAny("hMeasuredFinal");
    h13->SetName("h13");
 
+   TFile *inf14 = new TFile(Form("correction/correction-14-%s.root", name));
+   TH1F *h14 = (TH1F*)inf14->FindObjectAny("hMeasuredFinal");
+   h14->SetName("h14");
+
    TFile *inf23 = new TFile(Form("correction/correction-23-%s.root", name));
    TH1F *h23 = (TH1F*)inf23->FindObjectAny("hMeasuredFinal");
    h23->SetName("h23");
+
+   TFile *inf24 = new TFile(Form("correction/correction-24-%s.root", name));
+   TH1F *h24 = (TH1F*)inf24->FindObjectAny("hMeasuredFinal");
+   h24->SetName("h24");
+
+   TFile *inf34 = new TFile(Form("correction/correction-34-%s.root", name));
+   TH1F *h34 = (TH1F*)inf34->FindObjectAny("hMeasuredFinal");
+   h34->SetName("h34");
 
    TFile *outfile = new TFile(Form("merged/merged-%s.root", name), "recreate");
    TCanvas *c = new TCanvas("c", "", 600, 600);
@@ -41,16 +52,31 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", int zerobins = 5, int U
    h13->SetMarkerStyle(26);
    h13->SetMarkerColor(1);
    h13->SetLineColor(1);
+   h14->SetMarkerStyle(27);
+   h14->SetMarkerColor(2);
+   h14->SetLineColor(2);
    h23->SetMarkerStyle(25);
    h23->SetMarkerColor(4);
    h23->SetLineColor(4);
+   h24->SetMarkerStyle(28);
+   h24->SetMarkerColor(1);
+   h24->SetLineColor(1);
+   h34->SetMarkerStyle(30);
+   h34->SetMarkerColor(4);
+   h34->SetLineColor(4);
    h12->SetMarkerSize(1);
    h13->SetMarkerSize(1);
+   h14->SetMarkerSize(1);
    h23->SetMarkerSize(1);
+   h24->SetMarkerSize(1);
+   h34->SetMarkerSize(1);
 
-   clearNBins(3, h12);
-   clearNBins(zerobins, h13);
-   clearNBins(zerobins, h23);
+   clearNBins(1, h12);
+   clearNBins(2, h13);
+   clearNBins(2, h14);
+   clearNBins(2, h23);
+   clearNBins(2, h24);
+   clearNBins(2, h34);
 
    h12->SetXTitle("#eta");
    h12->SetYTitle("dN/d#eta");
@@ -59,7 +85,10 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", int zerobins = 5, int U
    hMC->Draw("same");
    h12->Draw("same");
    h13->Draw("same");
+   h14->Draw("same");
    h23->Draw("same");
+   h24->Draw("same");
+   h34->Draw("same");
 
    TLegend *leg = new TLegend(0.2, 0.18, 1, 0.35);
    leg->SetBorderSize(0);
@@ -72,7 +101,10 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", int zerobins = 5, int U
    leg->AddEntry("hTruth", name, "");
    leg->AddEntry("h12", "Reconstructed (1st+2nd layers)", "pl");
    leg->AddEntry("h13", "Reconstructed (1st+3rd layers)", "pl");
+   leg->AddEntry("h14", "Reconstructed (1st+4th layers)", "pl");
    leg->AddEntry("h23", "Reconstructed (2nd+3rd layers)", "pl");
+   leg->AddEntry("h24", "Reconstructed (2nd+4th layers)", "pl");
+   leg->AddEntry("h34", "Reconstructed (3rd+4th layers)", "pl");
    leg->Draw();
    c->SaveAs(Form("merged/merged-%s.pdf", name));
 
@@ -87,12 +119,18 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", int zerobins = 5, int U
       avgErr += h12->GetBinError(i)*h12->GetBinError(i);
       avg += h13->GetBinContent(i);
       avgErr += h13->GetBinError(i)*h13->GetBinError(i);
+      avg += h14->GetBinContent(i);
+      avgErr += h14->GetBinError(i)*h14->GetBinError(i);
       avg += h23->GetBinContent(i);
       avgErr += h23->GetBinError(i)*h23->GetBinError(i);
+      avg += h24->GetBinContent(i);
+      avgErr += h24->GetBinError(i)*h24->GetBinError(i);
+      avg += h34->GetBinContent(i);
+      avgErr += h34->GetBinError(i)*h34->GetBinError(i);
       avgErr = sqrt(avgErr);
-      if (i>zerobins&&i<=_NETABIN-zerobins) {
-         avg /= 3.0;
-         avgErr /= 3.0;
+      if (i>2&&i<=_NETABIN-2) {
+         avg /= 6.0;
+         avgErr /= 6.0;
       }
 
       hAvg->SetBinContent(i, avg);
@@ -101,7 +139,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", int zerobins = 5, int U
    hMC->Draw("same");
    hAvg->Draw("p same");
 
-   TLegend *leg3 = new TLegend(0.2, 0.18, 0.9, 0.35);
+   TLegend *leg3 = new TLegend(0.2, 0.18, 0.9, 0.45);
    leg3->SetBorderSize(0);
    leg3->SetTextFont(62);
    leg3->SetLineColor(1);
@@ -126,18 +164,30 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", int zerobins = 5, int U
       avgErr += h12->GetBinError(i)*h12->GetBinError(i);
       avg += h13->GetBinContent(i);
       avgErr += h13->GetBinError(i)*h13->GetBinError(i);
+      avg += h14->GetBinContent(i);
+      avgErr += h14->GetBinError(i)*h14->GetBinError(i);
       avg += h23->GetBinContent(i);
       avgErr += h23->GetBinError(i)*h23->GetBinError(i);
+      avg += h24->GetBinContent(i);
+      avgErr += h24->GetBinError(i)*h24->GetBinError(i);
+      avg += h34->GetBinContent(i);
+      avgErr += h34->GetBinError(i)*h34->GetBinError(i);
       avg += h12->GetBinContent(_NETABIN+1-i);
       avgErr += h12->GetBinError(_NETABIN+1-i)*h12->GetBinError(_NETABIN+1-i);
       avg += h13->GetBinContent(_NETABIN+1-i);
       avgErr += h13->GetBinError(_NETABIN+1-i)*h13->GetBinError(_NETABIN+1-i);
+      avg += h14->GetBinContent(_NETABIN+1-i);
+      avgErr += h14->GetBinError(_NETABIN+1-i)*h14->GetBinError(_NETABIN+1-i);
       avg += h23->GetBinContent(_NETABIN+1-i);
       avgErr += h23->GetBinError(_NETABIN+1-i)*h23->GetBinError(_NETABIN+1-i);
+      avg += h24->GetBinContent(_NETABIN+1-i);
+      avgErr += h24->GetBinError(_NETABIN+1-i)*h24->GetBinError(_NETABIN+1-i);
+      avg += h34->GetBinContent(_NETABIN+1-i);
+      avgErr += h34->GetBinError(_NETABIN+1-i)*h34->GetBinError(_NETABIN+1-i);
       avgErr = sqrt(avgErr);
-      if (i>zerobins) {
-         avg /= 6.0;
-         avgErr /= 6.0;
+      if (i>2) {
+         avg /= 12.0;
+         avgErr /= 12.0;
       } else {
          avg /= 2.0;
          avgErr /= 2.0;
@@ -153,7 +203,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", int zerobins = 5, int U
    hAvg2->SetMarkerColor(4);
    hAvg2->Draw("p same");
 
-   TLegend *leg2 = new TLegend(0.2, 0.18, 0.9, 0.35);
+   TLegend *leg2 = new TLegend(0.2, 0.18, 0.9, 0.45);
    leg2->SetBorderSize(0);
    leg2->SetTextFont(62);
    leg2->SetLineColor(1);
