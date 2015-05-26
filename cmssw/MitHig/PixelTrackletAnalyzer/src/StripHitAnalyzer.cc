@@ -109,6 +109,7 @@ struct PixelEvent{
    int nhits1;
    int nhits2;
    int nhits3;
+   int nhits4;
    int ntrks;
    int ntrksCut;
    int nHFp;
@@ -158,6 +159,13 @@ struct PixelEvent{
    //int id3[MAXHITS];
    //int gp3[MAXHITS];
    //int type3[MAXHITS];
+
+   // Fourth layer hit
+   float eta4[MAXHITS];
+   float phi4[MAXHITS];
+   float r4[MAXHITS];
+   float cs4[MAXHITS];
+   float ch4[MAXHITS];
 
    // genparticle
    int nparticle;
@@ -341,6 +349,7 @@ StripHitAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    pev_.nhits1 = 0;
    pev_.nhits2 = 0;
    pev_.nhits3 = 0;
+   pev_.nhits4 = 0;
    pev_.ntrks = 0;
    pev_.ntrksCut = 0;
    pev_.mult = 0;
@@ -530,16 +539,16 @@ StripHitAnalyzer::fillHits(const edm::Event& iEvent, const edm::EventSetup& iSet
    //geo_ = tracker.product(); 
    
   for(std::vector<edm::InputTag>::const_iterator inputTag = siStripRecHitInputTags_.begin(); inputTag != siStripRecHitInputTags_.end(); ++inputTag) {
-   edm::Handle<SiStripRecHit2DCollection> siStripRecCollection;
+   edm::Handle<SiStripMatchedRecHit2DCollection> siStripRecCollection;
    iEvent.getByLabel(*inputTag,siStripRecCollection);
-   const SiStripRecHit2DCollection RecHits = *(siStripRecCollection.product());
+   const SiStripMatchedRecHit2DCollection RecHits = *(siStripRecCollection.product());
    
    
-   SiStripRecHit2DCollection::DataContainer::const_iterator itRecHits = RecHits.data().begin();
+   SiStripMatchedRecHit2DCollection::DataContainer::const_iterator itRecHits = RecHits.data().begin();
 
    for(; itRecHits != RecHits.data().end();++itRecHits) {
 	  //uint32_t nClusters_ = RecHits.data().size();
-	  uint32_t detId_= (*itRecHits).geographicalId();
+	  uint32_t detId_= (*itRecHits).stereoHit().geographicalId();
 	  
       const StripGeomDetUnit* stripGedmDetUnit = dynamic_cast<const StripGeomDetUnit*>(trGeo_->idToDetUnit(detId_));
       //uint16_t Nstrips_ = stripGedmDetUnit->specificTopology().nstrips();
@@ -552,9 +561,9 @@ StripHitAnalyzer::fillHits(const edm::Event& iEvent, const edm::EventSetup& iSet
      double rhR_ = sqrt(rhX_*rhX_+rhY_*rhY_);
      double rhEta_ = -log(tan(atan2(rhR_,rhZ_)/2.)); 
      double rhPhi_= atan2(rhY_,rhX_);    
-     uint32_t clSize_= (*itRecHits).cluster()->amplitudes().size(); 
-     uint32_t clFistStrip_ = (*itRecHits).cluster()->firstStrip();
-     const std::vector<uint8_t>& vclAdcs = (*itRecHits).cluster()->amplitudes(); 
+     uint32_t clSize_= (*itRecHits).stereoHit().cluster()->amplitudes().size(); 
+     uint32_t clFistStrip_ = (*itRecHits).stereoHit().cluster()->firstStrip();
+     const std::vector<uint8_t>& vclAdcs = (*itRecHits).stereoHit().cluster()->amplitudes(); 
 	 
 	 
 	 uint16_t strip = clFistStrip_;
@@ -564,27 +573,34 @@ StripHitAnalyzer::fillHits(const edm::Event& iEvent, const edm::EventSetup& iSet
 	    //if(vclAdcs[i] ==255) APVwithSatStip_ = 
 		++strip;
 	 }
-     if(rhR_>26&&rhR_<30) {
+     if(rhR_>20&&rhR_<30) {
         pev_.cs1[pev_.nhits1] = clSize_;
         pev_.ch1[pev_.nhits1] = clTotCharge_;
         pev_.r1[pev_.nhits1] = rhR_;
         pev_.eta1[pev_.nhits1] = rhEta_;
         pev_.phi1[pev_.nhits1] = rhPhi_;
         pev_.nhits1++;
-     } else if (rhR_>34&&rhR_<38){
+     } else if (rhR_>30&&rhR_<45){
         pev_.cs2[pev_.nhits2] = clSize_;
         pev_.ch2[pev_.nhits2] = clTotCharge_;
         pev_.r2[pev_.nhits2] = rhR_;
         pev_.eta2[pev_.nhits2] = rhEta_;
         pev_.phi2[pev_.nhits2] = rhPhi_;
         pev_.nhits2++;
-     } else if (rhR_>42&&rhR_<46) {
+     } else if (rhR_>45&&rhR_<65) {
         pev_.cs3[pev_.nhits3] = clSize_;
         pev_.ch3[pev_.nhits3] = clTotCharge_;
         pev_.r3[pev_.nhits3] = rhR_;
         pev_.eta3[pev_.nhits3] = rhEta_;
         pev_.phi3[pev_.nhits3] = rhPhi_;
         pev_.nhits3++;
+     } else if (rhR_>65) {
+        pev_.cs4[pev_.nhits4] = clSize_;
+        pev_.ch4[pev_.nhits4] = clTotCharge_;
+        pev_.r4[pev_.nhits4] = rhR_;
+        pev_.eta4[pev_.nhits4] = rhEta_;
+        pev_.phi4[pev_.nhits4] = rhPhi_;
+        pev_.nhits4++;
      }	
   }
  
@@ -741,6 +757,7 @@ StripHitAnalyzer::beginJob()
   pixelTree_->Branch("nhits1",&pev_.nhits1,"nhits1/I");
   pixelTree_->Branch("nhits2",&pev_.nhits2,"nhits2/I");
   pixelTree_->Branch("nhits3",&pev_.nhits3,"nhits3/I");
+  pixelTree_->Branch("nhits4",&pev_.nhits4,"nhits4/I");
   pixelTree_->Branch("ntrks",&pev_.ntrks,"ntrks/I");
   pixelTree_->Branch("ntrksCut",&pev_.ntrksCut,"ntrksCut/I");
   pixelTree_->Branch("mult",&pev_.mult,"mult/I");
@@ -774,6 +791,16 @@ StripHitAnalyzer::beginJob()
   pixelTree_->Branch("ch3",pev_.ch3,"ch3[nhits3]/F");
   //pixelTree_->Branch("gp3",pev_.gp3,"gp3[nhits3]/I");
   //pixelTree_->Branch("type3",pev_.type3,"type3[nhits3]/I");
+
+  pixelTree_->Branch("eta4",pev_.eta4,"eta4[nhits4]/F");
+  pixelTree_->Branch("phi4",pev_.phi4,"phi4[nhits4]/F");
+  pixelTree_->Branch("r4",pev_.r4,"r4[nhits4]/F");
+  //pixelTree_->Branch("id4",pev_.id4,"id4[nhits4]/I");
+  pixelTree_->Branch("cs4",pev_.cs4,"cs4[nhits4]/F");
+  pixelTree_->Branch("ch4",pev_.ch4,"ch4[nhits4]/F");
+  //pixelTree_->Branch("gp4",pev_.gp4,"gp4[nhits4]/I");
+  //pixelTree_->Branch("type4",pev_.type4,"type4[nhits4]/I");
+
 
   pixelTree_->Branch("evtType",&pev_.evtType,"evtType/I");
   pixelTree_->Branch("npart",&pev_.nparticle,"npart/I");
