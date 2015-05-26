@@ -60,6 +60,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          double beamHaloRatio = 0.0,
                          const char* beamHaloFile = "BeamHalo.root",
                          bool useKKVertex = 0,                  // Use vertex from other recoVtx collection
+                         bool useAllLayerForVertex = 1,         // Use 12,13,14,23,24 combinations for vtx reco
                          bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
                          bool mimicPixelCounting = 0,           // Create a pixel counting tree instead of tracklet tree
                          bool checkDuplicateEvent = 0)          // Check if we have duplicates in the sample (slow)
@@ -185,7 +186,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          if (reWeight) cout << "Reweighted!!!!!!!" << endl;
       }
 
-      if (par.nhits1>2000 || par.nhits2>2000)
+      if (par.nhits1>2000 || par.nhits2>2000 || par.nhits3>2000 || par.nhits4>2000)
          continue;
 
       // bool flagDuplicateEvent = 0;
@@ -346,13 +347,17 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(layerRaw1, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       vector<RecoHit> layerRaw2;
       prepareHits(layerRaw2, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      vector<RecoHit> layerRaw3;
+      prepareHits(layerRaw3, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      vector<RecoHit> layerRaw4;
+      prepareHits(layerRaw4, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
       if (pileUp!=0) {
          nPileUp = gRandom->Poisson(pileUp);
          for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(layerRaw1, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(layerRaw2, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layerRaw2, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
          }
          t->GetEntry(i);
       }
@@ -372,6 +377,89 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                vertices.push_back(vertex);
             }
          }
+      }
+
+      if (useAllLayerForVertex) {
+         for (unsigned int h1 = 0; h1<layerRaw1.size(); h1++) {
+            double r1 = layerRaw1[h1].r;
+            double z1 = r1/tan(2*atan(exp(-layerRaw1[h1].eta)));
+            for (unsigned int h2 = 0; h2<layerRaw3.size(); h2++) {
+               if (dphi(layerRaw1[h1].phi, layerRaw3[h2].phi) > 0.08)
+                  continue;
+               Vertex vertex;
+               double r2 = layerRaw3[h2].r;
+               double z2 = r2/tan(2*atan(exp(-layerRaw3[h2].eta)));
+               vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
+               if (fabs(vertex.vz)<20.0) {
+                  vertices.push_back(vertex);
+               }
+            }
+         }
+
+         for (unsigned int h1 = 0; h1<layerRaw1.size(); h1++) {
+            double r1 = layerRaw1[h1].r;
+            double z1 = r1/tan(2*atan(exp(-layerRaw1[h1].eta)));
+            for (unsigned int h2 = 0; h2<layerRaw4.size(); h2++) {
+               if (dphi(layerRaw1[h1].phi, layerRaw4[h2].phi) > 0.08)
+                  continue;
+               Vertex vertex;
+               double r2 = layerRaw4[h2].r;
+               double z2 = r2/tan(2*atan(exp(-layerRaw4[h2].eta)));
+               vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
+               if (fabs(vertex.vz)<20.0) {
+                  vertices.push_back(vertex);
+               }
+            }
+         }
+
+         for (unsigned int h1 = 0; h1<layerRaw2.size(); h1++) {
+            double r1 = layerRaw2[h1].r;
+            double z1 = r1/tan(2*atan(exp(-layerRaw2[h1].eta)));
+            for (unsigned int h2 = 0; h2<layerRaw3.size(); h2++) {
+               if (dphi(layerRaw2[h1].phi, layerRaw3[h2].phi) > 0.08)
+                  continue;
+               Vertex vertex;
+               double r2 = layerRaw3[h2].r;
+               double z2 = r2/tan(2*atan(exp(-layerRaw3[h2].eta)));
+               vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
+               if (fabs(vertex.vz)<20.0) {
+                  vertices.push_back(vertex);
+               }
+            }
+         }
+
+         for (unsigned int h1 = 0; h1<layerRaw2.size(); h1++) {
+            double r1 = layerRaw2[h1].r;
+            double z1 = r1/tan(2*atan(exp(-layerRaw2[h1].eta)));
+            for (unsigned int h2 = 0; h2<layerRaw4.size(); h2++) {
+               if (dphi(layerRaw2[h1].phi, layerRaw4[h2].phi) > 0.08)
+                  continue;
+               Vertex vertex;
+               double r2 = layerRaw4[h2].r;
+               double z2 = r2/tan(2*atan(exp(-layerRaw4[h2].eta)));
+               vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
+               if (fabs(vertex.vz)<20.0) {
+                  vertices.push_back(vertex);
+               }
+            }
+         }
+
+         for (unsigned int h1 = 0; h1<layerRaw3.size(); h1++) {
+             double r1 = layerRaw3[h1].r;
+             double z1 = r1/tan(2*atan(exp(-layerRaw3[h1].eta)));
+             for (unsigned int h2 = 0; h2<layerRaw4.size(); h2++) {
+               if (dphi(layerRaw3[h1].phi, layerRaw4[h2].phi) > 0.08)
+                  continue;
+               Vertex vertex;
+               double r2 = layerRaw4[h2].r;
+               double z2 = r2/tan(2*atan(exp(-layerRaw4[h2].eta)));
+               vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
+               if (fabs(vertex.vz)<20.0) {
+                  vertices.push_back(vertex);
+               }
+            }
+         }
+
       }
 
       // vector<RecoHit> allhits;
