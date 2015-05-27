@@ -118,16 +118,17 @@ int plotFinalResult(int TrackletType, const char* filename,
       hAlphaB = (TH3F*)myFile->FindObjectAny("hAlphaB");
    }
 
-   int VzRangeL = -20;
-   int VzRangeH = 20;
+   int VzRangeL = -10;
+   int VzRangeH = 10;
 
    // Definition of Vz, Eta, Hit bins
    const int nTrackletBin = 12;
    const int nEtaBin = 12;
-   const int nVzBin = 10;
+   const int nVzBin = 5;
 
-//   double TrackletBins[nTrackletBin+1] = {-5, 1, 10, 15, 20, 25, 30, 36, 42, 50, 60, 72, 300};
-   double TrackletBins[nTrackletBin+1] = {-5*4, 1*4, 10*4, 15*4, 20*4, 25*4, 30*4, 36*4, 42*4, 50*4, 60*4, 72*4, 300*4};
+//   double TrackletBins[nTrackletBin+1] = {-5, 1, 10, 15, 20, 25, 30, 36, 42, 50, 60, 72, 1000};
+   double TrackletBins[nTrackletBin+1] = {-5, 1, 5, 10,20, 30, 36, 42, 50, 60, 72,100, 1000};
+//   double TrackletBins[nTrackletBin+1] = {-5*4, 1*4, 10*4, 15*4, 20*4, 25*4, 30*4, 36*4, 42*4, 50*4, 60*4, 72*4, 300*4};
    double EtaBins[nEtaBin+1];
    for (int i=0; i<=nEtaBin; i++)
       EtaBins[i] = (double)i*6.0/(double)nEtaBin-3.0;
@@ -138,7 +139,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    // Signal and Sideband regions =============================================
    double signalRegionCut = 1;   // dphi cut for signal region
    double sideBandRegionCut = 2; // dphi cut for side-band region
-   double detaCut = 0.1;           // deta cut
+   double detaCut = 0.2;           // deta cut
 
    TCut signalRegion                  = Form("abs(dphi)<%f&&abs(deta)<%f", signalRegionCut, detaCut);
    TCut sideBandRegionEtaSignalRegion = Form("abs(dphi)>%f&&abs(dphi)<%f&&abs(deta)<%f", signalRegionCut, sideBandRegionCut, detaCut);
@@ -147,16 +148,16 @@ int plotFinalResult(int TrackletType, const char* filename,
       signalRegion                  = "dR<0.1";
       sideBandRegionEtaSignalRegion = "dR>0.1&&dR<0.2";
    }
-
-   TString vtxCut = "abs(vz[1])<20";
+   TString vtxCut = "abs(vz[1])<10";
    TCut MCSelection;
    TString offlineSelection;
    TCut evtSelection;
-
+   TString jsonSelection;
    switch (selection) {
       case 0:
          MCSelection = "1";
-         offlineSelection = "(nHFp>0 || nHFn>0)";
+//         offlineSelection = "(nHFp>0 || nHFn>0)";
+         offlineSelection = "abs(vz[1])<10";//&&(nHFp>0 || nHFn>0)";
          printf("---------- INELASTIC definition\n");
          break;
       case 1:
@@ -175,11 +176,17 @@ int plotFinalResult(int TrackletType, const char* filename,
          printf("------- Single Track definition\n");
          break;
    }
-   evtSelection = TCut(vtxCut + "&&" + offlineSelection);
-   if (!isMC) MCSelection = "1";
+   
+   if (!isMC) jsonSelection = "((nLumi>=11&&nLumi<=96)||(nLumi>=104&&nLumi<=145)||(nLumi>=152&&nLumi<=191)||(nLumi>=199&&nLumi<=239))";
+//   if (!isMC) jsonSelection = "((nLumi>=11&&nLumi<=96))";
+   else jsonSelection = "1";
+   evtSelection = TCut(vtxCut + "&&" + offlineSelection + "&&" + jsonSelection);
 
+   cout <<jsonSelection<<endl;
+
+   if (!isMC) MCSelection = "1";
    // Output file =============================================================
-   TFile* outf = new TFile (Form("correction-%i-%s.root", TrackletType, myPlotTitle), "recreate");
+   TFile* outf = new TFile (Form("correction/correction-%i-%s.root", TrackletType, myPlotTitle), "recreate");
 
    TNtuple* betas = new TNtuple("betas", "", "eta:nTracklet:vz:beta:betaErr");
    TNtuple* alphas = new TNtuple("alphas", "", "eta:nTracklet:vz:alpha:alphaErr");
@@ -318,11 +325,11 @@ int plotFinalResult(int TrackletType, const char* filename,
 
    // Prepare Tracklet Three-Dimensional Histogram ============================
    // Signal region && evtSelection
-   TrackletTree->Project("hEverything", Form("vz[1]:%s:eta1", multiplicity), signalRegion&&evtSelection);
+   TrackletTree->Project("hEverything", Form("vz[1]:%s:(eta1+eta2)/2.", multiplicity), signalRegion&&evtSelection);
    hEverything->Sumw2();
 
    // Side-band region && evtSelection
-   TrackletTree->Project("hReproducedBackground", Form("vz[1]:%s:eta1", multiplicity), sideBandRegionEtaSignalRegion&&evtSelection);
+   TrackletTree->Project("hReproducedBackground", Form("vz[1]:%s:(eta1+eta2)/2.", multiplicity), sideBandRegionEtaSignalRegion&&evtSelection);
    hReproducedBackground->Sumw2();
 
    // Read Acceptance =========================================================
@@ -394,7 +401,7 @@ int plotFinalResult(int TrackletType, const char* filename,
                   double alpha = truth/nsig;
                   if (verbose) cout << "alpha calc: " << x << " " << y << " " << z << " " << truth << " " << val << " " << (1-beta) << " " << endl;
                   double alphaErr = truth/nsig*sqrt(valErr/nsig*valErr/nsig+truthErr/truth*truthErr/truth*0);
-                  if (beta!=1 && alpha/alphaErr>-3 && alpha<500 && alpha>0) {
+                  if (beta!=1 && alpha/alphaErr>-3 && alpha<5 && alpha>0) {
                      alphas->Fill((EtaBins[x]+EtaBins[x-1])/2, (TrackletBins[y]+TrackletBins[y-1])/2, (VzBins[z]+VzBins[z-1])/2, alpha, alphaErr);
                      alphaPlots[x-1][z-1]->SetBinContent(y, alpha);
                      alphaPlots[x-1][z-1]->SetBinError(y, alphaErr);
@@ -445,13 +452,13 @@ int plotFinalResult(int TrackletType, const char* filename,
             funAlphaErr[i][j] = new TF1(Form("funAlphaErr%dVz%d", i, j), "[0]+[1]/(x+0.5)+[2]*exp([3]*x)", 0, 100);
             double etaMin = i*0.2-3;
             double etaMax = i*0.2-3+0.2;
-            alphaPlots[i][j]->Fit(Form("funAlpha%dVz%d", i, j), "M E Q", "", 0, 200);
+            alphaPlots[i][j]->Fit(Form("funAlpha%dVz%d", i, j), "M E Q", "", 0, 2000);
             alphaPlots[i][j]->SetXTitle("N_{Hits}");
             alphaPlots[i][j]->SetYTitle(Form("#alpha %.1f < #eta < %.1f", etaMin, etaMax));
             alphaPlots[i][j]->SetAxisRange(0.9, 2.0, "Y");
             alphaPlots[i][j]->SetAxisRange(0, 100, "X");
             if (i<2 || i>9) alphaPlots[i][j]->SetAxisRange(4, 10, "y");
-            alphaErrPlots[i][j]->Fit(Form("funAlphaErr%dVz%d", i, j), "M E Q", "", 0, 200);
+            alphaErrPlots[i][j]->Fit(Form("funAlphaErr%dVz%d", i, j), "M E Q", "", 0, 2000);
             // alphaPlots[i][j]->Draw("p");
             fAlpha[i][j] = alphaPlots[i][j]->GetFunction(Form("funAlpha%dVz%d", i, j));
             fAlphaErr[i][j] = alphaErrPlots[i][j]->GetFunction(Form("funAlphaErr%dVz%d", i, j));
@@ -917,9 +924,9 @@ int plotFinalResult(int TrackletType, const char* filename,
       hEmptyEvtCorrection = (TH1F*)hTruthWOSelection->Clone();
       hEmptyEvtCorrection->SetName("hEmptyEvtCorrection");
       hEmptyEvtCorrection->Divide(hMeasuredTrigEffCorrected);
-      for (int x=1; x<=nEtaBin; x++)
-         hEmptyEvtCorrection->SetBinError(x, 0);
-      hEmptyEvtCorrection->Fit("pol2", "LL", "", -etaLimit+0.1, etaLimit-0.1);
+//      for (int x=1; x<=nEtaBin; x++)
+//         hEmptyEvtCorrection->SetBinError(x, 0);
+      hEmptyEvtCorrection->Fit("pol2", "LL", "", -etaLimit+0.5, etaLimit-0.5);
       fEmptyEvt = hEmptyEvtCorrection->GetFunction("pol2");
       fEmptyEvt->SetName("fEmptyEvt");
    } else {
@@ -1058,28 +1065,28 @@ int plotFinalResult(int TrackletType, const char* filename,
       // cRatio->SaveAs(Form("figs/ratio/ratio-%s-%d.eps", myPlotTitle, TrackletType));
       // cRatio->SaveAs(Form("figs/ratio/ratio-%s-%d.C", myPlotTitle, TrackletType));
 
-      // TCanvas *cDNdnTracklet = new TCanvas("cDNdnTracklet", "Measured vs mult", canvasSizeX, canvasSizeY);
+       TCanvas *cDNdnTracklet = new TCanvas("cDNdnTracklet", "Measured vs mult", canvasSizeX, canvasSizeY);
       TH1F *hTruthHit = (TH1F*)hHadronAccepted->Project3D("y");
       hTruthHit->Sumw2();
       formatHist(hTruthHit, 1, nevent);
       hTruthHit->SetAxisRange(0, dndetaRange, "y");
       hTruthHit->SetXTitle("N_{Hit1} |#eta|<3");
       hTruthHit->SetYTitle("dN/dN_{Hit1}");
-      // hTruthHit->Draw("hist");
+       hTruthHit->Draw("hist");
 
       TH1F *hMeasuredHit = (TH1F*)hCorrected->Project3D("y");
       hMeasuredHit->Sumw2();
       formatHist(hMeasuredHit, 2, nevent, 1);
-      // hMeasuredHit->Draw("e same");
-      // cDNdnTracklet->Update();
+       hMeasuredHit->Draw("e same");
+       cDNdnTracklet->Update();
 
-      // TCanvas *cRatioTracklet = new TCanvas("cRatioTracklet", "Ratio vs mult", canvasSizeX, canvasSizeY);
+      TCanvas *cRatioTracklet = new TCanvas("cRatioTracklet", "Ratio vs mult", canvasSizeX, canvasSizeY);
       TH1F *hRatioHit = (TH1F*)hMeasuredHit->Clone();
       hRatioHit->Divide(hTruthHit);
       hRatioHit->SetXTitle("#eta");
       hRatioHit->SetYTitle("Ratio");
       hRatioHit->SetAxisRange(0.7, 1.3, "y");
-      // hRatioHit->Draw();
+      hRatioHit->Draw();
 
       TLine *line2 = new TLine(0, 1, nTrackletBin, 1);
       // line2->Draw();
