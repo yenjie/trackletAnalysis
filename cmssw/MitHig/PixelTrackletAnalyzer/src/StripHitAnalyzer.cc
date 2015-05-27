@@ -537,42 +537,36 @@ StripHitAnalyzer::fillHits(const edm::Event& iEvent, const edm::EventSetup& iSet
    //edm::ESHandle<TrackerGeometry> tracker;
    //iSetup.get<TrackerDigiGeometryRecord>().get( tracker );    
    //geo_ = tracker.product(); 
-   
-  for(std::vector<edm::InputTag>::const_iterator inputTag = siStripRecHitInputTags_.begin(); inputTag != siStripRecHitInputTags_.end(); ++inputTag) {
-   edm::Handle<SiStripMatchedRecHit2DCollection> siStripRecCollection;
-   iEvent.getByLabel(*inputTag,siStripRecCollection);
-   const SiStripMatchedRecHit2DCollection RecHits = *(siStripRecCollection.product());
-   
-   
-   SiStripMatchedRecHit2DCollection::DataContainer::const_iterator itRecHits = RecHits.data().begin();
 
-   for(; itRecHits != RecHits.data().end();++itRecHits) {
-	  //uint32_t nClusters_ = RecHits.data().size();
-	  uint32_t detId_= (*itRecHits).stereoHit().geographicalId();
-	  
-      const StripGeomDetUnit* stripGedmDetUnit = dynamic_cast<const StripGeomDetUnit*>(trGeo_->idToDetUnit(detId_));
-      //uint16_t Nstrips_ = stripGedmDetUnit->specificTopology().nstrips();
-	  
-     //Position of the cluster
-     GlobalPoint globalPosition = stripGedmDetUnit->toGlobal((*itRecHits).localPosition());
+   vector<edm::Handle<SiStripMatchedRecHit2DCollection> > stripColls;
+   iEvent.getManyByType(stripColls);
+
+   for(vector<edm::Handle<SiStripMatchedRecHit2DCollection> >::const_iterator
+       stripColl = stripColls.begin();
+       stripColl!= stripColls.end(); stripColl++)
+   {
+    const SiStripMatchedRecHit2DCollection* theStripHits = (*stripColl).product();
+
+    for(SiStripMatchedRecHit2DCollection::DataContainer::const_iterator
+            recHit = theStripHits->data().begin();
+            recHit!= theStripHits->data().end(); recHit++)
+      {
+     
+     DetId id = recHit->geographicalId();
+     LocalPoint lpos = recHit->localPosition();
+     GlobalPoint globalPosition = trGeo_->idToDet(id)->toGlobal(lpos);
+
      double rhX_= globalPosition.x(); 
      double rhY_= globalPosition.y();
      double rhZ_ = globalPosition.z();
      double rhR_ = sqrt(rhX_*rhX_+rhY_*rhY_);
      double rhEta_ = -log(tan(atan2(rhR_,rhZ_)/2.)); 
      double rhPhi_= atan2(rhY_,rhX_);    
-     uint32_t clSize_= (*itRecHits).stereoHit().cluster()->amplitudes().size(); 
-     uint32_t clFistStrip_ = (*itRecHits).stereoHit().cluster()->firstStrip();
-     const std::vector<uint8_t>& vclAdcs = (*itRecHits).stereoHit().cluster()->amplitudes(); 
-	 
-	 
-	 uint16_t strip = clFistStrip_;
-	 uint32_t clTotCharge_=0;
-	 for(size_t i =0; i < vclAdcs.size(); ++i){
-		clTotCharge_ += vclAdcs[i];
-	    //if(vclAdcs[i] ==255) APVwithSatStip_ = 
-		++strip;
-	 }
+     
+     double clSize_=0;
+     double clTotCharge_=0;
+     
+     
      if(rhR_>20&&rhR_<30) {
         pev_.cs1[pev_.nhits1] = clSize_;
         pev_.ch1[pev_.nhits1] = clTotCharge_;
