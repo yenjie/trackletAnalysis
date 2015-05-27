@@ -1,4 +1,4 @@
-#define dndetaRange 8
+#define dndetaRange 9
 #define _NETABIN 12
 
 #include <iostream>
@@ -20,6 +20,12 @@ void clearNBins(int n, TH1F* h) {
 }
 
 int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
+
+   TFile *infEPOS = new TFile("correction/correction-12-EPOS.root");
+   TH1F* hMCEPOS = (TH1F*)infEPOS->FindObjectAny("hTruthWOSelection");
+   TFile *infPYTHIA = new TFile("correction/correction-12-PU28.root");
+   TH1F* hMCPYTHIA = (TH1F*)infPYTHIA->FindObjectAny("hTruthWOSelection");
+   
    TFile *inf12 = new TFile(Form("correction/correction-12-%s.root", name));
    TH1F *h12 = (TH1F*)inf12->FindObjectAny("hMeasuredFinal");
    TH1F* hMC = (TH1F*)inf12->FindObjectAny("hTruthWOSelection");
@@ -82,7 +88,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    h12->SetYTitle("dN/d#eta");
    hMC->SetLineColor(1);
    hMC->SetMarkerColor(1);
-   hMC->Draw("same");
+   hMC->Draw("hist same");
    h12->Draw("same");
    h13->Draw("same");
    h14->Draw("same");
@@ -90,7 +96,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    h24->Draw("same");
    h34->Draw("same");
 
-   TLegend *leg = new TLegend(0.2, 0.18, 1, 0.35);
+   TLegend *leg = new TLegend(0.2, 0.18, 1, 0.45);
    leg->SetBorderSize(0);
    leg->SetTextFont(62);
    leg->SetLineColor(1);
@@ -136,7 +142,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
       hAvg->SetBinContent(i, avg);
       hAvg->SetBinError(i, avgErr);
    }
-   hMC->Draw("same");
+   hMC->Draw("same hist");
    hAvg->Draw("p same");
 
    TLegend *leg3 = new TLegend(0.2, 0.18, 0.9, 0.45);
@@ -197,8 +203,23 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
       hAvg2->SetBinError(i, avgErr);
       hAvg2->SetBinContent(_NETABIN+1-i, avg);
       hAvg2->SetBinError(_NETABIN+1-i, avgErr);
+      cout <<fabs(hAvg2->GetBinCenter(i))<<" "<<avg<<endl;
    }
-   hMC->Draw("same");
+   TH1D *hh = (TH1D*)hAvg2->Clone("hh");
+   for (int i=0;i<=hAvg2->GetNbinsX();i++) {
+      double val = hAvg2->GetBinContent(i);
+      hh->SetBinContent(i,val);
+      hh->SetBinError(i,val*0.06);
+     // TLine *b = new TLine(hAvg2->GetBinLowEdge(i),val*1.1,hAvg2->GetBinLowEdge(i+1),val*0.9);
+      
+      //if (val!=0) b->Draw("same");
+   
+   }
+   hh->SetLineWidth(10);
+   hh->SetLineColor(kGray);
+   hh->Draw("same");
+   hMC->Draw("hist same");
+   
    hAvg2->SetLineColor(4);
    hAvg2->SetMarkerColor(4);
    hAvg2->Draw("p same");
@@ -217,6 +238,10 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    leg2->Draw();
    c3->SaveAs(Form("merged/avgsym-%s.pdf", name));
 
+   hMCEPOS->SetLineColor(6);
+   hMCPYTHIA->SetLineColor(4);
+   //hMCEPOS->Draw("hist same");
+   //hMCPYTHIA->Draw("hist same");
    outfile->Write();
 
    return 0;
