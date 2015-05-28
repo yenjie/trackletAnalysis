@@ -29,6 +29,7 @@
 #include "DataFormats/Common/interface/DetSetAlgorithm.h"
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 #include "DataFormats/SiPixelDetId/interface/PXBDetId.h"
+#include "DataFormats/SiPixelDetId/interface/PXFDetId.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -103,6 +104,8 @@ struct PixelEvent{
    int nhits1;
    int nhits2;
    int nhits3;
+   int nhits4;
+   int nhits5;
    int ntrks;
    int ntrksCut;
    int nHFp;
@@ -152,6 +155,26 @@ struct PixelEvent{
    //int id3[MAXHITS];
    //int gp3[MAXHITS];
    //int type3[MAXHITS];
+
+   // First disk hit
+   float eta4[MAXHITS];
+   float phi4[MAXHITS];
+   float r4[MAXHITS];
+   float cs4[MAXHITS];
+   float ch4[MAXHITS];
+   //int id4[MAXHITS];
+   //int gp4[MAXHITS];
+   //int type4[MAXHITS];
+
+   // Second disk hit
+   float eta5[MAXHITS];
+   float phi5[MAXHITS];
+   float r5[MAXHITS];
+   float cs5[MAXHITS];
+   float ch5[MAXHITS];
+   //int id5[MAXHITS];
+   //int gp5[MAXHITS];
+   //int type5[MAXHITS];
 
    // genparticle
    int nparticle;
@@ -334,6 +357,8 @@ PixelHitAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    pev_.nhits1 = 0;
    pev_.nhits2 = 0;
    pev_.nhits3 = 0;
+   pev_.nhits4 = 0;
+   pev_.nhits5 = 0;
    pev_.ntrks = 0;
    pev_.ntrksCut = 0;
    pev_.mult = 0;
@@ -536,11 +561,16 @@ PixelHitAnalyzer::fillHits(const edm::Event& iEvent){
       const SiPixelRecHitCollection::DetSet recHitRange = *recHitMatch;
       unsigned int detType=detId.det();    // det type, tracker=1
       unsigned int subid=detId.subdetId(); //subdetector type, barrel=1, fpix=2
-      if (detType!=1||subid!=1) continue;
-
-      PXBDetId pdetId = PXBDetId(detId);
+      
+      PXBDetId pdetIdB = PXBDetId(detId);
+      PXFDetId pdetIdF = PXFDetId(detId);
       unsigned int layer=0;
-      layer=pdetId.layer();
+      layer=pdetIdB.layer();
+      unsigned int disk=0;
+      disk=pdetIdF.disk();
+      //cout <<subid<<" "<<layer<<" "<<disk<<endl;
+      if (detType!=1) continue;
+
       for ( SiPixelRecHitCollection::DetSet::const_iterator recHitIterator = recHitRange.begin(); 
 	 recHitIterator != recHitRange.end(); ++recHitIterator) {
          const SiPixelRecHit * recHit = &(*recHitIterator);
@@ -634,7 +664,7 @@ PixelHitAnalyzer::fillHits(const edm::Event& iEvent){
          if(issecondary) type = 3;
 */
 	
-	 if(layer == 1){ 
+	 if(layer == 1 && subid==1){ 
 	    pev_.eta1[pev_.nhits1] = eta;
 	    pev_.phi1[pev_.nhits1] = phi;
 	    pev_.r1[pev_.nhits1] = r;
@@ -647,7 +677,7 @@ PixelHitAnalyzer::fillHits(const edm::Event& iEvent){
 	    if(fabs(gpos.eta()) < etaMult_ ) pev_.mult++;
 	 }
 	 
-	 if(layer == 2){
+	 if(layer == 2 && subid==1){
 	    pev_.eta2[pev_.nhits2] = eta;
 	    pev_.phi2[pev_.nhits2] = phi;
 	    pev_.r2[pev_.nhits2] = r;
@@ -659,7 +689,7 @@ PixelHitAnalyzer::fillHits(const edm::Event& iEvent){
 	    pev_.nhits2++;
 	 } 
 
-	 if(layer == 3){
+	 if(layer == 3 && subid==1){
 	    pev_.eta3[pev_.nhits3] = eta;
 	    pev_.phi3[pev_.nhits3] = phi;
 	    pev_.r3[pev_.nhits3] = r;
@@ -669,6 +699,28 @@ PixelHitAnalyzer::fillHits(const edm::Event& iEvent){
 	    //pev_.gp3[pev_.nhits3] = gpid;
 	    //pev_.type3[pev_.nhits3] = type;
 	    pev_.nhits3++;
+	 } 
+	 if(disk == 1 && subid==2){
+	    pev_.eta4[pev_.nhits4] = eta;
+	    pev_.phi4[pev_.nhits4] = phi;
+	    pev_.r4[pev_.nhits4] = r;
+            //pev_.id4[pev_.nhits4] = trid;
+	    pev_.cs4[pev_.nhits4] = recHit->cluster()->size(); //Cluster Size
+            pev_.ch4[pev_.nhits4] = recHit->cluster()->charge(); //Cluster Charge
+	    //pev_.gp4[pev_.nhits4] = gpid;
+	    //pev_.type4[pev_.nhits4] = type;
+	    pev_.nhits4++;
+	 } 
+	 if(disk == 2 && subid==2){
+	    pev_.eta5[pev_.nhits5] = eta;
+	    pev_.phi5[pev_.nhits5] = phi;
+	    pev_.r5[pev_.nhits5] = r;
+            //pev_.id5[pev_.nhits5] = trid;
+	    pev_.cs5[pev_.nhits5] = recHit->cluster()->size(); //Cluster Size
+            pev_.ch5[pev_.nhits5] = recHit->cluster()->charge(); //Cluster Charge
+	    //pev_.gp5[pev_.nhits5] = gpid;
+	    //pev_.type5[pev_.nhits5] = type;
+	    pev_.nhits5++;
 	 } 
       }
    }
@@ -823,6 +875,8 @@ PixelHitAnalyzer::beginJob()
   pixelTree_->Branch("nhits1",&pev_.nhits1,"nhits1/I");
   pixelTree_->Branch("nhits2",&pev_.nhits2,"nhits2/I");
   pixelTree_->Branch("nhits3",&pev_.nhits3,"nhits3/I");
+  pixelTree_->Branch("nhits4",&pev_.nhits4,"nhits4/I");
+  pixelTree_->Branch("nhits5",&pev_.nhits5,"nhits5/I");
   pixelTree_->Branch("ntrks",&pev_.ntrks,"ntrks/I");
   pixelTree_->Branch("ntrksCut",&pev_.ntrksCut,"ntrksCut/I");
   pixelTree_->Branch("mult",&pev_.mult,"mult/I");
@@ -856,6 +910,25 @@ PixelHitAnalyzer::beginJob()
   pixelTree_->Branch("ch3",pev_.ch3,"ch3[nhits3]/F");
   //pixelTree_->Branch("gp3",pev_.gp3,"gp3[nhits3]/I");
   //pixelTree_->Branch("type3",pev_.type3,"type3[nhits3]/I");
+
+  pixelTree_->Branch("eta4",pev_.eta4,"eta4[nhits4]/F");
+  pixelTree_->Branch("phi4",pev_.phi4,"phi4[nhits4]/F");
+  pixelTree_->Branch("r4",pev_.r4,"r4[nhits4]/F");
+  //pixelTree_->Branch("id4",pev_.id4,"id4[nhits4]/I");
+  pixelTree_->Branch("cs4",pev_.cs4,"cs4[nhits4]/F");
+  pixelTree_->Branch("ch4",pev_.ch4,"ch4[nhits4]/F");
+  //pixelTree_->Branch("gp4",pev_.gp4,"gp4[nhits4]/I");
+  //pixelTree_->Branch("type4",pev_.type4,"type4[nhits4]/I");
+
+  pixelTree_->Branch("eta5",pev_.eta5,"eta5[nhits5]/F");
+  pixelTree_->Branch("phi5",pev_.phi5,"phi5[nhits5]/F");
+  pixelTree_->Branch("r5",pev_.r5,"r5[nhits5]/F");
+  //pixelTree_->Branch("id5",pev_.id5,"id5[nhits5]/I");
+  pixelTree_->Branch("cs5",pev_.cs5,"cs5[nhits5]/F");
+  pixelTree_->Branch("ch5",pev_.ch5,"ch5[nhits5]/F");
+  //pixelTree_->Branch("gp5",pev_.gp5,"gp5[nhits5]/I");
+  //pixelTree_->Branch("type5",pev_.type5,"type5[nhits5]/I");
+
 
   pixelTree_->Branch("evtType",&pev_.evtType,"evtType/I");
   pixelTree_->Branch("npart",&pev_.nparticle,"npart/I");
