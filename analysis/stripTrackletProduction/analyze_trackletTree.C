@@ -49,13 +49,13 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          int addL3Bck = 0,                      // Add random background to third pixel layer
                          bool smearPixels = 0,                  // Smear pixel hits
                          double smearVertex = 0,                // Add additional smearing to vertex position
-                         bool reWeight = 0,                     // Reweight to Run 123596 vtx distribution
+                         bool reWeight = 1,                     // Reweight to Run 123596 vtx distribution
                          bool reweightMultiplicity = 0,         // Reweight the multiplicity distribution
                          bool cutOnClusterSize = 0,             // Cut on clusterSize to reduce background
                          int makeVzCut = 0,                     // Cut on Vz
                          double splitProb = 0,                  // Splitting probability of the pixel hit
                          double dropProb = 0,                   // Emulate efficiency loss
-                         double pileUp = 0,                     // Artifically overlap event to mimic pile-up
+                         double pileUp = 0.28,                     // Artifically overlap event to mimic pile-up
                          bool putBeamHalo = false,              // Adding beam Halo
                          double beamHaloRatio = 0.0,
                          const char* beamHaloFile = "BeamHalo.root",
@@ -71,7 +71,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
 
    // Input file ==============================================================
    TFile* inf = new TFile(infile);
-   TTree* t = dynamic_cast<TTree*>(inf->FindObjectAny("PixelTree"));
+   TTree* t = dynamic_cast<TTree*>(inf->Get("anaStrip/PixelTree"));
    TFile* beamHaloInf;
    TTree* beamHaloTree;
    if (putBeamHalo) {
@@ -172,7 +172,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    // Main loop ===============================================================
    for (int i=startEntry; i<t->GetEntries()&&i<endEntry; i=i+1+nPileUp) {
       t->GetEntry(i);
-      if (i % 1000 == 0) {
+      if (i % 100 == 0) {
          cout << "Run " << par.nRun << " Event " << i << " "
               << trackletTree12->GetEntries() << " "
               << trackletTree13->GetEntries() << " "
@@ -185,9 +185,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          if (reWeight) cout << "Reweighted!!!!!!!" << endl;
       }
 
-      if (par.nhits1>2000 || par.nhits2>2000 || par.nhits3>2000 || par.nhits4>2000)
+      if (par.nhits1>3000 || par.nhits2>3000 || par.nhits3>3000 || par.nhits4>3000)
          continue;
 
+      if (par.nRun>10&&par.nLumi>96) continue;
       // bool flagDuplicateEvent = 0;
       // if (checkDuplicateEvent) {
       //    for (unsigned int j=0; j<events[par.nLumi].size(); j++) {
@@ -200,34 +201,34 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       // }
       // if (flagDuplicateEvent) continue;
 
-      // bool reWeightDropFlag = 0;
-      // // Reweight MC vertex distribution to be the same as data
-      // if (reWeight) {
-      //    reWeightDropFlag = 0;
-      //    double myVz = par.vz[1];
-      //    if (myVz<-90) {
-      //       TF1 *f = new TF1("f", "gaus", -30, 30);
-      //       f->SetParameters(1, -0.6536, 4.438);
-      //       myVz = f->GetRandom();
-      //       delete f;
-      //    }
+       bool reWeightDropFlag = 0;
+       // Reweight MC vertex distribution to be the same as data
+       if (reWeight) {
+          reWeightDropFlag = 0;
+          double myVz = par.vz[1];
+          if (myVz<-90) {
+             TF1 *f = new TF1("f", "gaus", -30, 30);
+             f->SetParameters(1, -0.6536, 4.438);
+             myVz = f->GetRandom();
+             delete f;
+          }
 
-      //    // for early data 900 GeV
-      //    // double MCPdf = TMath::Gaus(myVz,-2.709,4.551,1);
-      //    // double DataPdf = TMath::Gaus(myVz,-2.702,3.627,1);
+          // for early data 900 GeV
+          // double MCPdf = TMath::Gaus(myVz,-2.709,4.551,1);
+          // double DataPdf = TMath::Gaus(myVz,-2.702,3.627,1);
 
-      //    // for early data 7000 GeV Run 132440
-      //    double MCPdf = TMath::Gaus(myVz, -0.6536, 4.438, 1);
-      //    double DataPdf = TMath::Gaus(myVz, 0.3533-vzShift, 2.161, 1);
+          // for early data 7000 GeV Run 132440
+          double MCPdf = TMath::Gaus(myVz, -0.4798, 5.445, 1);
+          double DataPdf = TMath::Gaus(myVz, -1.855-vzShift, 5.432, 1);
 
-      //    // double DataPdf = TMath::Gaus(myVz,-0.4623,2.731,1);
+          // double DataPdf = TMath::Gaus(myVz,-0.4623,2.731,1);
 
-      //    double Ratio = DataPdf / MCPdf;
-      //    double x = gRandom->Rndm()*2.5;
+          double Ratio = DataPdf / MCPdf;
+          double x = gRandom->Rndm()*2.5;
 
-      //    if (x>Ratio) reWeightDropFlag = 1;
-      // }
-      // if (reWeightDropFlag) continue;
+          if (x>Ratio) reWeightDropFlag = 1;
+       }
+       if (reWeightDropFlag) continue;
 
       // Beam Halo ============================================================
       // if (gRandom->Rndm()<beamHaloRatio && putBeamHalo) {
