@@ -63,7 +63,7 @@ void analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel 
 
    // Input file ==============================================================
    TFile* inf = new TFile(infile);
-   TTree* t = dynamic_cast<TTree*>(inf->FindObjectAny("PixelTree"));
+   TTree* t = dynamic_cast<TTree*>(inf->Get("ana/PixelTree"));
    TFile* beamHaloInf;
    TTree* beamHaloTree;
    if (putBeamHalo) {
