@@ -357,6 +357,18 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       vector<RecoHit> layer4;
       prepareHits(layer4, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
+      if (pileUp!=0) {
+         nPileUp = gRandom->Poisson(pileUp);
+         for (int p=1; p<=nPileUp; p++) {
+            t->GetEntry(i+p);
+            prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(allhits, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+         }
+         t->GetEntry(i);
+      }
+
       // Add trackletVertex
       // if (tdata12.nv==2) tdata12.nv = 3;
       // if (tdata13.nv==2) tdata13.nv = 3;
@@ -374,8 +386,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(allhits, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
-      if (pileUp!=0) {
-         nPileUp = gRandom->Poisson(pileUp);
+      if (nPileUp>0) {
          for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
