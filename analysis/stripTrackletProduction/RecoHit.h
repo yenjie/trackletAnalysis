@@ -1,5 +1,5 @@
-#define maxEntry 5000
-#define maxEntry2 15000
+#define maxEntry 10000
+#define maxEntry2 10000
 
 #include <vector>
 #include <algorithm>
@@ -52,15 +52,9 @@ class SelectionCriteria {
 class Parameters {
    public:
       int nRun, nEv, nLumi, nHltBit, nL1ABit, nL1TBit, nBX, nHFn, nHFp, nHits;
-      bool hltBit[500];
-      bool l1ABit[500];
-      bool l1TBit[500];
-      bool l1ABitVsBx[500][5];
-      bool l1TBitVsBx[500][5];
+      bool hltBit[500], l1ABit[500], l1TBit[500];
       float beamSpotX, beamSpotY, beamSpotZ;
-      float vx[maxEntry];
-      float vy[maxEntry];
-      float vz[maxEntry];
+      float vx[8], vy[8], vz[8];
       float eta1[maxEntry], phi1[maxEntry], r1[maxEntry], cs1[maxEntry], ch1[maxEntry];
       float eta2[maxEntry], phi2[maxEntry], r2[maxEntry], cs2[maxEntry], ch2[maxEntry];
       float eta3[maxEntry], phi3[maxEntry], r3[maxEntry], cs3[maxEntry], ch3[maxEntry];
@@ -75,16 +69,12 @@ class Parameters {
 class TrackletData {
    public:
       int nRun, nEv, nLumi, nHltBit, nL1ABit, nL1TBit, nBX, nHFn, nHFp, nHits;
-      bool hltBit[500];
-      bool l1ABit[500];
-      bool l1TBit[500];
+      bool hltBit[500], l1ABit[500], l1TBit[500];
       float eta1[maxEntry], phi1[maxEntry], r1[maxEntry], cs1[maxEntry], ch1[maxEntry];
       float eta2[maxEntry], phi2[maxEntry], r2[maxEntry], cs2[maxEntry], ch2[maxEntry];
-      float vx[maxEntry2];
-      float vy[maxEntry2];
-      float vz[maxEntry2];
-      float deta[maxEntry2], dphi[maxEntry2];
-      float eta[maxEntry2], phi[maxEntry2], nhad[12], pt[maxEntry2];
+      float deta[maxEntry], dphi[maxEntry];
+      float vx[8], vy[8], vz[8];
+      float eta[maxEntry2], phi[maxEntry2], pt[maxEntry2], nhad[12];
       int chg[maxEntry2], pdg[maxEntry2];
       float pro2;
       int nTracklet, nhit1, nhit2, mult, mult2, nv, npart, evtType, trackletType;
@@ -199,12 +189,12 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
    }
 }
 
-RecoHit RandomHit(double etaMin, double etaMax, double phiMin, double phiMax) {
-   double eta = etaMin+(etaMax-etaMin)*gRandom->Rndm();
-   double phi = phiMin+(phiMax-phiMin)*gRandom->Rndm();
-   RecoHit myRandomHit(eta, phi, 0, 100);
-   return myRandomHit;
-}
+// RecoHit RandomHit(double etaMin, double etaMax, double phiMin, double phiMax) {
+//    double eta = etaMin+(etaMax-etaMin)*gRandom->Rndm();
+//    double phi = phiMin+(phiMax-phiMin)*gRandom->Rndm();
+//    RecoHit myRandomHit(eta, phi, 0, 100);
+//    return myRandomHit;
+// }
 
 double calcDphi(double phi1_, double phi2_) {
    double pi = 3.14159265358979;
@@ -221,12 +211,12 @@ double calcDphi(double phi1_, double phi2_) {
    return dphi;
 }
 
-void combineRecHit(vector<RecoHit> &c, vector<RecoHit> a, vector<RecoHit> b) {
-   for (unsigned int i=0; i<a.size(); i++)
-      c.push_back(a[i]);
-   for (unsigned int i=0; i<b.size(); i++)
-      c.push_back(b[i]);
-}
+// void combineRecHit(vector<RecoHit> &c, vector<RecoHit> a, vector<RecoHit> b) {
+//    for (unsigned int i=0; i<a.size(); i++)
+//       c.push_back(a[i]);
+//    for (unsigned int i=0; i<b.size(); i++)
+//       c.push_back(b[i]);
+// }
 
 void getPixelTreeBranch(TTree* t, Parameters &par) {
    t->SetBranchAddress("nRun", &par.nRun);
