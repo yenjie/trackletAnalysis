@@ -184,7 +184,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
               << trackletTree34->GetEntries()
               << " Add Beam Halo: " << nBeamHalo << " " << nBeamHalo/(double)i
               << endl;
-         if (reWeight) cout << "Reweighted!!!!!!!" << endl;
+         if (reWeight && !i) cout << "Reweighted!!!!!!!" << endl;
       }
 
       if (par.nhits1>3000 || par.nhits2>3000 || par.nhits3>3000 || par.nhits4>3000)

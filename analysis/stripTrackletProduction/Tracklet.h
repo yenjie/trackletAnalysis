@@ -466,6 +466,8 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("nHFp", &tdata.nHFp, "nHFp/I");
    trackletTree->Branch("nHits", &tdata.nHits, "nHits/I");
 
+   trackletTree->Branch("nHltBit", &tdata.nHltBit, "nHltBit/I");
+   trackletTree->Branch("hltBit", tdata.hltBit, "hltBit[nHltBit]/O");
    trackletTree->Branch("nL1ABit", &tdata.nL1ABit, "nL1ABit/I");
    trackletTree->Branch("l1ABit", tdata.l1ABit, "l1ABit[nL1ABit]/O");
    trackletTree->Branch("nL1TBit", &tdata.nL1TBit, "nL1TBit/I");

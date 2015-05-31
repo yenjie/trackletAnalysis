@@ -56,7 +56,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          int makeVzCut = 0,                     // Cut on Vz
                          double splitProb = 0,                  // Splitting probability of the pixel hit
                          double dropProb = 0,                   // Emulate efficiency loss
-                         double pileUp = 0,                     // Artifically overlap event to mimic pile-up
+                         double pileUp = 0.3,                     // Artifically overlap event to mimic pile-up
                          bool putBeamHalo = false,              // Adding beam Halo
                          double beamHaloRatio = 0.0,
                          const char* beamHaloFile = "BeamHalo.root",
@@ -181,7 +181,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
               << trackletTree45->GetEntries()
               << " Add Beam Halo: " << nBeamHalo << " " << nBeamHalo/(double)i
               << endl;
-         if (reWeight) cout << "Reweighted!!!!!!!" << endl;
+         if (reWeight && !i) cout << "Reweighted!!!!!!!" << endl;
       }
 
       // bool flagDuplicateEvent = 0;
@@ -615,10 +615,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       // // Use trackletVertex
       // if (fabs(tdata12.vz[1])>cuts.vzCut && makeVzCut) continue;
 
+      // Process hits with Vz constraint:
       vector<RecoHit> layer1Cut;
       prepareHits(layer1Cut, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, 1, par.nRun, par.nLumi, 0);
 
-      // Process hits with Vz constraint:
       // vector<RecoHit> layer1;
       // prepareHits(layer1, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       // vector<RecoHit> layer2;
@@ -639,6 +639,14 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       std::vector<RecoHit> combinedhits;
       prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      if (nPileUp>0) {
+         for (int p=1; p<nPileUp; p++) {
+            t->GetEntry(i+p);
+            prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+         }
+         t->GetEntry(i);
+      }
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
       std::vector<Tracklet> recoTracklets12;
       recoTracklets12 = recoTracklets(combinedhits, 12);
@@ -646,6 +654,14 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       combinedhits.clear();
       prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      if (nPileUp>0) {
+         for (int p=1; p<nPileUp; p++) {
+            t->GetEntry(i+p);
+            prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+         }
+         t->GetEntry(i);
+      }
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
       std::vector<Tracklet> recoTracklets13;
       recoTracklets13 = recoTracklets(combinedhits, 13);
@@ -653,6 +669,14 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       combinedhits.clear();
       prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      if (nPileUp>0) {
+         for (int p=1; p<nPileUp; p++) {
+            t->GetEntry(i+p);
+            prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+         }
+         t->GetEntry(i);
+      }
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
       std::vector<Tracklet> recoTracklets23;
       recoTracklets23 = recoTracklets(combinedhits, 23);
@@ -660,6 +684,14 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       combinedhits.clear();
       prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      if (nPileUp>0) {
+         for (int p=1; p<nPileUp; p++) {
+            t->GetEntry(i+p);
+            prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+         }
+         t->GetEntry(i);
+      }
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
       std::vector<Tracklet> recoTracklets14;
       recoTracklets14 = recoTracklets(combinedhits, 14);
@@ -667,6 +699,14 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       combinedhits.clear();
       prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      if (nPileUp>0) {
+         for (int p=1; p<nPileUp; p++) {
+            t->GetEntry(i+p);
+            prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(combinedhits, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+         }
+         t->GetEntry(i);
+      }
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
       std::vector<Tracklet> recoTracklets15;
       recoTracklets15 = recoTracklets(combinedhits, 15);
@@ -674,6 +714,14 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       combinedhits.clear();
       prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      if (nPileUp>0) {
+         for (int p=1; p<nPileUp; p++) {
+            t->GetEntry(i+p);
+            prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(combinedhits, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+         }
+         t->GetEntry(i);
+      }
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
       std::vector<Tracklet> recoTracklets45;
       recoTracklets45 = recoTracklets(combinedhits, 45);
