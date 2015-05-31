@@ -1,5 +1,5 @@
-#define maxEntry 4000
-#define maxEntry2 16000
+#define maxEntry 5000
+#define maxEntry2 15000
 
 #include <vector>
 #include <algorithm>
@@ -154,21 +154,21 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
    sort (hits.begin(), hits.end(), comparePhi);
 
    for (int ihit = 0; ihit < (int)hits.size(); ++ihit) {
-      double dr = 0;
-      double dphi = 10;
-      double deta = 10;
-      int flag = 0;
-      if (ihit != 0) {
-         for (int k=ihit-1; k<ihit; k++) {
-            dphi = fabs(calcDphi(hits[k].phi, hits[ihit].phi));
-            deta = fabs(hits[k].eta - hits[ihit].eta);
-            dr   = fabs(hits[k].r - hits[ihit].r);
-            // no double hit removal...
-            // if (dr>cuts.drCut && dphi<cuts.dPhiCut) flag=1;
-            // if (dphi > cuts.dPhiCut) k=0;
-         }
-      }
-      if (flag==1) continue;
+      // double dr = 0;
+      // double dphi = 10;
+      // double deta = 10;
+      // int flag = 0;
+      // if (ihit != 0) {
+      //    for (int k=ihit-1; k<ihit; k++) {
+      //       dphi = fabs(calcDphi(hits[k].phi, hits[ihit].phi));
+      //       deta = fabs(hits[k].eta - hits[ihit].eta);
+      //       dr   = fabs(hits[k].r - hits[ihit].r);
+      //       // no double hit removal...
+      //       // if (dr>cuts.drCut && dphi<cuts.dPhiCut) flag=1;
+      //       // if (dphi > cuts.dPhiCut) k=0;
+      //    }
+      // }
+      // if (flag==1) continue;
 
       double x = hits[ihit].r*cos(hits[ihit].phi);
       double y = hits[ihit].r*sin(hits[ihit].phi);
@@ -281,6 +281,7 @@ void getPixelTreeBranch(TTree* t, Parameters &par) {
    t->SetBranchAddress("pt", &par.pt);
    t->SetBranchAddress("chg", &par.chg);
    t->SetBranchAddress("pdg", &par.pdg);
+   t->SetBranchAddress("evtType", &par.evtType);
 
    t->SetBranchAddress("xi", &par.xi);
    t->SetBranchAddress("passDS", &par.passDS);

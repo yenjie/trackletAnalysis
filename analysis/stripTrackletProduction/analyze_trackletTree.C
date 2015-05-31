@@ -2,7 +2,7 @@
 
 #define _PI 3.14159265358979
 
-#include <queue>
+#include <deque>
 
 #include <TFile.h>
 #include <TNtuple.h>
@@ -30,6 +30,7 @@ typedef struct Vertex {
 double dphi(double phi1, double phi2);
 
 bool sortphi(RecoHit h1, RecoHit h2);
+bool sorteta(RecoHit h1, RecoHit h2);
 
 bool sortvz(Vertex v1, Vertex v2);
 bool sortnz(Vertex v1, Vertex v2);
@@ -95,7 +96,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
 
    int vertexHitRegion = 500000;
    int nbins = 100;
-   // double mult = 0;
    bool isMC = 0;
    double vzShift = 0;
 
@@ -127,9 +127,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    setTrackletTreeBranch(trackletTree24, tdata24);
    setTrackletTreeBranch(trackletTree34, tdata34);
 
-   // TH3D* hLayer1Hit = new TH3D("hLayer1Hit", "", 75, 0, 15, 60, -3, 3, 64, -3.2, 3.2);
-   // TH3D* hLayer2Hit = new TH3D("hLayer2Hit", "", 75, 0, 15, 60, -3, 3, 64, -3.2, 3.2);
-   // TH3D* hLayer3Hit = new TH3D("hLayer3Hit", "", 75, 0, 15, 60, -3, 3, 64, -3.2, 3.2);
+   // TH3D* hLayer1Hit = new TH3D("hLayer1Hit", "", 60, 0, 120, 60, -3, 3, 64, -3.2, 3.2);
+   // TH3D* hLayer2Hit = new TH3D("hLayer2Hit", "", 60, 0, 120, 60, -3, 3, 64, -3.2, 3.2);
+   // TH3D* hLayer3Hit = new TH3D("hLayer3Hit", "", 60, 0, 120, 60, -3, 3, 64, -3.2, 3.2);
+   // TH3D* hLayer4Hit = new TH3D("hLayer4Hit", "", 60, 0, 120, 60, -3, 3, 64, -3.2, 3.2);
 
    // Prepare hit spectra for random hit
    // cout << "Projecting...1" << endl;
@@ -138,6 +139,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    // if (addL2Bck!=0) t->Project("hLayer2Hit", "phi2:eta2:r2");
    // cout << "Projecting...3" << endl;
    // if (addL3Bck!=0) t->Project("hLayer3Hit", "phi3:eta3:r3");
+   // cout << "Projecting...4" << endl;
+   // if (addL4Bck!=0) t->Project("hLayer4Hit", "phi4:eta4:r4");
    // cout << "Projecting...done" << endl;
 
    if (t->FindBranch("npart")!=0) {
@@ -157,7 +160,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    getPixelTreeBranch(t, par);
    // Parameters beamHaloPar;
    // if (putBeamHalo) getPixelTreeBranch(beamHaloTree, beamHaloPar);
-   if (!makeVzCut) t->SetBranchAddress("evtType", &par.evtType);
    cout << "Number of Events: " << t->GetEntries() << endl;
 
    int nBeamHalo = 0;
@@ -172,7 +174,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    // Main loop ===============================================================
    for (int i=startEntry; i<t->GetEntries()&&i<endEntry; i=i+1+nPileUp) {
       t->GetEntry(i);
-      if (i % 100 == 0) {
+      if (i % 1000 == 0) {
          cout << "Run " << par.nRun << " Event " << i << " "
               << trackletTree12->GetEntries() << " "
               << trackletTree13->GetEntries() << " "
@@ -188,7 +190,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       if (par.nhits1>3000 || par.nhits2>3000 || par.nhits3>3000 || par.nhits4>3000)
          continue;
 
-      if (par.nRun>10&&par.nLumi>96) continue;
+      if (par.nLumi<11 || par.nLumi>96)
+         continue;
+
       // bool flagDuplicateEvent = 0;
       // if (checkDuplicateEvent) {
       //    for (unsigned int j=0; j<events[par.nLumi].size(); j++) {
@@ -294,10 +298,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       // Add background hits
       // int bckHits = 0;
       // if (addL1Bck!=0 || addL2Bck!=0 || addL3Bck!=0) {
-      //    TF1* fBck = new TF1("fBck", "-0.00478376+0.000435517*x", 0, 1000);
-      //    double val = fBck->Eval(par.nhits1);
       //    for (int i=0; i<par.nhits1; i++)
-      //       if (gRandom->Rndm()<val)
+      //       if (gRandom->Rndm()<0.01)
       //          bckHits++;
       //    delete fBck;
       // }
@@ -335,10 +337,33 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       //    par.nhits3 += bckHits;
       // }
 
+      // if (addL4Bck!=0) {
+      //    for (int i=par.nhits4; i<par.nhits4+bckHits; i++) {
+      //       double eta, phi, r;
+      //       hLayer4Hit->GetRandom3(r, eta, phi);
+      //       par.eta4[i] = eta;
+      //       par.phi4[i] = phi;
+      //       par.r4[i] = r;
+      //    }
+      //    par.nhits4 += bckHits;
+      // }
+
+      vector<RecoHit> layer1;
+      prepareHits(layer1, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      vector<RecoHit> layer2;
+      prepareHits(layer2, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      vector<RecoHit> layer3;
+      prepareHits(layer3, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      vector<RecoHit> layer4;
+      prepareHits(layer4, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+
       // Add trackletVertex
       // if (tdata12.nv==2) tdata12.nv = 3;
       // if (tdata13.nv==2) tdata13.nv = 3;
+      // if (tdata14.nv==2) tdata14.nv = 3;
       // if (tdata23.nv==2) tdata23.nv = 3;
+      // if (tdata24.nv==2) tdata24.nv = 3;
+      // if (tdata34.nv==2) tdata34.nv = 3;
 
       int recoPU = 0;
       double trackletVertex = -99;
@@ -366,8 +391,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          allhits.push_back(allhits[m]);
          allhits.back().phi += 2*_PI;
       }
-      RecoHit bar(0, 4, 0, 0, 1);
-      allhits.push_back(bar);
+      RecoHit fake(0, 4, 0, 0, 1);
+      allhits.push_back(fake);
 
       std::vector<Vertex> vertices;
       std::deque<RecoHit> trackcands[4];
@@ -460,22 +485,22 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          recoPU = pileupcands.size();
 
          // for (unsigned int d=0; d<candidates.size(); d++) {
-         //    TGraph* csveta_g = new TGraph(layerRaw1.size()+layerRaw2.size());
+         //    TGraph* csveta_g = new TGraph(layer1.size()+layer2.size());
 
          //    int g = 0;
-         //    for (unsigned int c1=0; c1<layerRaw1.size(); c1++) {
-         //       double r1 = layerRaw1[c1].r;
-         //       double z1 = r1/tan(2*atan(exp(-layerRaw1[c1].eta)));
+         //    for (unsigned int c1=0; c1<layer1.size(); c1++) {
+         //       double r1 = layer1[c1].r;
+         //       double z1 = r1/tan(2*atan(exp(-layer1[c1].eta)));
          //       double neweta = (z1 - candidates[d].vzmean > 0) ? -log(tan(atan(r1/(z1-candidates[d].vzmean))/2)) : log(tan(atan(r1/(candidates[d].vzmean-z1))/2));
-         //       if (layerRaw1[c1].cs<24 && layerRaw1[c1].cs>=0.9*cosh(neweta))
-         //          csveta_g->SetPoint(g++, neweta, layerRaw1[c1].cs);
+         //       if (layer1[c1].cs<24 && layer1[c1].cs>=0.9*cosh(neweta))
+         //          csveta_g->SetPoint(g++, neweta, layer1[c1].cs);
          //    }
-         //    for (unsigned int c2=0; c2<layerRaw2.size(); c2++) {
-         //       double r2 = layerRaw2[c2].r;
-         //       double z2 = r2/tan(2*atan(exp(-layerRaw2[c2].eta)));
+         //    for (unsigned int c2=0; c2<layer2.size(); c2++) {
+         //       double r2 = layer2[c2].r;
+         //       double z2 = r2/tan(2*atan(exp(-layer2[c2].eta)));
          //       double neweta = (z2 - candidates[d].vzmean > 0) ? -log(tan(atan(r2/(z2-candidates[d].vzmean))/2)) : log(tan(atan(r2/(candidates[d].vzmean-z2))/2));
-         //       if (layerRaw2[c2].cs<24)
-         //          csveta_g->SetPoint(g++, neweta, layerRaw2[c2].cs);
+         //       if (layer2[c2].cs<24)
+         //          csveta_g->SetPoint(g++, neweta, layer2[c2].cs);
          //    }
          //    csveta_g->Set(g);
          //    if (g) {
@@ -504,6 +529,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          //    candidates.insert(candidates.begin(), *eqnz);
          // }
 
+         // Using sigma2 only =================================================
          std::vector<Vertex>::iterator eqnz = candidates.begin();
          for (; eqnz!=candidates.end() && (*eqnz).nz==candidates[0].nz; eqnz++);
          std::sort(candidates.begin(), eqnz, sortsigma2);
@@ -561,69 +587,114 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       //    if (i==1) cout << "Random Vertex!!!" << endl;
       //    tdata12.vz[1] = gRandom->Rndm()*40-20;
       //    tdata13.vz[1] = tdata12.vz[1];
+      //    tdata14.vz[1] = tdata12.vz[1];
       //    tdata23.vz[1] = tdata12.vz[1];
+      //    tdata24.vz[1] = tdata12.vz[1];
+      //    tdata34.vz[1] = tdata12.vz[1];
       // }
       // // Use trackletVertex
       // if (fabs(tdata12.vz[1])>cuts.vzCut && makeVzCut) continue;
 
       // Process hits with Vz constraint:
-      vector<RecoHit> layer1;
-      prepareHits(layer1, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layer2;
-      prepareHits(layer2, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layer3;
-      prepareHits(layer3, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layer4;
-      prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-
       vector<RecoHit> layer1Cut;
       prepareHits(layer1Cut, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, 1, par.nRun, par.nLumi, 0);
 
-      if (nPileUp>0) {
-         for (int p=1; p<=nPileUp; p++) {
-            t->GetEntry(i+p);
-            prepareHits(layer1, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize);
-            prepareHits(layer2, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize);
-            prepareHits(layer3, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize);
-            prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize);
-         }
-         t->GetEntry(i);
-      }
+      std::vector<RecoHit> combinedhits;
+      prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+      std::vector<Tracklet> recoTracklets12;
+      recoTracklets12 = recoTracklets(combinedhits, 12);
+
+      combinedhits.clear();
+      prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+      std::vector<Tracklet> recoTracklets13;
+      recoTracklets13 = recoTracklets(combinedhits, 13);
+
+      combinedhits.clear();
+      prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+      std::vector<Tracklet> recoTracklets14;
+      recoTracklets14 = recoTracklets(combinedhits, 14);
+
+      combinedhits.clear();
+      prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+      std::vector<Tracklet> recoTracklets23;
+      recoTracklets23 = recoTracklets(combinedhits, 23);
+
+      combinedhits.clear();
+      prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+      std::vector<Tracklet> recoTracklets24;
+      recoTracklets24 = recoTracklets(combinedhits, 24);
+
+      combinedhits.clear();
+      prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+      std::vector<Tracklet> recoTracklets34;
+      recoTracklets34 = recoTracklets(combinedhits, 34);
+
+      // vector<RecoHit> layer1;
+      // prepareHits(layer1, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // vector<RecoHit> layer2;
+      // prepareHits(layer2, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // vector<RecoHit> layer3;
+      // prepareHits(layer3, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // vector<RecoHit> layer4;
+      // prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+
+      // if (nPileUp>0) {
+      //    for (int p=1; p<=nPileUp; p++) {
+      //       t->GetEntry(i+p);
+      //       prepareHits(layer1, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize);
+      //       prepareHits(layer2, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize);
+      //       prepareHits(layer3, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize);
+      //       prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize);
+      //    }
+      //    t->GetEntry(i);
+      // }
 
       // Form Tracklets
-      vector<Tracklet> protoTracklets12;
-      vector<Tracklet> protoTracklets13;
-      vector<Tracklet> protoTracklets14;
-      vector<Tracklet> protoTracklets23;
-      vector<Tracklet> protoTracklets24;
-      vector<Tracklet> protoTracklets34;
-      vector<Tracklet> recoTracklets12;
-      vector<Tracklet> recoTracklets13;
-      vector<Tracklet> recoTracklets14;
-      vector<Tracklet> recoTracklets23;
-      vector<Tracklet> recoTracklets24;
-      vector<Tracklet> recoTracklets34;
+      // vector<Tracklet> protoTracklets12;
+      // vector<Tracklet> protoTracklets13;
+      // vector<Tracklet> protoTracklets14;
+      // vector<Tracklet> protoTracklets23;
+      // vector<Tracklet> protoTracklets24;
+      // vector<Tracklet> protoTracklets34;
+      // vector<Tracklet> recoTracklets12;
+      // vector<Tracklet> recoTracklets13;
+      // vector<Tracklet> recoTracklets14;
+      // vector<Tracklet> recoTracklets23;
+      // vector<Tracklet> recoTracklets24;
+      // vector<Tracklet> recoTracklets34;
 
-      if (mimicPixelCounting) {
-         protoTracklets12 = recoProtoTracklets(layer1, layer1);
-         protoTracklets13 = recoProtoTracklets(layer2, layer2);
-         protoTracklets14 = recoProtoTracklets(layer3, layer3);
-         protoTracklets23 = recoProtoTracklets(layer4, layer4);
-      } else {
-         protoTracklets12 = recoProtoTracklets(layer1, layer2);
-         protoTracklets13 = recoProtoTracklets(layer1, layer3);
-         protoTracklets14 = recoProtoTracklets(layer1, layer4);
-         protoTracklets23 = recoProtoTracklets(layer2, layer3);
-         protoTracklets24 = recoProtoTracklets(layer2, layer4);
-         protoTracklets34 = recoProtoTracklets(layer3, layer4);
-      }
+      // if (mimicPixelCounting) {
+      //    protoTracklets12 = recoProtoTracklets(layer1, layer1);
+      //    protoTracklets13 = recoProtoTracklets(layer2, layer2);
+      //    protoTracklets14 = recoProtoTracklets(layer3, layer3);
+      //    protoTracklets23 = recoProtoTracklets(layer4, layer4);
+      // } else {
+      //    protoTracklets12 = recoProtoTracklets(layer1, layer2);
+      //    protoTracklets13 = recoProtoTracklets(layer1, layer3);
+      //    protoTracklets14 = recoProtoTracklets(layer1, layer4);
+      //    protoTracklets23 = recoProtoTracklets(layer2, layer3);
+      //    protoTracklets24 = recoProtoTracklets(layer2, layer4);
+      //    protoTracklets34 = recoProtoTracklets(layer3, layer4);
+      // }
 
-      recoTracklets12 = cleanTracklets(protoTracklets12, 0, cuts);
-      recoTracklets13 = cleanTracklets(protoTracklets13, 0, cuts);
-      recoTracklets14 = cleanTracklets(protoTracklets14, 0, cuts);
-      recoTracklets23 = cleanTracklets(protoTracklets23, 0, cuts);
-      recoTracklets24 = cleanTracklets(protoTracklets24, 0, cuts);
-      recoTracklets34 = cleanTracklets(protoTracklets34, 0, cuts);
+      // recoTracklets12 = cleanTracklets(protoTracklets12, 0, cuts);
+      // recoTracklets13 = cleanTracklets(protoTracklets13, 0, cuts);
+      // recoTracklets14 = cleanTracklets(protoTracklets14, 0, cuts);
+      // recoTracklets23 = cleanTracklets(protoTracklets23, 0, cuts);
+      // recoTracklets24 = cleanTracklets(protoTracklets24, 0, cuts);
+      // recoTracklets34 = cleanTracklets(protoTracklets34, 0, cuts);
 
       // Move the Vertex back
       // if (smearVertex!=0) {
@@ -1107,6 +1178,10 @@ double dphi(double phi1, double phi2) {
 
 bool sortphi(RecoHit h1, RecoHit h2) {
    return h1.phi < h2.phi;
+}
+
+bool sorteta(RecoHit h1, RecoHit h2) {
+   return h1.eta > h2.eta;
 }
 
 bool sortvz(Vertex v1, Vertex v2) {
