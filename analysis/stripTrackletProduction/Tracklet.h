@@ -1,12 +1,22 @@
 #define PI 3.141592653589
 
 #include "RecoHit.h"
+
 #include <vector>
 #include <iostream>
+
 #include <TH1F.h>
 #include <TTree.h>
 
 using namespace std;
+
+typedef struct phit {
+   int index;
+   bool paired;
+   int lindex;
+   int pindex;
+   int cindex;
+} phit;
 
 class Tracklet {
    public:
@@ -138,214 +148,314 @@ bool compareDeltaPhi(Tracklet a, Tracklet b) {
    return fabs(a.dphi()) < fabs(b.dphi());
 }
 
-vector<Tracklet> recoProtoTracklets(vector<RecoHit> hits1, vector<RecoHit> hits2) {
-   vector<Tracklet> protoTracklets;
-   for (int i=0; i<(int)hits1.size(); i++) {
-      for (int j=0; j<(int)hits2.size(); j++) {
-         Tracklet mytracklet(hits1[i].eta, hits2[j].eta, hits1[i].phi, hits2[j].phi, hits1[i].r, hits2[j].r, hits1[i].cs, hits2[j].cs);
-         mytracklet.setIt1(i);
-         mytracklet.setIt2(j);
-         // prevent self-match in same layer tracklet
-         // if (hits1[i].eta!=hits2[j].eta)
-         protoTracklets.push_back(mytracklet);
-      }
-   }
+// vector<Tracklet> recoProtoTracklets(vector<RecoHit> hits1, vector<RecoHit> hits2) {
+//    vector<Tracklet> protoTracklets;
+//    for (int i=0; i<(int)hits1.size(); i++) {
+//       for (int j=0; j<(int)hits2.size(); j++) {
+//          Tracklet mytracklet(hits1[i].eta, hits2[j].eta, hits1[i].phi, hits2[j].phi, hits1[i].r, hits2[j].r, hits1[i].cs, hits2[j].cs);
+//          mytracklet.setIt1(i);
+//          mytracklet.setIt2(j);
+//          // prevent self-match in same layer tracklet
+//          // if (hits1[i].eta!=hits2[j].eta)
+//          protoTracklets.push_back(mytracklet);
+//       }
+//    }
 
-   return protoTracklets;
-}
+//    return protoTracklets;
+// }
 
-vector<Tracklet> recoFastTracklets(vector<RecoHit> hits, int verbose_ = 0) {
-   vector<Tracklet> fastTracklets;
-   sort(hits.begin(), hits.end(), compareEta);
+vector<Tracklet> recoTracklets(vector<RecoHit> allhits, int layers) {
+   std::vector<phit> hits[2];
+   std::vector<phit> cands;
+   std::vector<bool> valid;
+   std::vector<Tracklet> tracklets;
 
-   int i = 0;
-   int i1 = 1, i2 = 2;
-   int n[3] = {0, 0, 0};
-   int flag = 0;
-   for (int i=0; i<(int)hits.size(); i++)
-      n[(int)hits[i].layer]++;
+   hits[0].reserve(allhits.size());
+   hits[1].reserve(allhits.size());
 
-   while (n[1]!=0 && n[2]!=0) {
-      double left = -10, center = 10e10, right = 10e10;
+   int tl[2];
+   for (std::size_t a=0; a<allhits.size(); a++) {
+      int l = allhits[a].layer - 1;
 
-      if (i!=0&&hits[i].layer!=hits[i-1].layer)
-         left = fabs(hits[i].eta-hits[i-1].eta);
-      else
-         left = 10e10;
-
-      i1 = i + 1;
-      while (center==10e10&&i1<(int)hits.size()) {
-         if (i1!=(int)hits.size() && hits[i1-1].layer!=hits[i1].layer) {
-            center = fabs(hits[i1-1].eta-hits[i1].eta);
-         } else {
-            center = 10e10;
-            i1++;
-         }
+      // 1+2, 1+3, 1+4, 2+3, 2+4, 3+4 only
+      if (layers/10 == 1) {
+         if (l) l = 1;
+      } else if (layers/10 == 2) {
+         --l;
+         if (l) l = 1;
+      } else if (layers == 34) {
+         l -= 2;
       }
 
-      i2 = i1 + 1;
-      while (right==10e10&&i2<(int)hits.size()) {
-         if (i2!=(int)hits.size()&&hits[i2-1].layer!=hits[i2].layer) {
-            right = fabs(hits[i2-1].eta-hits[i2].eta);
-         } else {
-            right = 10e10;
-            i2++;
-         }
-      }
+      phit nexthit;
+      nexthit.index = a;
+      nexthit.paired = 0;
+      nexthit.lindex = hits[1-l].size();
+      hits[l].push_back(nexthit);
 
-      if (verbose_) {
-         for (int j=0; j<(int)hits.size(); j++) {
-            if (j==i1-1) cout << "[" ;
-            cout << " " << Form("%.2f", hits[j].eta) << ";" << hits[j].layer << " ";
-            if (j==i1) cout << "]" ;
-         }
-         cout << " (" << i << " " << i1 << " " << i2 << ")" << endl;
-         cout << "LCR = " << left << " " << center << " " << right << endl;
-      }
+      std::vector<phit>::iterator thisl = hits[l].end() - 1;
+      std::vector<phit>::iterator thatl = hits[1-l].end() - 1;
+      for (; !hits[1-l].empty() && !(*thisl).paired && thatl+1!=hits[1-l].begin(); --thatl) {
+         if ((*thatl).paired) {
+            valid[(*thatl).cindex] = 0;
+            if (abs(allhits[(*thatl).index].eta - allhits[(*thatl).pindex].eta) < abs(allhits[(*thatl).index].eta - allhits[(*thisl).index].eta)) {
+               tl[l] = (*thatl).pindex;
+               tl[1-l] = (*thatl).index;
+               hits[1-l].erase(thatl);
 
-      if (center<left && center<right) {
-         if (flag==0 && i2>=(int)hits.size()) {
-            flag++;
-            i=0;
-            continue;
-         }
-         flag = 0;
-         Tracklet mytracklet(hits[i1-1].eta, hits[i1].eta, hits[i1-1].phi, hits[i1].phi, hits[i1-1].r, hits[i1].r, hits[i1-1].cs, hits[i1].cs);
-         fastTracklets.push_back(mytracklet);
-         n[(int)hits[i1-1].layer]--;
-         n[(int)hits[i1].layer]--;
-         hits.erase(hits.begin()+i1-1, hits.begin()+i1+1);
-         if (verbose_) {
-            cout << "Form Tracklet! " << i1-1 << " " << i1 << " d= " << mytracklet.deta() << endl;
-            cout << endl;
-            cout << n[1] << " " << n[2] << endl;
-         }
-         i = 0;
-      } else {
-         i++;
-      }
-      if (i>=(int)hits.size() || i<0) i = 0;
-   }
-   sort(fastTracklets.begin(), fastTracklets.end(), compareDeltaEta);
+               Tracklet tracklet(allhits[tl[0]].eta, allhits[tl[1]].eta, allhits[tl[0]].phi, allhits[tl[1]].phi, allhits[tl[0]].r, allhits[tl[1]].r, allhits[tl[0]].cs, allhits[tl[1]].cs);
+               tracklets.push_back(tracklet);
 
-   return fastTracklets;
-}
+               std::vector<phit>::iterator it = hits[l].begin();
+               for (; it!=hits[l].end() && (*it).index<(*thatl).pindex; ++it);
+               for (; it!=hits[l].end(); ++it)
+                  (*it).lindex--;
+            } else {
+               phit unpaired = cands[(*thatl).cindex];
+               unpaired.paired = 0;
 
-vector<Tracklet> cleanTracklets(vector<Tracklet> input, int matchNumber, SelectionCriteria cuts) {
-   vector<Tracklet> output;
+               (*thisl).paired = 1;
+               (*thisl).pindex = (*thatl).index;
+               (*thisl).cindex = cands.size();
+               (*thatl).paired = 1;
+               (*thatl).pindex = (*thisl).index;
+               (*thatl).cindex = cands.size();
+               cands.push_back(*thatl);
+               hits[1-l].erase(thatl);
+               valid.push_back(1);
 
-   if (cuts.useDeltaPhi_) {
-      if (cuts.useDeltaRho_)
-         sort(input.begin(), input.end(), compareDeltaRWithRhoCut);
-      else
-         sort(input.begin(), input.end(), compareDeltaR);
-   } else {
-      if (cuts.useDeltaRho_) {
-         cout << "Not supported option!!" << endl;
-         // sort(input.begin(), input.end(), compareDeltaEtaRho);
-      } else {
-         sort(input.begin(), input.end(), compareDeltaEta);
-         // sort(input.begin(), input.end(), compareDeltaPhi);
-      }
-   }
-
-   if (cuts.verbose_) {
-      for (unsigned int i=0; i<input.size(); i++)
-         cout << input[i].deta() << " " << input[i].getIt1() << " " << input[i].getIt2() << endl;
-   }
-
-   int used1[50000];
-   int used2[50000];
-   for (int i=0; i<50000; i++) {
-      used1[i] = 0;
-      used2[i] = 0;
-   }
-   if (cuts.verbose_) cout << "Printing Hits" << endl;
-   for (unsigned int i=0; i<input.size(); i++) {
-      int i1 = input[i].getIt1();
-      int i2 = input[i].getIt2();
-
-      if (used1[i1]==0 && used2[i2]==matchNumber) {
-         Tracklet tmp = input[i];
-         output.push_back(tmp);
-         used1[i1]++;
-         if (cuts.checkSecondLayer_) used2[i2]++;
-      }
-      if (used1[i1]==0 && used2[i2]<matchNumber) {
-         if (cuts.checkSecondLayer_) used2[i2]++;
-      }
-   }
-   return output;
-}
-
-void printTrackletVector(vector<Tracklet> x) {
-   for (int i=0; i<(int)x.size(); i++)
-      cout << fabs(x[i].deta()) << " " << "L1: " << x[i].eta1() << " " << x[i].phi1() << " L2: " << x[i].eta2() << " " << x[i].phi2() << endl;
-}
-
-double sumTrackletVector(vector<Tracklet> x) {
-   double total = 0;
-   for (int i=0; i<(int)x.size(); i++)
-      total += fabs(x[i].deta());
-   return total;
-}
-
-double TrackletVertexUnbin(vector<RecoHit> layer1, vector<RecoHit> layer2, double histDeltaZ, double dPhiCut, bool fillZ = true) {
-   double maxNz = 0;
-   double maxTotalZ = 0;
-   double maxRMS = 10e10;
-   double nRecoZ = 0;
-
-   vector<double> vectorZ;
-   for(int ihit = 0; ihit< (int)layer1.size(); ++ihit) {
-      double r1 = layer1[ihit].r;
-      double phi1 = layer1[ihit].phi;
-      double z1 = r1/tan(atan(exp(-layer1[ihit].eta))*2);
-
-      for(int ihit2 = 0; ihit2< (int)layer2.size(); ++ihit2) {
-         double r2 = layer2[ihit2].r;
-         double phi2 = layer2[ihit2].phi;
-         if (fabs(calcDphi(phi1,phi2))>dPhiCut) continue;
-         double z2 = r2/tan(atan(exp(-layer2[ihit2].eta))*2);
-
-         double z = z1-(z2-z1)/(r2-r1)*r1;
-         if (fabs(z)<20) {
-            if (fillZ){
-               nRecoZ++;
-               vectorZ.push_back(z);
+               for (thisl=hits[l].begin(); thisl!=hits[l].end() && (*thisl).index<unpaired.index; ++thisl);
+               hits[l].insert(thisl, unpaired);
+               thatl = hits[1-l].begin() + unpaired.lindex;
             }
+         } else {
+            (*thisl).paired = 1;
+            (*thisl).pindex = (*thatl).index;
+            (*thisl).cindex = cands.size();
+            (*thatl).paired = 1;
+            (*thatl).pindex = (*thisl).index;
+            (*thatl).cindex = cands.size();
+            cands.push_back(*thatl);
+            hits[1-l].erase(thatl);
+            valid.push_back(1);
          }
       }
    }
 
-   sort(vectorZ.begin(), vectorZ.end());
-   for (int i=0; i<(int)vectorZ.size(); i++) {
-      double nz = 0;
-      double totalZ = 0;
-      double rms = 0;
-
-      TH1F* h = new TH1F("h", "", 100, vectorZ[i]-histDeltaZ, vectorZ[i]+histDeltaZ);
-      for (int j=0; j<(int)vectorZ.size(); j++) {
-         if ((fabs(vectorZ[j]-vectorZ[i]))<histDeltaZ) {
-            nz++;
-            totalZ+=vectorZ[j];
-            h->Fill(vectorZ[j]);
+   for (std::size_t t=0; t<cands.size(); t++) {
+      if (valid[t]) {
+         int l = allhits[cands[t].index].layer - 1;
+         // 1+2, 1+3, 1+4, 2+3, 2+4, 3+4 only
+         if (layers/10 == 1) {
+            if (l) l = 1;
+         } else if (layers/10 == 2) {
+            --l;
+            if (l) l = 1;
+         } else if (layers == 34) {
+            l -= 2;
          }
-      }
-      rms=h->GetRMS();
-      delete h;
-      if (nz>maxNz || (nz==maxNz && rms<maxRMS)) {
-         maxNz=nz;
-         maxTotalZ=totalZ;
-         maxRMS=rms;
+         tl[l] = cands[t].index;
+         tl[1-l] = cands[t].pindex;
+         Tracklet tracklet(allhits[tl[0]].eta, allhits[tl[1]].eta, allhits[tl[0]].phi, allhits[tl[1]].phi, allhits[tl[0]].r, allhits[tl[1]].r, allhits[tl[0]].cs, allhits[tl[1]].cs);
+         tracklets.push_back(tracklet);
       }
    }
 
-   if (nRecoZ==0)
-      return -99;
-   else
-      return maxTotalZ/maxNz;
+   return tracklets;
 }
+
+// vector<Tracklet> recoFastTracklets(vector<RecoHit> hits, int verbose_ = 0) {
+//    vector<Tracklet> fastTracklets;
+//    sort(hits.begin(), hits.end(), compareEta);
+
+//    int i = 0;
+//    int i1 = 1, i2 = 2;
+//    int n[3] = {0, 0, 0};
+//    int flag = 0;
+//    for (int i=0; i<(int)hits.size(); i++)
+//       n[(int)hits[i].layer]++;
+
+//    while (n[1]!=0 && n[2]!=0) {
+//       double left = -10, center = 10e10, right = 10e10;
+
+//       if (i!=0&&hits[i].layer!=hits[i-1].layer)
+//          left = fabs(hits[i].eta-hits[i-1].eta);
+//       else
+//          left = 10e10;
+
+//       i1 = i + 1;
+//       while (center==10e10&&i1<(int)hits.size()) {
+//          if (i1!=(int)hits.size() && hits[i1-1].layer!=hits[i1].layer) {
+//             center = fabs(hits[i1-1].eta-hits[i1].eta);
+//          } else {
+//             center = 10e10;
+//             i1++;
+//          }
+//       }
+
+//       i2 = i1 + 1;
+//       while (right==10e10&&i2<(int)hits.size()) {
+//          if (i2!=(int)hits.size()&&hits[i2-1].layer!=hits[i2].layer) {
+//             right = fabs(hits[i2-1].eta-hits[i2].eta);
+//          } else {
+//             right = 10e10;
+//             i2++;
+//          }
+//       }
+
+//       if (verbose_) {
+//          for (int j=0; j<(int)hits.size(); j++) {
+//             if (j==i1-1) cout << "[" ;
+//             cout << " " << Form("%.2f", hits[j].eta) << ";" << hits[j].layer << " ";
+//             if (j==i1) cout << "]" ;
+//          }
+//          cout << " (" << i << " " << i1 << " " << i2 << ")" << endl;
+//          cout << "LCR = " << left << " " << center << " " << right << endl;
+//       }
+
+//       if (center<left && center<right) {
+//          if (flag==0 && i2>=(int)hits.size()) {
+//             flag++;
+//             i=0;
+//             continue;
+//          }
+//          flag = 0;
+//          Tracklet mytracklet(hits[i1-1].eta, hits[i1].eta, hits[i1-1].phi, hits[i1].phi, hits[i1-1].r, hits[i1].r, hits[i1-1].cs, hits[i1].cs);
+//          fastTracklets.push_back(mytracklet);
+//          n[(int)hits[i1-1].layer]--;
+//          n[(int)hits[i1].layer]--;
+//          hits.erase(hits.begin()+i1-1, hits.begin()+i1+1);
+//          if (verbose_) {
+//             cout << "Form Tracklet! " << i1-1 << " " << i1 << " d= " << mytracklet.deta() << endl;
+//             cout << endl;
+//             cout << n[1] << " " << n[2] << endl;
+//          }
+//          i = 0;
+//       } else {
+//          i++;
+//       }
+//       if (i>=(int)hits.size() || i<0) i = 0;
+//    }
+//    sort(fastTracklets.begin(), fastTracklets.end(), compareDeltaEta);
+
+//    return fastTracklets;
+// }
+
+// vector<Tracklet> cleanTracklets(vector<Tracklet> input, int matchNumber, SelectionCriteria cuts) {
+//    vector<Tracklet> output;
+
+//    if (cuts.useDeltaPhi_) {
+//       if (cuts.useDeltaRho_)
+//          sort(input.begin(), input.end(), compareDeltaRWithRhoCut);
+//       else
+//          sort(input.begin(), input.end(), compareDeltaR);
+//    } else {
+//       if (cuts.useDeltaRho_) {
+//          cout << "Not supported option!!" << endl;
+//          // sort(input.begin(), input.end(), compareDeltaEtaRho);
+//       } else {
+//          sort(input.begin(), input.end(), compareDeltaEta);
+//          // sort(input.begin(), input.end(), compareDeltaPhi);
+//       }
+//    }
+
+//    if (cuts.verbose_) {
+//       for (unsigned int i=0; i<input.size(); i++)
+//          cout << input[i].deta() << " " << input[i].getIt1() << " " << input[i].getIt2() << endl;
+//    }
+
+//    int used1[50000];
+//    int used2[50000];
+//    for (int i=0; i<50000; i++) {
+//       used1[i] = 0;
+//       used2[i] = 0;
+//    }
+//    if (cuts.verbose_) cout << "Printing Hits" << endl;
+//    for (unsigned int i=0; i<input.size(); i++) {
+//       int i1 = input[i].getIt1();
+//       int i2 = input[i].getIt2();
+
+//       if (used1[i1]==0 && used2[i2]==matchNumber) {
+//          Tracklet tmp = input[i];
+//          output.push_back(tmp);
+//          used1[i1]++;
+//          if (cuts.checkSecondLayer_) used2[i2]++;
+//       }
+//       if (used1[i1]==0 && used2[i2]<matchNumber) {
+//          if (cuts.checkSecondLayer_) used2[i2]++;
+//       }
+//    }
+//    return output;
+// }
+
+// void printTrackletVector(vector<Tracklet> x) {
+//    for (int i=0; i<(int)x.size(); i++)
+//       cout << fabs(x[i].deta()) << " " << "L1: " << x[i].eta1() << " " << x[i].phi1() << " L2: " << x[i].eta2() << " " << x[i].phi2() << endl;
+// }
+
+// double sumTrackletVector(vector<Tracklet> x) {
+//    double total = 0;
+//    for (int i=0; i<(int)x.size(); i++)
+//       total += fabs(x[i].deta());
+//    return total;
+// }
+
+// double TrackletVertexUnbin(vector<RecoHit> layer1, vector<RecoHit> layer2, double histDeltaZ, double dPhiCut, bool fillZ = true) {
+//    double maxNz = 0;
+//    double maxTotalZ = 0;
+//    double maxRMS = 10e10;
+//    double nRecoZ = 0;
+
+//    vector<double> vectorZ;
+//    for(int ihit = 0; ihit< (int)layer1.size(); ++ihit) {
+//       double r1 = layer1[ihit].r;
+//       double phi1 = layer1[ihit].phi;
+//       double z1 = r1/tan(atan(exp(-layer1[ihit].eta))*2);
+
+//       for(int ihit2 = 0; ihit2< (int)layer2.size(); ++ihit2) {
+//          double r2 = layer2[ihit2].r;
+//          double phi2 = layer2[ihit2].phi;
+//          if (fabs(calcDphi(phi1,phi2))>dPhiCut) continue;
+//          double z2 = r2/tan(atan(exp(-layer2[ihit2].eta))*2);
+
+//          double z = z1-(z2-z1)/(r2-r1)*r1;
+//          if (fabs(z)<20) {
+//             if (fillZ){
+//                nRecoZ++;
+//                vectorZ.push_back(z);
+//             }
+//          }
+//       }
+//    }
+
+//    sort(vectorZ.begin(), vectorZ.end());
+//    for (int i=0; i<(int)vectorZ.size(); i++) {
+//       double nz = 0;
+//       double totalZ = 0;
+//       double rms = 0;
+
+//       TH1F* h = new TH1F("h", "", 100, vectorZ[i]-histDeltaZ, vectorZ[i]+histDeltaZ);
+//       for (int j=0; j<(int)vectorZ.size(); j++) {
+//          if ((fabs(vectorZ[j]-vectorZ[i]))<histDeltaZ) {
+//             nz++;
+//             totalZ+=vectorZ[j];
+//             h->Fill(vectorZ[j]);
+//          }
+//       }
+//       rms=h->GetRMS();
+//       delete h;
+//       if (nz>maxNz || (nz==maxNz && rms<maxRMS)) {
+//          maxNz=nz;
+//          maxTotalZ=totalZ;
+//          maxRMS=rms;
+//       }
+//    }
+
+//    if (nRecoZ==0)
+//       return -99;
+//    else
+//       return maxTotalZ/maxNz;
+// }
 
 void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("nRun", &tdata.nRun, "nRun/I");
