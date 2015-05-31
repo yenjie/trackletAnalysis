@@ -1,0 +1,4 @@
+<use name="UserCode/LineTracking"/>
+<library file="*.cc" name="UserCodeLineTrackingPlugins">
+  <flags EDM_PLUGIN="1"/>
+</library>
