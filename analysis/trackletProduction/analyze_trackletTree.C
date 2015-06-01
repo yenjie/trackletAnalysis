@@ -332,16 +332,25 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       // if (tdata13.nv==2) tdata13.nv = 3;
       // if (tdata23.nv==2) tdata23.nv = 3;
 
-      vector<RecoHit> layer1;
+      vector<RecoHit> layer1, layer2, layer3, layer4, layer5;
       prepareHits(layer1, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layer2;
       prepareHits(layer2, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layer3;
       prepareHits(layer3, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layer4;
       prepareHits(layer4, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layer5;
       prepareHits(layer5, par, cuts, 5, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+
+      if (pileUp!=0) {
+         nPileUp = gRandom->Poisson(pileUp);
+         for (int p=1; p<=nPileUp; p++) {
+            t->GetEntry(i+p);
+            prepareHits(layer1, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer2, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer3, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer4, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer5, par, cuts, 5, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+         }
+         t->GetEntry(i);
+      }
 
       int recoPU = 0;
       double trackletVertex = -99;
@@ -350,8 +359,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
-      if (pileUp!=0) {
-         nPileUp = gRandom->Poisson(pileUp);
+      if (nPileUp>0) {
          for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -494,12 +502,12 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          std::vector<Vertex> pileupcands;
          pileupcands.push_back(vertices[0]);
          for (unsigned int p=1; p<vertices.size(); p++) {
-            if (vertices[p].nz < 10)
+            if (vertices[p].nz < 4)
                break;
-            if (vertices[p].nz < pileupcands[0].nz*0.75)
+            if (vertices[p].nz < pileupcands[0].nz*0.5)
                break;
             std::vector<Vertex>::iterator it = pileupcands.begin();
-            for (; it!=pileupcands.end() && abs((*it).vzmean-vertices[p].vzmean)>2.0; it++);
+            for (; it!=pileupcands.end() && abs((*it).vzmean-vertices[p].vzmean)>0.06; it++);
             if (it!=pileupcands.end())
                continue;
             pileupcands.push_back(vertices[p]);
@@ -640,7 +648,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       if (nPileUp>0) {
-         for (int p=1; p<nPileUp; p++) {
+         for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -655,7 +663,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       if (nPileUp>0) {
-         for (int p=1; p<nPileUp; p++) {
+         for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -670,7 +678,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       if (nPileUp>0) {
-         for (int p=1; p<nPileUp; p++) {
+         for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -685,7 +693,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       if (nPileUp>0) {
-         for (int p=1; p<nPileUp; p++) {
+         for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -700,7 +708,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       if (nPileUp>0) {
-         for (int p=1; p<nPileUp; p++) {
+         for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(combinedhits, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -715,7 +723,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(combinedhits, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       if (nPileUp>0) {
-         for (int p=1; p<nPileUp; p++) {
+         for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(combinedhits, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
