@@ -155,7 +155,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    switch (selection) {
       case 0:
          MCSelection = "1";
-         offlineSelection = "(nHFp>0 || nHFn>0)";
+         offlineSelection = "((nHFp>0 || nHFn>0) && recoPU<2)";
          printf("---------- INELASTIC definition\n");
          break;
       case 1:
@@ -266,25 +266,46 @@ int plotFinalResult(int TrackletType, const char* filename,
    // cVz->SaveAs(Form("figs/vz/plotVz-%s-%d.eps", myPlotTitle, TrackletType));
    // cVz->SaveAs(Form("figs/vz/plotVz-%s-%d.C", myPlotTitle, TrackletType));
 
-   // Determine the acceptance region to avoid large correction factors
+   // Define the acceptance region to avoid large correction factors
    // End point in z (cm)
+   bool accepRegion[nEtaBin][nVzBin];
+   memset(accepRegion, 0, sizeof(bool)*nEtaBin*nVzBin);
+
+   double etaLimit;
+   if (TrackletType % 10 > 3) {
+      double etaLL = 1.7;
+      double etaHL = 2.7;
+      if (TrackletType % 10 == 5)
+         etaLL = 1.9;
+      for (int i=0; i<nEtaBin; i++) {
+         for (int j=0; j<nVzBin; j++) {
+            if (((EtaBins[i]>-etaHL && EtaBins[i]<-etaLL) || (EtaBins[i+1]>etaLL && EtaBins[i+1]<etaHL)) && VzBins[j]>-7.5 && VzBins[j+1]<7.5)
+               accepRegion[i][j] = 1;
+         }
+      }
+   } else {
    double endpoint2 = 30.0; // 26.66 (old)
-   double rho = 7.6; // Second layer rho
-   double etaLimit = 2.5;
-   if (TrackletType % 10 == 3) {
-      rho = 10.5; // Third layer rho
-      etaLimit = 2.1;
+      double rho = 7.6; // Second layer rho
+      etaLimit = 2.5;
+      if (TrackletType % 10 == 3) {
+         rho = 10.5; // Third layer rho
+         etaLimit = 2.1;
+      }
+      for (int i=0; i<nEtaBin; i++) {
+         for (int j=0; j<nVzBin; j++) {
+            double minEta = EtaBins[i];
+            double maxEta = EtaBins[i+1];
+            double maxEdge = VzBins[j+1]-rho/tan(atan(exp(maxEta-0.1))*2);
+            double minEdge = VzBins[j]-rho/tan(atan(exp(minEta+0.1))*2);
+            if (maxEdge>-endpoint2 && minEdge<endpoint2 && maxEta<etaLimit && minEta>-etaLimit)
+               accepRegion[i][j] = 1;
+         }
+      }
    }
 
    for (int i=0; i<nEtaBin; i++) {
       for (int j=0; j<nVzBin; j++) {
-         double minEta = EtaBins[i];
-         double maxEta = EtaBins[i+1];
-         double maxEdge = VzBins[j+1]-rho/tan(atan(exp(maxEta-0.1))*2);
-         double minEdge = VzBins[j]-rho/tan(atan(exp(minEta+0.1))*2);
-         if (verbose) cout << minEta << " " << maxEta << " " << VzBins[j] << " " << maxEdge << " " << minEdge;
-
-         if (maxEdge>-endpoint2 && minEdge<endpoint2 && maxEta<etaLimit && minEta>-etaLimit) {
+         if (accepRegion[i][j]) {
             if (verbose) cout << " Selected! " << endl;
             hAcceptance->SetBinContent(i+1, j+1, hVz->GetBinContent(j+1));
             hAcceptance->SetBinError(i+1, j+1, 0);
@@ -917,9 +938,16 @@ int plotFinalResult(int TrackletType, const char* filename,
       hEmptyEvtCorrection->Divide(hMeasuredTrigEffCorrected);
       for (int x=1; x<=nEtaBin; x++)
          hEmptyEvtCorrection->SetBinError(x, 0);
-      hEmptyEvtCorrection->Fit("pol2", "LL", "", -etaLimit+0.1, etaLimit-0.1);
-      fEmptyEvt = hEmptyEvtCorrection->GetFunction("pol2");
-      fEmptyEvt->SetName("fEmptyEvt");
+      if (TrackletType % 10 < 4) {
+         hEmptyEvtCorrection->Fit("pol2", "LL", "", -etaLimit+0.1, etaLimit-0.1);
+         fEmptyEvt = hEmptyEvtCorrection->GetFunction("pol2");
+         fEmptyEvt->SetName("fEmptyEvt");
+      } else {
+         // hEmptyEvtCorrection->Fit("pol0", "LL", "", -2.4, -1.6-0.2*(TrackletType % 10 == 5));
+         // fEmptyEvt = hEmptyEvtCorrection->GetFunction("pol0");
+         fEmptyEvt = new TF1("fEmptyEvt", Form("%f", hEmptyEvtCorrection->GetBinContent(5)), -3, 3);
+         fEmptyEvt->SetName("fEmptyEvt");
+      }
    } else {
       hEmptyEvtCorrection = (TH1F*)fCorrection->FindObjectAny("hEmptyEvtCorrection");
       fEmptyEvt = (TF1*)fCorrection->FindObjectAny("fEmptyEvt");
