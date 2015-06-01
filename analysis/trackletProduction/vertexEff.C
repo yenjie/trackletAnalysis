@@ -10,6 +10,9 @@ void vertexEff(const char* fname) {
    TProfile *hTracklet = new TProfile("hTracklet", "", 20, 0, 40);
    t->Draw("vz[1]>-40:nhit1>>hTracklet", "abs(vz[0])<20", "goff");
 
+   TProfile *hTracking = new TProfile("hTracking", "", 20, 0, 40);
+   t->Draw("vz[2]>-40:nhit1>>hTracking", "abs(vz[0])<20", "goff");
+
    hTracklet->SetMarkerStyle(8);
    hTracklet->SetLineColor(4);
    hTracklet->SetMarkerColor(4);
@@ -21,10 +24,15 @@ void vertexEff(const char* fname) {
    hTracklet->SetYTitle("Efficiency");
    hTracklet->SetStats(0);
    hTracklet->Draw();
-
-   // TLegend* l = new TLegend(0.5, 0.6, 0.9, 0.72);
-   // l->AddEntry(hTracklet,"Reconstruction Efficiency", "pl");
-   // l->Draw();
+   hTracking->SetLineColor(2);
+   hTracking->SetMarkerColor(2);
+   hTracking->Draw("same");
+   TLegend* l = new TLegend(0.5, 0.6, 0.9, 0.72);
+   l->SetBorderSize(0);
+   l->SetFillStyle(0);
+   l->AddEntry(hTracklet,"Tracklet Vertex", "pl");
+   l->AddEntry(hTracking,"Line Tracking Vertex", "pl");
+   l->Draw();
 
    c1->SaveAs("vertex-eff.png");
 }
