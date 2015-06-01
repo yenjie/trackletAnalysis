@@ -56,7 +56,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          int makeVzCut = 0,                     // Cut on Vz
                          double splitProb = 0,                  // Splitting probability of the pixel hit
                          double dropProb = 0,                   // Emulate efficiency loss
-                         double pileUp = 0,                     // Artifically overlap event to mimic pile-up
+                         double pileUp = 0.3,                     // Artifically overlap event to mimic pile-up
                          bool putBeamHalo = false,              // Adding beam Halo
                          double beamHaloRatio = 0.0,
                          const char* beamHaloFile = "BeamHalo.root",
@@ -502,12 +502,12 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          std::vector<Vertex> pileupcands;
          pileupcands.push_back(vertices[0]);
          for (unsigned int p=1; p<vertices.size(); p++) {
-            if (vertices[p].nz < 10)
+            if (vertices[p].nz < 4)
                break;
-            if (vertices[p].nz < pileupcands[0].nz*0.75)
+            if (vertices[p].nz < pileupcands[0].nz*0.5)
                break;
             std::vector<Vertex>::iterator it = pileupcands.begin();
-            for (; it!=pileupcands.end() && abs((*it).vzmean-vertices[p].vzmean)>0.5; it++);
+            for (; it!=pileupcands.end() && abs((*it).vzmean-vertices[p].vzmean)>0.06; it++);
             if (it!=pileupcands.end())
                continue;
             pileupcands.push_back(vertices[p]);
