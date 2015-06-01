@@ -83,6 +83,10 @@ class TrackletData {
       bool passDS, passSingleTrack;
       int ntrks, ntrksCut;
       int nPU, recoPU;
+      float vzPU[10];
+      int nVtx;
+      float vtxVz[1500], vtxSigma2[1500];
+      int vtxNz[1500];
 };
 
 bool compareEta(RecoHit a, RecoHit b) {

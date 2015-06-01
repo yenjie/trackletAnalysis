@@ -332,6 +332,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       // if (tdata13.nv==2) tdata13.nv = 3;
       // if (tdata23.nv==2) tdata23.nv = 3;
 
+      double vzPileUp[40];
+      vzPileUp[0] = par.vz[0];
+
       vector<RecoHit> layer1, layer2, layer3, layer4, layer5;
       prepareHits(layer1, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(layer2, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -348,6 +351,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
             prepareHits(layer3, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(layer4, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(layer5, par, cuts, 5, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            vzPileUp[p] = par.vz[0];
          }
          t->GetEntry(i);
       }
@@ -447,6 +451,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       //    ftrackcands[l].push_back(fallhits[a]);
       // }
 
+      double vertexVz[1000], vertexSigma2[1000];
+      double vertexNz[1000];
+      int nVertices = 0;
+
       // Vertex clustering ====================================================
       if (vertices.size()) {
          std::sort(vertices.begin(), vertices.end(), sortvz);
@@ -497,6 +505,15 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                break;
             if (vertices[c].vzmean!=candidates.back().vzmean)
                candidates.push_back(vertices[c]);
+         }
+
+         vertexVz[0] = vertices[0].vzmean;
+         for (std::size_t v=0; v<vertices.size(); v++) {
+            if (vertices[v].vzmean != vertexVz[nVertices]) {
+               vertexVz[++nVertices] = vertices[v].vzmean;
+               vertexSigma2[nVertices] = vertices[v].sigma2;
+               vertexNz[nVertices] = vertices[v].nz;
+            }
          }
 
          std::vector<Vertex> pileupcands;
@@ -783,8 +800,18 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata12.passSingleTrack = par.passSingleTrack;
       tdata12.ntrks      = par.ntrks;
       tdata12.ntrksCut   = par.ntrksCut;
-      tdata12.nPU        = nPileUp;
+      tdata12.nPU        = nPileUp + 1;
       tdata12.recoPU     = recoPU;
+      tdata12.nVtx       = nVertices;
+
+      for (int j=0; j<nPileUp; j++)
+         tdata12.vzPU[j] = vzPileUp[j];
+
+      for (int j=0; j<nVertices; j++) {
+         tdata12.vtxVz[j] = vertexVz[j];
+         tdata12.vtxSigma2[j] = vertexSigma2[j];
+         tdata12.vtxNz[j] = vertexNz[j];
+      }
 
       for (int j=0; j<(int)par.nHltBit; j++)
          tdata12.hltBit[j] = par.hltBit[j];
@@ -881,8 +908,18 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata13.passSingleTrack = par.passSingleTrack;
       tdata13.ntrks      = par.ntrks;
       tdata13.ntrksCut   = par.ntrksCut;
-      tdata13.nPU        = nPileUp;
+      tdata13.nPU        = nPileUp + 1;
       tdata13.recoPU     = recoPU;
+      tdata13.nVtx       = nVertices;
+
+      for (int j=0; j<nPileUp; j++)
+         tdata13.vzPU[j] = vzPileUp[j];
+
+      for (int j=0; j<nVertices; j++) {
+         tdata13.vtxVz[j] = vertexVz[j];
+         tdata13.vtxSigma2[j] = vertexSigma2[j];
+         tdata13.vtxNz[j] = vertexNz[j];
+      }
 
       for (int j=0; j<(int)par.nHltBit; j++)
          tdata13.hltBit[j] = par.hltBit[j];
@@ -952,8 +989,18 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata23.passSingleTrack = par.passSingleTrack;
       tdata23.ntrks      = par.ntrks;
       tdata23.ntrksCut   = par.ntrksCut;
-      tdata23.nPU        = nPileUp;
+      tdata23.nPU        = nPileUp + 1;
       tdata23.recoPU     = recoPU;
+      tdata23.nVtx       = nVertices;
+
+      for (int j=0; j<nPileUp; j++)
+         tdata23.vzPU[j] = vzPileUp[j];
+
+      for (int j=0; j<nVertices; j++) {
+         tdata23.vtxVz[j] = vertexVz[j];
+         tdata23.vtxSigma2[j] = vertexSigma2[j];
+         tdata23.vtxNz[j] = vertexNz[j];
+      }
 
       for (int j=0; j<(int)par.nHltBit; j++)
          tdata23.hltBit[j] = par.hltBit[j];
@@ -1023,8 +1070,18 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata14.passSingleTrack = par.passSingleTrack;
       tdata14.ntrks      = par.ntrks;
       tdata14.ntrksCut   = par.ntrksCut;
-      tdata14.nPU        = nPileUp;
+      tdata14.nPU        = nPileUp + 1;
       tdata14.recoPU     = recoPU;
+      tdata14.nVtx       = nVertices;
+
+      for (int j=0; j<nPileUp; j++)
+         tdata14.vzPU[j] = vzPileUp[j];
+
+      for (int j=0; j<nVertices; j++) {
+         tdata14.vtxVz[j] = vertexVz[j];
+         tdata14.vtxSigma2[j] = vertexSigma2[j];
+         tdata14.vtxNz[j] = vertexNz[j];
+      }
 
       for (int j=0; j<(int)par.nHltBit; j++)
          tdata14.hltBit[j] = par.hltBit[j];
@@ -1094,8 +1151,18 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata15.passSingleTrack = par.passSingleTrack;
       tdata15.ntrks      = par.ntrks;
       tdata15.ntrksCut   = par.ntrksCut;
-      tdata15.nPU        = nPileUp;
+      tdata15.nPU        = nPileUp + 1;
       tdata15.recoPU     = recoPU;
+      tdata15.nVtx       = nVertices;
+
+      for (int j=0; j<nPileUp; j++)
+         tdata15.vzPU[j] = vzPileUp[j];
+
+      for (int j=0; j<nVertices; j++) {
+         tdata15.vtxVz[j] = vertexVz[j];
+         tdata15.vtxSigma2[j] = vertexSigma2[j];
+         tdata15.vtxNz[j] = vertexNz[j];
+      }
 
       for (int j=0; j<(int)par.nHltBit; j++)
          tdata15.hltBit[j] = par.hltBit[j];
@@ -1165,8 +1232,18 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata45.passSingleTrack = par.passSingleTrack;
       tdata45.ntrks      = par.ntrks;
       tdata45.ntrksCut   = par.ntrksCut;
-      tdata45.nPU        = nPileUp;
+      tdata45.nPU        = nPileUp + 1;
       tdata45.recoPU     = recoPU;
+      tdata45.nVtx       = nVertices;
+
+      for (int j=0; j<nPileUp; j++)
+         tdata45.vzPU[j] = vzPileUp[j];
+
+      for (int j=0; j<nVertices; j++) {
+         tdata45.vtxVz[j] = vertexVz[j];
+         tdata45.vtxSigma2[j] = vertexSigma2[j];
+         tdata45.vtxNz[j] = vertexNz[j];
+      }
 
       for (int j=0; j<(int)par.nHltBit; j++)
          tdata45.hltBit[j] = par.hltBit[j];
