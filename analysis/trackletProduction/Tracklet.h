@@ -503,11 +503,10 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
 
    trackletTree->Branch("nPU", &tdata.nPU, "nPU/I");
    trackletTree->Branch("vzPU", tdata.vzPU, "vzPU[nPU]/F");
-
    trackletTree->Branch("nVtx", &tdata.nVtx, "nVtx/I");
    trackletTree->Branch("vtxVz", tdata.vtxVz, "vtxVz[nVtx]/F");
-   trackletTree->Branch("vtxSigma2", tdata.vtxSigma2, "vtxSigma2[nVtx]/F");
    trackletTree->Branch("vtxNz", tdata.vtxNz, "vtxNz[nVtx]/I");
+   trackletTree->Branch("vtxSigma2", tdata.vtxSigma2, "vtxSigma2[nVtx]/F");
 
    trackletTree->Branch("xi", &tdata.xi, "xi/F");
    trackletTree->Branch("passDS", &tdata.passDS, "passDS/O");

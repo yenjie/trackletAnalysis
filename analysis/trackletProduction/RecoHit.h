@@ -1,5 +1,5 @@
-#define maxEntry 10000
-#define maxEntry2 10000
+#define maxEntry 4000
+#define maxEntry2 4000
 
 #include <vector>
 #include <algorithm>
@@ -83,10 +83,10 @@ class TrackletData {
       bool passDS, passSingleTrack;
       int ntrks, ntrksCut;
       int nPU, recoPU;
-      float vzPU[10];
+      float vzPU[20];
       int nVtx;
-      float vtxVz[1500], vtxSigma2[1500];
-      int vtxNz[1500];
+      float vtxVz[5000], vtxSigma2[5000];
+      int vtxNz[5000];
 };
 
 bool compareEta(RecoHit a, RecoHit b) {
@@ -202,12 +202,12 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
    }
 }
 
-RecoHit RandomHit(double etaMin, double etaMax, double phiMin, double phiMax) {
-   double eta = etaMin+(etaMax-etaMin)*gRandom->Rndm();
-   double phi = phiMin+(phiMax-phiMin)*gRandom->Rndm();
-   RecoHit myRandomHit(eta, phi, 0, 100);
-   return myRandomHit;
-}
+// RecoHit RandomHit(double etaMin, double etaMax, double phiMin, double phiMax) {
+//    double eta = etaMin+(etaMax-etaMin)*gRandom->Rndm();
+//    double phi = phiMin+(phiMax-phiMin)*gRandom->Rndm();
+//    RecoHit myRandomHit(eta, phi, 0, 100);
+//    return myRandomHit;
+// }
 
 double calcDphi(double phi1_, double phi2_) {
    double pi = 3.14159265358979;
@@ -224,12 +224,12 @@ double calcDphi(double phi1_, double phi2_) {
    return dphi;
 }
 
-void combineRecHit(vector<RecoHit> &c, vector<RecoHit> a, vector<RecoHit> b) {
-   for (unsigned int i=0; i<a.size(); i++)
-      c.push_back(a[i]);
-   for (unsigned int i=0; i<b.size(); i++)
-      c.push_back(b[i]);
-}
+// void combineRecHit(vector<RecoHit> &c, vector<RecoHit> a, vector<RecoHit> b) {
+//    for (unsigned int i=0; i<a.size(); i++)
+//       c.push_back(a[i]);
+//    for (unsigned int i=0; i<b.size(); i++)
+//       c.push_back(b[i]);
+// }
 
 void getPixelTreeBranch(TTree* t, Parameters &par) {
    t->SetBranchAddress("nRun", &par.nRun);
