@@ -73,7 +73,7 @@ int plotFinalResult(int TrackletType, const char* filename,
                     int UseExternalSDEff = 0,
                     bool useDR = 0)
 {
-   TFile* f= new TFile(filename);
+   TFile* f = new TFile(filename);
 
    // Input trackletTree
    TTree* TrackletTree = (TTree*)f->Get(Form("TrackletTree%d", TrackletType));
@@ -90,7 +90,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    if (!doTriggerCorrection)
       cout << "Trigger correction off!!!" << endl;
 
-   // Choose multiplcity handle
+   // Choose multiplicity handle
    const char* multiplicity;
    if (doMult2==1) {
       multiplicity = "mult2";
@@ -155,7 +155,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    switch (selection) {
       case 0:
          MCSelection = "1";
-         offlineSelection = "((nHFp>0 || nHFn>0) && recoPU<2)";
+         offlineSelection = "(nHFp>0 || nHFn>0)";
          printf("---------- INELASTIC definition\n");
          break;
       case 1:
@@ -943,9 +943,8 @@ int plotFinalResult(int TrackletType, const char* filename,
          fEmptyEvt = hEmptyEvtCorrection->GetFunction("pol2");
          fEmptyEvt->SetName("fEmptyEvt");
       } else {
-         // hEmptyEvtCorrection->Fit("pol0", "LL", "", -2.4, -1.6-0.2*(TrackletType % 10 == 5));
-         // fEmptyEvt = hEmptyEvtCorrection->GetFunction("pol0");
-         fEmptyEvt = new TF1("fEmptyEvt", Form("%f", hEmptyEvtCorrection->GetBinContent(5)), -3, 3);
+         hEmptyEvtCorrection->Fit("pol0", "LL", "", -2.4, -2.0);
+         fEmptyEvt = hEmptyEvtCorrection->GetFunction("pol0");
          fEmptyEvt->SetName("fEmptyEvt");
       }
    } else {
@@ -964,7 +963,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    TH1F *hMeasuredFinal = (TH1F*)hMeasuredTrigEffCorrected->Clone();
    hMeasuredFinal->SetName("hMeasuredFinal");
    hMeasuredFinal->SetMarkerStyle(20);
-   if (doTriggerCorrection){
+   if (doTriggerCorrection) {
       for (int x=1; x<=nEtaBin; x++) {
          double emptyCorrection = fEmptyEvt->Eval((EtaBins[x-1]+EtaBins[x])/2);
          hMeasuredFinal->SetBinContent(x, hMeasuredFinal->GetBinContent(x)*emptyCorrection);
