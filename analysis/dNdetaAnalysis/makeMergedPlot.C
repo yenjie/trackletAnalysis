@@ -73,7 +73,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0.055) 
    leg->AddEntry("h13", "Reconstructed (1st+3rd layers)", "pl");
    leg->AddEntry("h23", "Reconstructed (2nd+3rd layers)", "pl");
    leg->Draw();
-   c->SaveAs(Form("merged/merged-%s.pdf", name));
+   c1->SaveAs(Form("merged/merged-%s.pdf", name));
 
    TCanvas* c2 = new TCanvas("c2", "", 600, 600);
    TH1F* hAvg = (TH1F*)h12->Clone();
