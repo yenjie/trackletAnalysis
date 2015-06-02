@@ -1,4 +1,5 @@
 #define _DZ 0.12
+#define _DPHI 0.05
 
 #define _PI 3.14159265358979
 
@@ -46,6 +47,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          long startEntry = 0,                   // Starting Entry number in the Pixel Tree
                          long endEntry = 1000000000,            // Ending Entry number in the Pixel Tree
                          double pileUp = 0,                     // Artifically overlap event to mimic pile-up
+                         bool useForwardPixels = 1,             // Use forward pixel detector for vertexing
                          int addL1Bck = 0,                      // Add random background to first pixel layer
                          int addL2Bck = 0,                      // Add random background to second pixel layer
                          int addL3Bck = 0,                      // Add random background to third pixel layer
@@ -337,9 +339,14 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       vector<RecoHit> layer1raw, layer2raw, layer3raw, layer4raw, layer5raw;
       prepareHits(layer1raw, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(layer2raw, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(layer3raw, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(layer4raw, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(layer5raw, par, cuts, 5, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // prepareHits(layer3raw, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // prepareHits(layer4raw, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // prepareHits(layer5raw, par, cuts, 5, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+
+      vector<RecoHit> allhits, fallhits;
+      prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
       if (pileUp!=0) {
          nPileUp = gRandom->Poisson(pileUp);
@@ -352,21 +359,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
             vzPileUp[p] = par.vz[0];
             prepareHits(layer1raw, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(layer2raw, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(layer3raw, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(layer4raw, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(layer5raw, par, cuts, 5, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-         }
-         t->GetEntry(i);
-      }
+            // prepareHits(layer3raw, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            // prepareHits(layer4raw, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            // prepareHits(layer5raw, par, cuts, 5, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
-      vector<RecoHit> allhits;
-      prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-
-      if (nPileUp>0) {
-         for (int p=1; p<=nPileUp; p++) {
-            t->GetEntry(i+p);
             prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -375,7 +371,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       }
 
       std::sort(allhits.begin(), allhits.end(), sortphi);
-      for (unsigned int m=0; m<allhits.size() && allhits[m].phi<0.08-_PI; m++) {
+      for (unsigned int m=0; m<allhits.size() && allhits[m].phi<_DPHI-_PI; m++) {
          allhits.push_back(allhits[m]);
          allhits.back().phi += 2*_PI;
       }
@@ -386,7 +382,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       std::deque<RecoHit> trackcands[3];
       for (unsigned int a=0; a<allhits.size(); a++) {
          for (int q=0; q<3; q++) {
-            while (!trackcands[q].empty() && allhits[a].phi>trackcands[q].front().phi+0.08) {
+            while (!trackcands[q].empty() && allhits[a].phi>trackcands[q].front().phi+_DPHI) {
                for (int w=0; w<3; w++) {
                   if (q == w) continue;
                   for (std::deque<RecoHit>::iterator it = trackcands[w].begin(); it != trackcands[w].end(); it++) {
@@ -406,31 +402,52 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          trackcands[allhits[a].layer-1].push_back(allhits[a]);
       }
 
-      // std::deque<RecoHit> ftrackcands[3];
-      // for (unsigned int a=0; a<fallhits.size(); a++) {
-      //    for (int q=0; q<3; q++) {
-      //       while (!ftrackcands[q].empty() && fallhits[a].phi>ftrackcands[q].front().phi+0.08) {
-      //          for (int w=0; w<3; w++) {
-      //             if (w == q || (q & w)) continue;
-      //             for (std::deque<RecoHit>::iterator it = ftrackcands[w].begin(); it != ftrackcands[w].end(); it++) {
-      //                Vertex vertex;
-      //                double r1 = ftrackcands[q].front().r;
-      //                double z1 = r1/tan(2*atan(exp(-ftrackcands[q].front().eta)));
-      //                double r2 = (*it).r;
-      //                double z2 = r2/tan(2*atan(exp(-(*it).eta)));
-      //                vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
-      //                if (fabs(vertex.vz)<20.0)
-      //                   vertices.push_back(vertex);
-      //             }
-      //          }
-      //          ftrackcands[q].pop_front();
-      //       }
-      //    }
-      //    int l = fallhits[a].layer - 1;
-      //    if (l == 3) l = 1;
-      //    if (l == 4) l = 2;
-      //    ftrackcands[l].push_back(fallhits[a]);
-      // }
+      if (useForwardPixels) {
+         prepareHits(fallhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+         prepareHits(fallhits, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+         prepareHits(fallhits, par, cuts, 5, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+
+         if (nPileUp>0) {
+            for (int p=1; p<=nPileUp; p++) {
+               t->GetEntry(i+p);
+               prepareHits(fallhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+               prepareHits(fallhits, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+               prepareHits(fallhits, par, cuts, 5, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            }
+            t->GetEntry(i);
+         }
+
+         std::sort(fallhits.begin(), fallhits.end(), sortphi);
+         for (unsigned int m=0; m<fallhits.size() && fallhits[m].phi<_DPHI-_PI; m++) {
+            fallhits.push_back(fallhits[m]);
+            fallhits.back().phi += 2*_PI;
+         }
+         fallhits.push_back(fake);
+
+         std::deque<RecoHit> ftrackcands[5];
+         for (unsigned int a=0; a<fallhits.size(); a++) {
+            for (int q=0; q<5; q++) {
+               while (!ftrackcands[q].empty() && fallhits[a].phi>ftrackcands[q].front().phi+_DPHI) {
+                  for (int w=0; w<5; w++) {
+                     if (q == w) continue;
+                     if (q && w) continue;
+                     for (std::deque<RecoHit>::iterator it = ftrackcands[w].begin(); it != ftrackcands[w].end(); it++) {
+                        Vertex vertex;
+                        double r1 = ftrackcands[q].front().r;
+                        double z1 = r1/tan(2*atan(exp(-ftrackcands[q].front().eta)));
+                        double r2 = (*it).r;
+                        double z2 = r2/tan(2*atan(exp(-(*it).eta)));
+                        vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
+                        if (fabs(vertex.vz)<20.0)
+                           vertices.push_back(vertex);
+                     }
+                  }
+                  ftrackcands[q].pop_front();
+               }
+            }
+            ftrackcands[fallhits[a].layer-1].push_back(fallhits[a]);
+         }
+      }
 
       // Vertex clustering ====================================================
       if (vertices.size()) {

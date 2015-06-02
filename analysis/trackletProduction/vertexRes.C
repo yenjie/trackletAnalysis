@@ -7,7 +7,7 @@
 void vertexRes(const char* fname) {
    TFile* f = new TFile(fname, "READ");
    TTree* t = (TTree*)f->Get("TrackletTree12");
-   TH2D* hTracklet = new TH2D("hTracklet", "", 50, 0, 100, 100, -2, 2);
+   TH2D* hTracklet = new TH2D("hTracklet", "", 25, 0, 50, 100, -2, 2);
    t->Draw("vz[1]-vz[0]:nhit1>>hTracklet", "vz[1]>-40 && nhit1>0 && abs(vz[1])<15 && abs(vz[0])<15", "colz");
    hTracklet->FitSlicesY();
    TH1D* hRes = (TH1D*)gDirectory->Get("hTracklet_2");
@@ -18,7 +18,7 @@ void vertexRes(const char* fname) {
 
    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
    c1->SetLogy();
-   // hRes->SetAxisRange(0.002, 200, "Y");
+   hRes->SetAxisRange(0.002, 2, "Y");
    hRes->SetXTitle("N_{Hits}");
    hRes->SetTitle("Vertex Resolution");
    hRes->SetYTitle("Resolution (cm)");
