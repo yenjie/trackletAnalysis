@@ -24,7 +24,7 @@ TGraph* GetTGraphErrorBand(TH1F *hist, Double_t xoffset = 0) {
    }
    for (Int_t i=0; i<n; i++) {
       Double_t shiftedx = x[i];
-      cout << x[i] << endl;
+      // cout << x[i] << endl;
       if (i == 0) shiftedx -= xoffset;
       if (i == n-1) shiftedx += xoffset;
       outg->SetPoint(i, shiftedx, y[i]-hist->GetBinError(i+1));
@@ -63,7 +63,7 @@ TGraph* GetErrorBand(TH1F *hist, Double_t ratio1, Double_t ratio2, Double_t xoff
    }
    for (Int_t i=1; i<n-1; i++) {
       Double_t shiftedx = x[i];
-      cout << x[i] << endl;
+      // cout << x[i] << endl;
       if (i == 1) shiftedx -= xoffset;
       if (i == n-2) shiftedx += xoffset;
       outg->SetPoint(i-1, shiftedx, y[i]*(1-ratio2));
@@ -71,7 +71,7 @@ TGraph* GetErrorBand(TH1F *hist, Double_t ratio1, Double_t ratio2, Double_t xoff
       outg->SetPoint(2*n-4, x[1]-xoffset, y[i]*(1-ratio2));
 
    }
-   outg->Print();
+   // outg->Print();
    outg->SetLineColor(ing->GetLineColor());
    outg->SetLineWidth(ing->GetLineWidth());
    outg->SetLineStyle(ing->GetLineStyle());
@@ -103,14 +103,14 @@ TGraph* GetErrorBand(TH1F *hist, Double_t *ratio1, Double_t *ratio2, Double_t xo
    }
    for (Int_t i=1; i<n-1; i++) {
       Double_t shiftedx = x[i];
-      cout <<x[i]<<endl;
+      // cout << x[i] << endl;
       if (i == 1) shiftedx -= xoffset;
       if (i == n-2) shiftedx += xoffset;
       outg->SetPoint(i-1, shiftedx, y[i]*(1-ratio2[i]));
       outg->SetPoint(2*n-4-i, shiftedx, y[i]*(1+ratio1[i]));
       outg->SetPoint(2*n-4, x[1]-xoffset, y[i]*(1-ratio2[i]));
    }
-   outg->Print();
+   // outg->Print();
    outg->SetLineColor(ing->GetLineColor());
    outg->SetLineWidth(ing->GetLineWidth());
    outg->SetLineStyle(ing->GetLineStyle());
@@ -130,7 +130,7 @@ TGraph* GetErrorBand2(TH1F *hist, Double_t *ratio1, Double_t *ratio2, Double_t x
    Int_t n = ing->GetN();
    if (!n) return 0;
    TGraph *outg = new TGraph(2*n+1-8);
-   cout << n << endl;
+   // cout << n << endl;
    Double_t *x = ing->GetX();
    Double_t *y = ing->GetY();
    Double_t *yerr = ing->GetEY();
@@ -150,7 +150,7 @@ TGraph* GetErrorBand2(TH1F *hist, Double_t *ratio1, Double_t *ratio2, Double_t x
       outg->SetPoint(2*n-6-i-1, shiftedx, y[i]*(1+ratio1[i]));
       outg->SetPoint(2*n-6-1, x[1]-xoffset, y[i]*(1-ratio2[i]));
    }
-   outg->Print();
+   // outg->Print();
    outg->SetLineColor(ing->GetLineColor());
    outg->SetLineWidth(ing->GetLineWidth());
    outg->SetLineStyle(ing->GetLineStyle());

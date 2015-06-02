@@ -108,12 +108,12 @@ int plotFinalResult(int TrackletType, const char* filename,
    TFile* fAcceptance;
    if (useCorrectionFile) fCorrection = getCorrectionFile(correctionName, TrackletType);
    if (useCorrectionFile && doAcceptanceCorrection) fAcceptance = getAcceptanceFile(TrackletType);
-   TFile *fCorrectionExternal = new TFile(Form("correction/correction-%d-external.root", TrackletType));
+   TFile* fCorrectionExternal = new TFile(Form("correction/correction-%d-external.root", TrackletType));
 
-   TH3F *hAlphaA;
-   TH3F *hAlphaB;
+   TH3F* hAlphaA;
+   TH3F* hAlphaB;
    if (doBetaCorrection) {
-      TFile *myFile = new TFile(Form("correction/alphaBetaCoeff-%d.root", TrackletType));
+      TFile* myFile = new TFile(Form("correction/alphaBetaCoeff-%d.root", TrackletType));
       hAlphaA = (TH3F*)myFile->FindObjectAny("hAlphaA");
       hAlphaB = (TH3F*)myFile->FindObjectAny("hAlphaB");
    }
@@ -980,8 +980,8 @@ int plotFinalResult(int TrackletType, const char* filename,
    hTruthEvtCutCorrectedByXi->SetYTitle("dN/d#eta");
    // hTruthEvtCutCorrectedByXi->Draw("hist");
 
-   // double systematicError10TeV[12] = {0.132, 0.132, 0.093, 0.085, 0.084, 0.083, 0.083, 0.084, 0.085, 0.093, 0.132, 0.132};
-   // TGraph *gErrorBand = GetErrorBand((TH1F*)hMeasuredFinal, systematicError10TeV, systematicError10TeV, 0.25);
+   // double systematicError13TeV[30];
+   // TGraph* gErrorBand = GetErrorBand(hMeasuredFinal, systematicError13TeV, systematicError13TeV, 0.1);
    // gErrorBand->Draw("F");
 
    // TH1F* hUA5(0);
