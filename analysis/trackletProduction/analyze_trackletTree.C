@@ -47,7 +47,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          long startEntry = 0,                   // Starting Entry number in the Pixel Tree
                          long endEntry = 1000000000,            // Ending Entry number in the Pixel Tree
                          double pileUp = 0,                     // Artifically overlap event to mimic pile-up
-                         bool useForwardPixels = 1,             // Use forward pixel detector for vertexing
+                         bool useForwardPixels = 0,             // Use forward pixel detector for vertexing
                          int addL1Bck = 0,                      // Add random background to first pixel layer
                          int addL2Bck = 0,                      // Add random background to second pixel layer
                          int addL3Bck = 0,                      // Add random background to third pixel layer
@@ -198,34 +198,27 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       // }
       // if (flagDuplicateEvent) continue;
 
-      // bool reWeightDropFlag = 0;
-      // // Reweight MC vertex distribution to be the same as data
-      // if (reWeight) {
-      //    reWeightDropFlag = 0;
-      //    double myVz = par.vz[1];
-      //    if (myVz<-90) {
-      //       TF1 *f = new TF1("f", "gaus", -30, 30);
-      //       f->SetParameters(1, -0.6536, 4.438);
-      //       myVz = f->GetRandom();
-      //       delete f;
-      //    }
+      bool reWeightDropFlag = 0;
+      // Reweight MC vertex distribution to be the same as data
+      if (reWeight) {
+         reWeightDropFlag = 0;
+         double myVz = par.vz[1];
+         if (myVz<-90) {
+            TF1 *f = new TF1("f", "gaus", -30, 30);
+            f->SetParameters(1, -0.492993, 5.00017);
+            myVz = f->GetRandom();
+            delete f;
+         }
 
-      //    // for early data 900 GeV
-      //    // double MCPdf = TMath::Gaus(myVz,-2.709,4.551,1);
-      //    // double DataPdf = TMath::Gaus(myVz,-2.702,3.627,1);
+         // 13 TeV Run 246908
+         double MCPdf = TMath::Gaus(myVz, -0.492993, 5.00017, 1);
+         double DataPdf = TMath::Gaus(myVz, -2.03961-vzShift, 4.2783, 1);
 
-      //    // for early data 7000 GeV Run 132440
-      //    double MCPdf = TMath::Gaus(myVz, -0.6536, 4.438, 1);
-      //    double DataPdf = TMath::Gaus(myVz, 0.3533-vzShift, 2.161, 1);
-
-      //    // double DataPdf = TMath::Gaus(myVz,-0.4623,2.731,1);
-
-      //    double Ratio = DataPdf / MCPdf;
-      //    double x = gRandom->Rndm()*2.5;
-
-      //    if (x>Ratio) reWeightDropFlag = 1;
-      // }
-      // if (reWeightDropFlag) continue;
+         double Ratio = DataPdf / MCPdf;
+         double x = gRandom->Rndm()*2.5;
+         if (x>Ratio) reWeightDropFlag = 1;
+      }
+      if (reWeightDropFlag) continue;
 
       // Beam Halo ============================================================
       // if (gRandom->Rndm()<beamHaloRatio && putBeamHalo) {
