@@ -624,6 +624,18 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          if (i==0) cout << "Use Tracklet Vertex " << endl;
       }
 
+      if (useRandomVertex) {
+          if (i==1) cout << "Random Vertex!!!" << endl;
+          tdata12.vz[1] = gRandom->Rndm()*40-20;
+          tdata13.vz[1] = tdata12.vz[1];
+          tdata14.vz[1] = tdata12.vz[1];
+          tdata23.vz[1] = tdata12.vz[1];
+          tdata24.vz[1] = tdata12.vz[1];
+          tdata34.vz[1] = tdata12.vz[1];
+      }
+      // // Use trackletVertex
+      // if (fabs(tdata12.vz[1])>cuts.vzCut && makeVzCut) continue;
+
       // Process hits with Vz constraint:
       vector<RecoHit> layer1Cut;
       prepareHits(layer1Cut, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, 1, par.nRun, par.nLumi, 0);
