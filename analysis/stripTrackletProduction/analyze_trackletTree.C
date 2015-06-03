@@ -190,8 +190,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       if (par.nhits1>3000 || par.nhits2>3000 || par.nhits3>3000 || par.nhits4>3000)
          continue;
 
-      if (par.nLumi<11 || par.nLumi>96)
-         continue;
+      // if (par.nLumi<11 || par.nLumi>96)
+      //    continue;
 
       // bool flagDuplicateEvent = 0;
       // if (checkDuplicateEvent) {
@@ -212,7 +212,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
           double myVz = par.vz[1];
           if (myVz<-90) {
              TF1 *f = new TF1("f", "gaus", -30, 30);
-             f->SetParameters(1, -0.6536, 4.438);
+             f->SetParameters(1, -0.474919, 5.51924);
              myVz = f->GetRandom();
              delete f;
           }
@@ -221,11 +221,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
           // double MCPdf = TMath::Gaus(myVz,-2.709,4.551,1);
           // double DataPdf = TMath::Gaus(myVz,-2.702,3.627,1);
 
-          // for early data 7000 GeV Run 132440
-          double MCPdf = TMath::Gaus(myVz, -0.4798, 5.445, 1);
-          double DataPdf = TMath::Gaus(myVz, -1.855-vzShift, 5.432, 1);
-
-          // double DataPdf = TMath::Gaus(myVz,-0.4623,2.731,1);
+          // 13 TeV PromptReco
+          double MCPdf = TMath::Gaus(myVz, -0.474919, 5.51924, 1);
+          double DataPdf = TMath::Gaus(myVz, -1.81438-vzShift, 5.66246, 1);
 
           double Ratio = DataPdf / MCPdf;
           double x = gRandom->Rndm()*2.5;
@@ -361,10 +359,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          nPileUp = gRandom->Poisson(pileUp);
          for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
-            prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(allhits, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer1, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer2, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer3, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer4, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
          }
          t->GetEntry(i);
       }
