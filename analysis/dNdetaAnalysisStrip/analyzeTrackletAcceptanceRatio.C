@@ -56,9 +56,9 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
 
    hDataEta->SetLineColor(1);
    hDataEta->SetXTitle("#eta");
-   hDataEta->Rebin(nEtaBin/30);
+   hDataEta->Rebin(nEtaBin/12);
    hMCEta->SetLineColor(2);
-   hMCEta->Rebin(nEtaBin/30);
+   hMCEta->Rebin(nEtaBin/12);
    hDataEta->Draw();
    hMCEta->Draw("same");
 
@@ -70,13 +70,13 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
 
    TH2F *hDataAcc = (TH2F*)hData->Clone();
    hDataAcc->SetName("hDataAcc");
-   hDataAcc->RebinX(nEtaBin/30);
-   hDataAcc->RebinY(nVzBin/20);
+   hDataAcc->RebinX(nEtaBin/12);
+   hDataAcc->RebinY(nVzBin/5);
 
    TH2F *hMCAcc = (TH2F*)hMC->Clone();
    hMCAcc->SetName("hMCAcc");
-   hMCAcc->RebinX(nEtaBin/30);
-   hMCAcc->RebinY(nVzBin/20);
+   hMCAcc->RebinX(nEtaBin/12);
+   hMCAcc->RebinY(nVzBin/5);
 
    outfile->Write();
 }
