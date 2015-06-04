@@ -89,7 +89,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0.055) 
       avg += h23->GetBinContent(i);
       avgErr += h23->GetBinError(i)*h23->GetBinError(i);
       avgErr = sqrt(avgErr);
-      if (i>zerobins&&i<=_NETABIN-zerobins) {
+      if (i>5&&i<=_NETABIN-5) {
          avg /= 3.0;
          avgErr /= 3.0;
       }
@@ -137,7 +137,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0.055) 
       avg += h23->GetBinContent(_NETABIN+1-i);
       avgErr += h23->GetBinError(_NETABIN+1-i)*h23->GetBinError(_NETABIN+1-i);
       avgErr = sqrt(avgErr);
-      if (i>zerobins) {
+      if (i>5) {
          avg /= 6.0;
          avgErr /= 6.0;
       } else {

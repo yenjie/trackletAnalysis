@@ -50,13 +50,13 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          int addL3Bck = 0,                      // Add random background to third pixel layer
                          bool smearPixels = 0,                  // Smear pixel hits
                          double smearVertex = 0,                // Add additional smearing to vertex position
-                         bool reWeight = 1,                     // Reweight to Run 123596 vtx distribution
+                         bool reWeight = 0,                     // Reweight to Run 123596 vtx distribution
                          bool reweightMultiplicity = 0,         // Reweight the multiplicity distribution
                          bool cutOnClusterSize = 0,             // Cut on clusterSize to reduce background
                          int makeVzCut = 0,                     // Cut on Vz
                          double splitProb = 0,                  // Splitting probability of the pixel hit
                          double dropProb = 0,                   // Emulate efficiency loss
-                         double pileUp = 0.28,                     // Artifically overlap event to mimic pile-up
+                         double pileUp = 0,                     // Artifically overlap event to mimic pile-up
                          bool putBeamHalo = false,              // Adding beam Halo
                          double beamHaloRatio = 0.0,
                          const char* beamHaloFile = "BeamHalo.root",
@@ -187,7 +187,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          if (reWeight && !i) cout << "Reweighted!!!!!!!" << endl;
       }
 
-      if (par.nhits1>3000 || par.nhits2>3000 || par.nhits3>3000 || par.nhits4>3000)
+      if (par.nhits1>10000 || par.nhits2>10000 || par.nhits3>10000 || par.nhits4>10000)
          continue;
 
       if (par.nLumi<11 || par.nLumi>96)
@@ -205,34 +205,28 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       // }
       // if (flagDuplicateEvent) continue;
 
-       bool reWeightDropFlag = 0;
-       // Reweight MC vertex distribution to be the same as data
-       if (reWeight) {
-          reWeightDropFlag = 0;
-          double myVz = par.vz[1];
-          if (myVz<-90) {
-             TF1 *f = new TF1("f", "gaus", -30, 30);
-             f->SetParameters(1, -0.6536, 4.438);
-             myVz = f->GetRandom();
-             delete f;
-          }
+      bool reWeightDropFlag = 0;
+      // Reweight MC vertex distribution to be the same as data
+      if (reWeight) {
+         reWeightDropFlag = 0;
+         double myVz = par.vz[1];
+         if (myVz<-90) {
+            TF1* f = new TF1("f", "gaus", -30, 30);
+            f->SetParameters(1, -0.474919, 5.51924);
+            myVz = f->GetRandom();
+            delete f;
+         }
 
-          // for early data 900 GeV
-          // double MCPdf = TMath::Gaus(myVz,-2.709,4.551,1);
-          // double DataPdf = TMath::Gaus(myVz,-2.702,3.627,1);
+         // 13 TeV PromptReco
+         double MCPdf = TMath::Gaus(myVz, -0.474919, 5.51924, 1);
+         double DataPdf = TMath::Gaus(myVz, -1.81438-vzShift, 5.66246, 1);
 
-          // for early data 7000 GeV Run 132440
-          double MCPdf = TMath::Gaus(myVz, -0.4798, 5.445, 1);
-          double DataPdf = TMath::Gaus(myVz, -1.855-vzShift, 5.432, 1);
+         double Ratio = DataPdf / MCPdf;
+         double x = gRandom->Rndm()*2.5;
 
-          // double DataPdf = TMath::Gaus(myVz,-0.4623,2.731,1);
-
-          double Ratio = DataPdf / MCPdf;
-          double x = gRandom->Rndm()*2.5;
-
-          if (x>Ratio) reWeightDropFlag = 1;
-       }
-       if (reWeightDropFlag) continue;
+         if (x>Ratio) reWeightDropFlag = 1;
+      }
+      if (reWeightDropFlag) continue;
 
       // Beam Halo ============================================================
       // if (gRandom->Rndm()<beamHaloRatio && putBeamHalo) {
@@ -348,23 +342,20 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       //    par.nhits4 += bckHits;
       // }
 
-      vector<RecoHit> layer1;
-      prepareHits(layer1, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layer2;
-      prepareHits(layer2, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layer3;
-      prepareHits(layer3, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      vector<RecoHit> layer4;
-      prepareHits(layer4, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      vector<RecoHit> layer1raw, layer2raw, layer3raw, layer4raw;
+      prepareHits(layer1raw, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(layer2raw, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(layer3raw, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(layer4raw, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
       if (pileUp!=0) {
          nPileUp = gRandom->Poisson(pileUp);
          for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
-            prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(allhits, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer1raw, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer2raw, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer3raw, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer4raw, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
          }
          t->GetEntry(i);
       }
@@ -496,22 +487,22 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          recoPU = pileupcands.size();
 
          // for (unsigned int d=0; d<candidates.size(); d++) {
-         //    TGraph* csveta_g = new TGraph(layer1.size()+layer2.size());
+         //    TGraph* csveta_g = new TGraph(layer1raw.size()+layer2raw.size());
 
          //    int g = 0;
-         //    for (unsigned int c1=0; c1<layer1.size(); c1++) {
-         //       double r1 = layer1[c1].r;
-         //       double z1 = r1/tan(2*atan(exp(-layer1[c1].eta)));
+         //    for (unsigned int c1=0; c1<layer1raw.size(); c1++) {
+         //       double r1 = layer1raw[c1].r;
+         //       double z1 = r1/tan(2*atan(exp(-layer1raw[c1].eta)));
          //       double neweta = (z1 - candidates[d].vzmean > 0) ? -log(tan(atan(r1/(z1-candidates[d].vzmean))/2)) : log(tan(atan(r1/(candidates[d].vzmean-z1))/2));
-         //       if (layer1[c1].cs<24 && layer1[c1].cs>=0.9*cosh(neweta))
-         //          csveta_g->SetPoint(g++, neweta, layer1[c1].cs);
+         //       if (layer1raw[c1].cs<24 && layer1raw[c1].cs>=0.9*cosh(neweta))
+         //          csveta_g->SetPoint(g++, neweta, layer1raw[c1].cs);
          //    }
-         //    for (unsigned int c2=0; c2<layer2.size(); c2++) {
-         //       double r2 = layer2[c2].r;
-         //       double z2 = r2/tan(2*atan(exp(-layer2[c2].eta)));
+         //    for (unsigned int c2=0; c2<layer2raw.size(); c2++) {
+         //       double r2 = layer2raw[c2].r;
+         //       double z2 = r2/tan(2*atan(exp(-layer2raw[c2].eta)));
          //       double neweta = (z2 - candidates[d].vzmean > 0) ? -log(tan(atan(r2/(z2-candidates[d].vzmean))/2)) : log(tan(atan(r2/(candidates[d].vzmean-z2))/2));
-         //       if (layer2[c2].cs<24)
-         //          csveta_g->SetPoint(g++, neweta, layer2[c2].cs);
+         //       if (layer2raw[c2].cs<24)
+         //          csveta_g->SetPoint(g++, neweta, layer2raw[c2].cs);
          //    }
          //    csveta_g->Set(g);
          //    if (g) {
@@ -610,94 +601,60 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       vector<RecoHit> layer1Cut;
       prepareHits(layer1Cut, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, 1, par.nRun, par.nLumi, 0);
 
-      std::vector<RecoHit> combinedhits;
-      prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      std::vector<RecoHit> layer1, layer2, layer3, layer4;
+      prepareHits(layer1, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(layer2, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(layer3, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+
       if (nPileUp>0) {
          for (int p=1; p<=nPileUp; p++) {
             t->GetEntry(i+p);
-            prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer1, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer2, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer3, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
          }
          t->GetEntry(i);
       }
+
+      std::vector<Tracklet> recoTracklets12, recoTracklets13, recoTracklets14, recoTracklets23, recoTracklets24, recoTracklets34;
+
+      std::vector<RecoHit> combinedhits;
+      combinedhits.reserve(layer1.size() + layer2.size());
+      combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+      combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      std::vector<Tracklet> recoTracklets12;
       recoTracklets12 = recoTracklets(combinedhits, 12);
 
       combinedhits.clear();
-      prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      if (nPileUp>0) {
-         for (int p=1; p<=nPileUp; p++) {
-            t->GetEntry(i+p);
-            prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-         }
-         t->GetEntry(i);
-      }
+      combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+      combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      std::vector<Tracklet> recoTracklets13;
       recoTracklets13 = recoTracklets(combinedhits, 13);
 
       combinedhits.clear();
-      prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      if (nPileUp>0) {
-         for (int p=1; p<=nPileUp; p++) {
-            t->GetEntry(i+p);
-            prepareHits(combinedhits, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-         }
-         t->GetEntry(i);
-      }
+      combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+      combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      std::vector<Tracklet> recoTracklets14;
       recoTracklets14 = recoTracklets(combinedhits, 14);
 
       combinedhits.clear();
-      prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      if (nPileUp>0) {
-         for (int p=1; p<=nPileUp; p++) {
-            t->GetEntry(i+p);
-            prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-         }
-         t->GetEntry(i);
-      }
+      combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
+      combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      std::vector<Tracklet> recoTracklets23;
       recoTracklets23 = recoTracklets(combinedhits, 23);
 
       combinedhits.clear();
-      prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      if (nPileUp>0) {
-         for (int p=1; p<=nPileUp; p++) {
-            t->GetEntry(i+p);
-            prepareHits(combinedhits, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-         }
-         t->GetEntry(i);
-      }
+      combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
+      combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      std::vector<Tracklet> recoTracklets24;
       recoTracklets24 = recoTracklets(combinedhits, 24);
 
       combinedhits.clear();
-      prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      if (nPileUp>0) {
-         for (int p=1; p<=nPileUp; p++) {
-            t->GetEntry(i+p);
-            prepareHits(combinedhits, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(combinedhits, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-         }
-         t->GetEntry(i);
-      }
+      combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
+      combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      std::vector<Tracklet> recoTracklets34;
       recoTracklets34 = recoTracklets(combinedhits, 34);
 
       // vector<RecoHit> layer1;
