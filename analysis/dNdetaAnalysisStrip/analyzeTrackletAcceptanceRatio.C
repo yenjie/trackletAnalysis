@@ -26,8 +26,8 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
 
    int nEtaBin = 1200;
    int nVzBin = 1200;
-   int VzRangeL = -20;
-   int VzRangeH = 20;
+   int VzRangeL = -10;
+   int VzRangeH = 10;
 
    TFile *outfile = new TFile(Form("acceptance-%d.root", TrackletType), "recreate");
 
@@ -50,7 +50,7 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
    hMC->SetLineColor(4);
    hMC->Draw("box");
 
-   TCanvas *c3 = new TCanvas("c3", "Data & MC", 600, 600);
+   // TCanvas *c3 = new TCanvas("c3", "Data & MC", 600, 600);
    TH1F *hDataEta = (TH1F*)hData->ProjectionX();
    TH1F *hMCEta = (TH1F*)hMC->ProjectionX();
 
@@ -59,8 +59,8 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
    hDataEta->Rebin(nEtaBin/12);
    hMCEta->SetLineColor(2);
    hMCEta->Rebin(nEtaBin/12);
-   hDataEta->Draw();
-   hMCEta->Draw("same");
+   // hDataEta->Draw();
+   // hMCEta->Draw("same");
 
    TCanvas *c4 = new TCanvas("c4", "Ratio", 600, 600);
    TH1F* hRatio = (TH1F*) hMCEta->Clone();
