@@ -621,10 +621,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
           if (i==1) cout << "Random Vertex!!!" << endl;
           tdata12.vz[1] = gRandom->Rndm()*40-20;
           tdata13.vz[1] = tdata12.vz[1];
-          tdata14.vz[1] = tdata12.vz[1];
           tdata23.vz[1] = tdata12.vz[1];
-          tdata24.vz[1] = tdata12.vz[1];
-          tdata34.vz[1] = tdata12.vz[1];
+          tdata14.vz[1] = tdata12.vz[1];
+          tdata15.vz[1] = tdata12.vz[1];
+          tdata45.vz[1] = tdata12.vz[1];
       }
       // // Use trackletVertex
       // if (fabs(tdata12.vz[1])>cuts.vzCut && makeVzCut) continue;
@@ -659,37 +659,52 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
       combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets12 = recoTracklets(combinedhits, 12);
+      recoTracklets12 = recoTracklets(combinedhits, 1, 2);
 
       combinedhits.clear();
       combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
       combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets13 = recoTracklets(combinedhits, 13);
+      recoTracklets13 = recoTracklets(combinedhits, 1, 3);
 
       combinedhits.clear();
       combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
       combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets23 = recoTracklets(combinedhits, 23);
+      recoTracklets23 = recoTracklets(combinedhits, 2, 3);
 
       combinedhits.clear();
       combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
       combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets14 = recoTracklets(combinedhits, 14);
+      recoTracklets14 = recoTracklets(combinedhits, 1, 4);
 
       combinedhits.clear();
       combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
       combinedhits.insert(combinedhits.end(), layer5.begin(), layer5.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets15 = recoTracklets(combinedhits, 15);
+      recoTracklets15 = recoTracklets(combinedhits, 1, 5);
 
       combinedhits.clear();
       combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
       combinedhits.insert(combinedhits.end(), layer5.begin(), layer5.end());
       std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets45 = recoTracklets(combinedhits, 45);
+      recoTracklets45 = recoTracklets(combinedhits, 4, 5);
+
+      // Hit correlations in a single layer ===================================
+      // combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+      // std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+      // recoTracklets12 = recoTracklets(combinedhits, 1, 1);
+
+      // combinedhits.clear();
+      // combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
+      // std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+      // recoTracklets13 = recoTracklets(combinedhits, 2, 2);
+
+      // combinedhits.clear();
+      // combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
+      // std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+      // recoTracklets23 = recoTracklets(combinedhits, 3, 3);
 
       // Move the Vertex back
       // if (smearVertex!=0) {
