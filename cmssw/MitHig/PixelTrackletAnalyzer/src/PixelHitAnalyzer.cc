@@ -450,10 +450,11 @@ PixelHitAnalyzer::fillVertices(const edm::Event& iEvent){
          //nVertex = vertices->size();
          for (unsigned int i = 0 ; i< vertices->size(); ++i){
    	    daughter = (*vertices)[i].nDaughterTracks();
-   	    if( daughter >(*vertices)[greatestvtx].nDaughterTracks()&&fabs((*vertices)[i].position().z())<30000) greatestvtx = i;
+   	    if(  daughter >(*vertices)[greatestvtx].nDaughterTracks()
+   	       &&fabs((*vertices)[i].position().z())<30) greatestvtx = i;
          }
       
-         if(vertices->size()>0&&fabs((*vertices)[greatestvtx].position().z())<30000){
+         if(vertices->size()>0&&fabs((*vertices)[greatestvtx].position().z())<30){
    	    pev_.vx[pev_.nv] = (*vertices)[greatestvtx].position().x();
    	    pev_.vy[pev_.nv] = (*vertices)[greatestvtx].position().y();
 	    pev_.vz[pev_.nv] = (*vertices)[greatestvtx].position().z();
@@ -469,14 +470,17 @@ PixelHitAnalyzer::fillVertices(const edm::Event& iEvent){
          pev_.vz[pev_.nv] = -99;
          edm::SimVertexContainer::const_iterator simVtxItr= SimVtx->begin();
         // for (unsigned int iv=0; iv<SimVtx->size(); iv++) {
-         for (unsigned int iv=0; iv<=0; iv++) {
-	    //itr->momentum();
-	    simVtxItr++;
-            pev_.vx[0]=simVtxItr->position().X();
-            pev_.vy[0]=simVtxItr->position().Y();
-            pev_.vz[0]=simVtxItr->position().Z();
-            //cout <<pev_.vx[0]<<" "<<pev_.vy[0]<<" "<<pev_.vz[0]<<" "<<simVtxItr->position().T()<<endl;
-	 }
+         if (SimVtx->size()>0) {
+   	    for (unsigned int iv=0; iv<=0; iv++) {
+	       //itr->momentum();
+	       simVtxItr++;
+               pev_.vx[0]=simVtxItr->position().X();
+               pev_.vy[0]=simVtxItr->position().Y();
+               pev_.vz[0]=simVtxItr->position().Z();
+               //if (fabs(pev_.vz[0]>100) cout <<"!!!"<<endl;
+	       //cout <<pev_.vx[0]<<" "<<pev_.vy[0]<<" "<<pev_.vz[0]<<" "<<simVtxItr->position().T()<<endl;
+	    }
+	 }   
 	 //cout <<"============"<<endl;
       }
 
