@@ -21,10 +21,10 @@ void clearNBins(int n, TH1F* h) {
 
 int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
 
-   TFile *infEPOS = new TFile("correction/correction-12-EPOS.root");
-   TH1F* hMCEPOS = (TH1F*)infEPOS->FindObjectAny("hTruthWOSelection");
-   TFile *infPYTHIA = new TFile("correction/correction-12-PU28.root");
-   TH1F* hMCPYTHIA = (TH1F*)infPYTHIA->FindObjectAny("hTruthWOSelection");
+   //TFile *infEPOS = new TFile("correction/correction-12-EPOS.root");
+   //TH1F* hMCEPOS = (TH1F*)infEPOS->FindObjectAny("hTruthWOSelection");
+   //TFile *infPYTHIA = new TFile("correction/correction-12-PU28.root");
+   //TH1F* hMCPYTHIA = (TH1F*)infPYTHIA->FindObjectAny("hTruthWOSelection");
    
    TFile *inf12 = new TFile(Form("correction/correction-12-%s.root", name));
    TH1F *h12 = (TH1F*)inf12->FindObjectAny("hMeasuredFinal");
@@ -238,8 +238,8 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    leg2->Draw();
    c3->SaveAs(Form("merged/avgsym-%s.pdf", name));
 
-   hMCEPOS->SetLineColor(6);
-   hMCPYTHIA->SetLineColor(4);
+   //hMCEPOS->SetLineColor(6);
+   //hMCPYTHIA->SetLineColor(4);
    //hMCEPOS->Draw("hist same");
    //hMCPYTHIA->Draw("hist same");
    outfile->Write();

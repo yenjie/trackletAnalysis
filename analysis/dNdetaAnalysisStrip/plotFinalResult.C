@@ -66,14 +66,14 @@ int plotFinalResult(int TrackletType, const char* filename,
                     int verbose = 0,                                // set verbose level
                     int makePlot = 0,                               // make alpha plots
                     bool putUA5 = 0,                                // overlap UA5 result
-                    bool doAcceptanceCorrection = 0,                // do acceptance correction
+                    bool doAcceptanceCorrection = 1,                // do acceptance correction
                     bool doBetaCorrection = 0,                      // do beta correction
                     int doMult2 = 0,                                // multiplicity
                     bool doTriggerCorrection = 1,                   // do trigger eff correction
                     int UseExternalSDEff = 0,
                     bool useDR = 0)
 {
-   TFile* f= new TFile(filename);
+   TFile* f = new TFile(filename);
 
    // Input trackletTree
    TTree* TrackletTree = (TTree*)f->Get(Form("TrackletTree%d", TrackletType));
@@ -278,8 +278,8 @@ int plotFinalResult(int TrackletType, const char* filename,
    // End point in z (cm)
    double endpoint2 = 30.0; // 26.66 (old)
    double rho = 7.6; // Second layer rho
-   double etaLimit = 2.5;
-   if (TrackletType % 10 == 3) {
+   double etaLimit = 2.6;
+   if (TrackletType % 10 > 2) {
       rho = 10.5; // Third layer rho
       etaLimit = 2.1;
    }
@@ -288,12 +288,11 @@ int plotFinalResult(int TrackletType, const char* filename,
       for (int j=0; j<nVzBin; j++) {
          double minEta = EtaBins[i];
          double maxEta = EtaBins[i+1];
-         double maxEdge = VzBins[j+1]-rho/tan(atan(exp(maxEta-0.1))*2);
-         double minEdge = VzBins[j]-rho/tan(atan(exp(minEta+0.1))*2);
-         if (verbose) cout << minEta << " " << maxEta << " " << VzBins[j] << " " << maxEdge << " " << minEdge;
+         // double maxEdge = VzBins[j+1]-rho/tan(atan(exp(maxEta-0.1))*2);
+         // double minEdge = VzBins[j]-rho/tan(atan(exp(minEta+0.1))*2);
+         // if (verbose) cout << minEta << " " << maxEta << " " << VzBins[j] << " " << maxEdge << " " << minEdge;
 
-         if (1){
-//||maxEdge>-endpoint2 && minEdge<endpoint2 && maxEta<etaLimit && minEta>-etaLimit) {
+         if (maxEta<etaLimit && minEta>-etaLimit) {
             if (verbose) cout << " Selected! " << endl;
             hAcceptance->SetBinContent(i+1, j+1, hVz->GetBinContent(j+1));
             hAcceptance->SetBinError(i+1, j+1, 0);
@@ -1065,22 +1064,21 @@ int plotFinalResult(int TrackletType, const char* filename,
       // cRatio->SaveAs(Form("figs/ratio/ratio-%s-%d.eps", myPlotTitle, TrackletType));
       // cRatio->SaveAs(Form("figs/ratio/ratio-%s-%d.C", myPlotTitle, TrackletType));
 
-       TCanvas *cDNdnTracklet = new TCanvas("cDNdnTracklet", "Measured vs mult", canvasSizeX, canvasSizeY);
+      // TCanvas *cDNdnTracklet = new TCanvas("cDNdnTracklet", "Measured vs mult", canvasSizeX, canvasSizeY);
       TH1F *hTruthHit = (TH1F*)hHadronAccepted->Project3D("y");
       hTruthHit->Sumw2();
       formatHist(hTruthHit, 1, nevent);
       hTruthHit->SetAxisRange(0, dndetaRange, "y");
       hTruthHit->SetXTitle("N_{Hit1} |#eta|<3");
       hTruthHit->SetYTitle("dN/dN_{Hit1}");
-       hTruthHit->Draw("hist");
+      // hTruthHit->Draw("hist");
 
       TH1F *hMeasuredHit = (TH1F*)hCorrected->Project3D("y");
       hMeasuredHit->Sumw2();
       formatHist(hMeasuredHit, 2, nevent, 1);
-       hMeasuredHit->Draw("e same");
-       cDNdnTracklet->Update();
+      // hMeasuredHit->Draw("e same");
 
-      TCanvas *cRatioTracklet = new TCanvas("cRatioTracklet", "Ratio vs mult", canvasSizeX, canvasSizeY);
+      // TCanvas *cRatioTracklet = new TCanvas("cRatioTracklet", "Ratio vs mult", canvasSizeX, canvasSizeY);
       TH1F *hRatioHit = (TH1F*)hMeasuredHit->Clone();
       hRatioHit->Divide(hTruthHit);
       hRatioHit->SetXTitle("#eta");
@@ -1090,7 +1088,6 @@ int plotFinalResult(int TrackletType, const char* filename,
 
       TLine *line2 = new TLine(0, 1, nTrackletBin, 1);
       // line2->Draw();
-      // cRatioTracklet->Update();
    }
 
    for (int i=0; i<nEtaBin; i++) {
