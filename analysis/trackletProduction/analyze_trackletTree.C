@@ -323,6 +323,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       int nVertices = 0;
       double vertexVz[5000], vertexSigma2[5000];
       int vertexNz[5000];
+
       double trackletVertex = -99;
 
       double vzPileUp[20];
@@ -493,7 +494,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
             if (vertices[c].vzmean != candidates.back().vzmean)
                candidates.push_back(vertices[c]);
          }
-
+/**
          vertexVz[0] = vertices[0].vzmean;
          vertexNz[0] = vertices[0].nz;
          for (unsigned int v=1; v<vertices.size(); v++) {
@@ -504,7 +505,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
             }
          }
          ++nVertices;
-
+/**/
          std::vector<Vertex> pileupcands;
          pileupcands.push_back(vertices[0]);
          for (unsigned int p=1; p<vertices.size(); p++) {
@@ -734,16 +735,15 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata12.nPU        = nPileUp + 1;
       tdata12.recoPU     = recoPU;
       tdata12.nVtx       = nVertices;
-
+/**
       for (int j=0; j<nVertices; j++) {
          tdata12.vtxVz[j] = vertexVz[j];
          tdata12.vtxNz[j] = vertexNz[j];
          tdata12.vtxSigma2[j] = vertexSigma2[j];
       }
-
+/**/
       for (int j=0; j<=nPileUp; j++)
          tdata12.vzPU[j] = vzPileUp[j];
-
       for (int j=0; j<(int)par.nHltBit; j++)
          tdata12.hltBit[j] = par.hltBit[j];
       for (int j=0; j<(int)par.nL1ABit; j++)
@@ -844,12 +844,13 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    tdata##q##w.nPU        = nPileUp + 1;                       \
    tdata##q##w.recoPU     = recoPU;                            \
    tdata##q##w.nVtx       = nVertices;                         \
-                                                               \
+/**                                                            \
    for (int j=0; j<nVertices; j++) {                           \
       tdata##q##w.vtxVz[j] = vertexVz[j];                      \
       tdata##q##w.vtxNz[j] = vertexNz[j];                      \
       tdata##q##w.vtxSigma2[j] = vertexSigma2[j];              \
    }                                                           \
+/**/                                                           \
    for (int j=0; j<=nPileUp; j++)                              \
       tdata##q##w.vzPU[j] = vzPileUp[j];                       \
    for (int j=0; j<(int)par.nHltBit; j++)                      \
