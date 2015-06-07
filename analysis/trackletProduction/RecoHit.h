@@ -110,9 +110,14 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
 
    double x0, y0;
    // The beamspot for each run
+
+   if (par.nRun==247324) {
    x0 = 0.053;
    y0 = 0.162;
-
+   } else {
+   x0 = 0.032;
+   y0 = 0; 
+   }
    if (layer == 1) {
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
          RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], 1);
