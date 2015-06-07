@@ -142,7 +142,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    // if (addL3Bck!=0) t->Project("hLayer3Hit", "phi3:eta3:r3");
    // cout << "Projecting...done" << endl;
 
-   if (t->FindBranch("npart")!=0) {
+   if (t->GetEntries("nRun<10")!=0) {
       isMC = true;
       cout << "This is a Monte Carlo study." << endl;
       vzShift = -0.4847;
