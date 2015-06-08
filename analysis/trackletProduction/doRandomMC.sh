@@ -1,0 +1,10 @@
+root -l -q -b 'analyze_trackletTree.C+("../sample/v8-withLineTracking/PixelTree-PYTHIA.root","../sample/v8-withLineTracking/PixelTree_RandomVertex1.root",1,1000000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",0,0,1)' &
+root -l -q -b 'analyze_trackletTree.C+("../sample/v8-withLineTracking/PixelTree-PYTHIA.root","../sample/v8-withLineTracking/PixelTree_RandomVertex2.root",2,1000000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",0,0,1)' &
+root -l -q -b 'analyze_trackletTree.C+("../sample/v8-withLineTracking/PixelTree-PYTHIA.root","../sample/v8-withLineTracking/PixelTree_RandomVertex3.root",3,1000000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",0,0,1)' &
+root -l -q -b 'analyze_trackletTree.C+("../sample/v8-withLineTracking/PixelTree-PYTHIA.root","../sample/v8-withLineTracking/PixelTree_RandomVertex4.root",4,1000000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",0,0,1)' &
+root -l -q -b 'analyze_trackletTree.C+("../sample/v8-withLineTracking/PixelTree-PYTHIA.root","../sample/v8-withLineTracking/PixelTree_RandomVertex5.root",5,1000000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",0,0,1)' &
+root -l -q -b 'analyze_trackletTree.C+("../sample/v8-withLineTracking/PixelTree-PYTHIA.root","../sample/v8-withLineTracking/PixelTree_RandomVertex6.root",6,1000000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",0,0,1)' &
+root -l -q -b 'analyze_trackletTree.C+("../sample/v8-withLineTracking/PixelTree-PYTHIA.root","../sample/v8-withLineTracking/PixelTree_RandomVertex7.root",7,1000000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",0,0,1)' &
+root -l -q -b 'analyze_trackletTree.C+("../sample/v8-withLineTracking/PixelTree-PYTHIA.root","../sample/v8-withLineTracking/PixelTree_RandomVertex8.root",8,1000000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",0,0,1)' &
+root -l -q -b 'analyze_trackletTree.C+("../sample/v8-withLineTracking/PixelTree-PYTHIA.root","../sample/v8-withLineTracking/PixelTree_RandomVertex9.root",9,1000000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",0,0,1)' &
+root -l -q -b 'analyze_trackletTree.C+("../sample/v8-withLineTracking/PixelTree-PYTHIA.root","../sample/v8-withLineTracking/PixelTree_RandomVertex10.root",10,1000000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",0,0,1)' &
