@@ -19,13 +19,14 @@ void clearNBins(int n, TH1F* h) {
    }
 }
 
-int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
+int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0) {
 
-   //TFile *infEPOS = new TFile("correction/correction-12-EPOS.root");
-   //TH1F* hMCEPOS = (TH1F*)infEPOS->FindObjectAny("hTruthWOSelection");
-   //TFile *infPYTHIA = new TFile("correction/correction-12-PU28.root");
-   //TH1F* hMCPYTHIA = (TH1F*)infPYTHIA->FindObjectAny("hTruthWOSelection");
-   
+   TFile *infEPOS = new TFile("correction/correction-12-EPOS.root");
+   TH1F* hMCEPOS = (TH1F*)infEPOS->FindObjectAny("hTruthWOSelection");
+
+   TFile *infPYTHIA = new TFile("correction/correction-12-STRIPS-PYTHIA8-PU-0_3.root");
+   TH1F* hMCPYTHIA = (TH1F*)infPYTHIA->FindObjectAny("hTruthWOSelection");
+
    TFile *inf12 = new TFile(Form("correction/correction-12-%s.root", name));
    TH1F *h12 = (TH1F*)inf12->FindObjectAny("hMeasuredFinal");
    TH1F* hMC = (TH1F*)inf12->FindObjectAny("hTruthWOSelection");
@@ -142,7 +143,10 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
       hAvg->SetBinContent(i, avg);
       hAvg->SetBinError(i, avgErr);
    }
-   hMC->Draw("same hist");
+   hAvg->Draw("p");
+   TGraph* gErrorBand = GetErrorBand(hAvg, syserr, syserr, 0.25);
+   gErrorBand->Draw("F");
+   hMC->Draw("same");
    hAvg->Draw("p same");
 
    TLegend *leg3 = new TLegend(0.2, 0.18, 0.9, 0.45);
@@ -205,23 +209,12 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
       hAvg2->SetBinError(_NETABIN+1-i, avgErr);
       cout <<fabs(hAvg2->GetBinCenter(i))<<" "<<avg<<endl;
    }
-   TH1D *hh = (TH1D*)hAvg2->Clone("hh");
-   for (int i=0;i<=hAvg2->GetNbinsX();i++) {
-      double val = hAvg2->GetBinContent(i);
-      hh->SetBinContent(i,val);
-      hh->SetBinError(i,val*0.06);
-     // TLine *b = new TLine(hAvg2->GetBinLowEdge(i),val*1.1,hAvg2->GetBinLowEdge(i+1),val*0.9);
-      
-      //if (val!=0) b->Draw("same");
-   
-   }
-   hh->SetLineWidth(10);
-   hh->SetLineColor(kGray);
-   hh->Draw("same");
-   hMC->Draw("hist same");
-   
    hAvg2->SetLineColor(4);
    hAvg2->SetMarkerColor(4);
+   hAvg2->Draw("p");
+   TGraph* gErrorBand = GetErrorBand(hAvg2, syserr, syserr, 0.25);
+   gErrorBand->Draw("F");
+   hMC->Draw("same");
    hAvg2->Draw("p same");
 
    TLegend *leg2 = new TLegend(0.2, 0.18, 0.9, 0.45);
@@ -238,10 +231,10 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    leg2->Draw();
    c3->SaveAs(Form("merged/avgsym-%s.pdf", name));
 
-   //hMCEPOS->SetLineColor(6);
-   //hMCPYTHIA->SetLineColor(4);
-   //hMCEPOS->Draw("hist same");
-   //hMCPYTHIA->Draw("hist same");
+   hMCEPOS->SetLineColor(2);
+   hMCPYTHIA->SetLineColor(8);
+   hMCEPOS->Draw("hist same");
+   hMCPYTHIA->Draw("hist same");
    outfile->Write();
 
    return 0;
