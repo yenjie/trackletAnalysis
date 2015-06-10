@@ -461,6 +461,11 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("nL1TBit", &tdata.nL1TBit, "nL1TBit/I");
    trackletTree->Branch("l1TBit", tdata.l1TBit, "l1TBit[nL1TBit]/O");
 
+   trackletTree->Branch("L1_BPTX_AND", &tdata.L1_BPTX_AND, "L1_BPTX_AND/I");
+   trackletTree->Branch("L1_BPTX_OR", &tdata.L1_BPTX_OR, "L1_BPTX_OR/I");
+   trackletTree->Branch("L1_BPTX_plus", &tdata.L1_BPTX_plus, "L1_BPTX_plus/I");
+   trackletTree->Branch("L1_BPTX_minus", &tdata.L1_BPTX_minus, "L1_BPTX_minus/I");
+
    trackletTree->Branch("nTracklets", &tdata.nTracklet, "nTracklets/I");
    trackletTree->Branch("nhit1", &tdata.nhit1, "nhit1/I");
    trackletTree->Branch("nhit2", &tdata.nhit2, "nhit2/I");

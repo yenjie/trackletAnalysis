@@ -59,7 +59,7 @@ TFile* getCorrectionFile(string correctionFileName, int TrackletType) {
 int plotFinalResult(int TrackletType, const char* filename,
                     const char* myPlotTitle = "PYTHIA8_Monash13",   // Title of the plot
                     bool useCorrectionFile = 0,                     // use Correction file
-                    string correctionName = "PYTHIA8_Monash13",     // Correction file name
+                    string correctionName = "PYTHIA8-REWEIGHTED",   // Correction file name
                     int selection = 0,                              // MC selection
                     int LumiL = 0,                                  // nLumi lower cut
                     int LumiH = 1000,                               // nLumi higher cut
@@ -118,13 +118,13 @@ int plotFinalResult(int TrackletType, const char* filename,
       hAlphaB = (TH3F*)myFile->FindObjectAny("hAlphaB");
    }
 
-   int VzRangeL = -20;
-   int VzRangeH = 20;
+   int VzRangeL = -15;
+   int VzRangeH = 15;
 
    // Definition of Vz, Eta, Hit bins
    const int nTrackletBin = 12;
    const int nEtaBin = 30;
-   const int nVzBin = 20;
+   const int nVzBin = 15;
 
    double TrackletBins[nTrackletBin+1] = {-5, 1, 10, 15, 20, 25, 30, 36, 42, 50, 60, 72, 300};
    double EtaBins[nEtaBin+1];
@@ -147,7 +147,7 @@ int plotFinalResult(int TrackletType, const char* filename,
       sideBandRegionEtaSignalRegion = "dR>0.1&&dR<0.2";
    }
 
-   TString vtxCut = "abs(vz[1])<20";
+   TString vtxCut = "abs(vz[1])<15";
    TCut MCSelection;
    TString offlineSelection;
    TCut evtSelection;

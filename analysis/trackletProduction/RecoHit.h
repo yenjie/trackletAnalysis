@@ -53,6 +53,7 @@ class Parameters {
    public:
       int nRun, nEv, nLumi, nHltBit, nL1ABit, nL1TBit, nBX, nHFn, nHFp, nHits;
       bool hltBit[500], l1ABit[500], l1TBit[500];
+      int L1_BPTX_AND, L1_BPTX_OR, L1_BPTX_plus, L1_BPTX_minus;
       float beamSpotX, beamSpotY, beamSpotZ;
       float vx[8], vy[8], vz[8];
       float eta1[maxEntry], phi1[maxEntry], r1[maxEntry], cs1[maxEntry], ch1[maxEntry];
@@ -71,6 +72,7 @@ class TrackletData {
    public:
       int nRun, nEv, nLumi, nHltBit, nL1ABit, nL1TBit, nBX, nHFn, nHFp, nHits;
       bool hltBit[500], l1ABit[500], l1TBit[500];
+      int L1_BPTX_AND, L1_BPTX_OR, L1_BPTX_plus, L1_BPTX_minus;
       float eta1[maxEntry], phi1[maxEntry], r1[maxEntry], cs1[maxEntry], ch1[maxEntry];
       float eta2[maxEntry], phi2[maxEntry], r2[maxEntry], cs2[maxEntry], ch2[maxEntry];
       float deta[maxEntry], dphi[maxEntry];
@@ -110,8 +112,13 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
 
    double x0, y0;
    // The beamspot for each run
-   x0 = 0.032;
-   y0 = 0.0;
+   if (par.nRun == 247324) {
+      x0 = 0.053;
+      y0 = 0.162;
+   } else {
+      x0 = 0.032;
+      y0 = 0;
+   }
 
    if (layer == 1) {
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
@@ -245,6 +252,11 @@ void getPixelTreeBranch(TTree* t, Parameters &par) {
    t->SetBranchAddress("L1A", par.l1ABit);
    t->SetBranchAddress("nL1T", &par.nL1TBit);
    t->SetBranchAddress("L1T", par.l1TBit);
+
+   t->SetBranchAddress("L1Tech_BPTX_plus_AND_minus.v0", &par.L1_BPTX_AND);
+   t->SetBranchAddress("L1Tech_BPTX_plus_OR_minus.v0", &par.L1_BPTX_OR);
+   t->SetBranchAddress("L1Tech_BPTX_plus.v0", &par.L1_BPTX_plus);
+   t->SetBranchAddress("L1Tech_BPTX_minus.v0", &par.L1_BPTX_minus);
 
    t->SetBranchAddress("eta1", par.eta1);
    t->SetBranchAddress("phi1", par.phi1);
