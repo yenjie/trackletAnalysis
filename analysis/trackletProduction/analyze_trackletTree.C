@@ -147,7 +147,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    if (t->GetEntries("nRun<10")!=0) {
       isMC = true;
       cout << "This is a Monte Carlo study." << endl;
-      vzShift = -0.4847;
+      vzShift = -0.3;
       cout << "vzShift = " << vzShift << endl;
    } else {
       cout << "This is a data analysis." << endl;
@@ -226,7 +226,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          // double DataPdf = TMath::Gaus(myVz, -2.03961-vzShift, 4.2783, 1);
 
          // 13 TeV Run 247324
-         double DataPdf = TMath::Gaus(myVz, -1.93761, 4.57713, 1);
+         double DataPdf = TMath::Gaus(myVz, -1.93761-vzShift, 4.57713, 1);
 
          double Ratio = DataPdf / MCPdf;
          double x = gRandom->Rndm()*3;
