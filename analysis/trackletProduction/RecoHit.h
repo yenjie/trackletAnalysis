@@ -122,6 +122,8 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
 
    if (layer == 1) {
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
+         if (par.phi1[ihit]<-0.3904152 && par.phi1[ihit]>-0.391 && par.eta1[ihit]<-1.457 && par.eta1[ihit]>-1.458)
+            continue;
          RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], 1);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
@@ -130,6 +132,12 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       }
    } else if (layer == 2) {
       for (int ihit = 0; ihit < par.nhits2; ++ihit) {
+         if (par.eta2[ihit]>-1.8578 && par.eta2[ihit]<-1.8575 && par.phi2[ihit]>2.1893 && par.phi2[ihit]<2.1894)
+            continue;
+         if (par.eta2[ihit]>0.1253 && par.eta2[ihit]<0.1254 && par.phi2[ihit]>1.0334 && par.phi2[ihit]<1.0335)
+            continue;
+         if (par.eta2[ihit]>0.1262 && par.eta2[ihit]<0.1264 && par.phi2[ihit]>1.033 && par.phi2[ihit]<1.035)
+            continue;
          RecoHit tmp(par.eta2[ihit], par.phi2[ihit], par.r2[ihit], par.cs2[ihit], 2);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
@@ -138,6 +146,10 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       }
    } else if (layer == 3) {
       for (int ihit = 0; ihit < par.nhits3; ++ihit) {
+         if (par.eta3[ihit]>0.76 && par.eta3[ihit]<0.761 && par.phi3[ihit]>-1.223 && par.phi3[ihit]<-1.222)
+            continue;
+         if (par.eta3[ihit]>-1.391 && par.eta3[ihit]<-1.3905 && par.phi3[ihit]>1.116 && par.phi3[ihit]<1.117)
+            continue;
          RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit], 3);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
