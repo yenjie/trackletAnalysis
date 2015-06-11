@@ -26,8 +26,8 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
 
    int nEtaBin = 1200;
    int nVzBin = 1200;
-   int VzRangeL = -20;
-   int VzRangeH = 20;
+   int VzRangeL = -15;
+   int VzRangeH = 15;
 
    TFile *outfile = new TFile(Form("acceptance-%d.root", TrackletType), "recreate");
 
@@ -71,12 +71,12 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
    TH2F *hDataAcc = (TH2F*)hData->Clone();
    hDataAcc->SetName("hDataAcc");
    hDataAcc->RebinX(nEtaBin/30);
-   hDataAcc->RebinY(nVzBin/20);
+   hDataAcc->RebinY(nVzBin/15);
 
    TH2F *hMCAcc = (TH2F*)hMC->Clone();
    hMCAcc->SetName("hMCAcc");
    hMCAcc->RebinX(nEtaBin/30);
-   hMCAcc->RebinY(nVzBin/20);
+   hMCAcc->RebinY(nVzBin/15);
 
    outfile->Write();
 }

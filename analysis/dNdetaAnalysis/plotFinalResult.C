@@ -155,7 +155,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    switch (selection) {
       case 0:
          MCSelection = "1";
-         offlineSelection = "(nHFp>0 || nHFn>0)";
+         offlineSelection = "1"; // "(nHFp>0 || nHFn>0)";
          printf("---------- INELASTIC definition\n");
          break;
       case 1:
