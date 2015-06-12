@@ -118,13 +118,13 @@ int plotFinalResult(int TrackletType, const char* filename,
       hAlphaB = (TH3F*)myFile->FindObjectAny("hAlphaB");
    }
 
-   int VzRangeL = -15;
-   int VzRangeH = 15;
+   int VzRangeL = -16;
+   int VzRangeH = 12;
 
    // Definition of Vz, Eta, Hit bins
    const int nTrackletBin = 12;
    const int nEtaBin = 30;
-   const int nVzBin = 15;
+   const int nVzBin = 14;
 
    double TrackletBins[nTrackletBin+1] = {-5, 1, 10, 15, 20, 25, 30, 36, 42, 50, 60, 72, 300};
    double EtaBins[nEtaBin+1];
@@ -147,7 +147,7 @@ int plotFinalResult(int TrackletType, const char* filename,
       sideBandRegionEtaSignalRegion = "dR>0.1&&dR<0.2";
    }
 
-   TString vtxCut = "abs(vz[1])<15";
+   TString vtxCut = "(vz[1]<12 && vz[1]>-16)";
    TCut MCSelection;
    TString offlineSelection;
    TCut evtSelection;
@@ -155,7 +155,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    switch (selection) {
       case 0:
          MCSelection = "1";
-         offlineSelection = "1"; // "(nHFp>0 || nHFn>0)";
+         offlineSelection = "1";// && nBX==208"; // "(nHFp>0 || nHFn>0)";
          printf("---------- INELASTIC definition\n");
          break;
       case 1:
