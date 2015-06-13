@@ -57,7 +57,7 @@ Int_t getContainedHits(const std::vector<RecoHit> &hits, double z0, double &diff
   Int_t n = 0;
   diff   = 0.;
      
-  for(std::vector<RecoHit>::const_iterator hit = hits.begin(); hit!= hits.end(); hit++) {
+  for(std::vector<RecoHit>::const_iterator hit = hits.begin(); hit!= hits.end(); ++hit) {
     Double_t z = hit->r/tan(2.*atan(exp(-hit->eta)));
     Double_t exp = 1.5+0.43*fabs(z-z0);
     if(fabs(exp - hit->cs) <= 1.) { //v-shape with 1 cm width

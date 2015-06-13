@@ -92,6 +92,7 @@ class TrackletData {
       int nVtx;
       float vtxVz[5000], vtxSigma2[5000];
       int vtxNz[5000];
+      float clusVtxQual;
 };
 
 bool compareEta(RecoHit a, RecoHit b) {
@@ -125,7 +126,7 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
 
    if (layer == 1) {
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
-         if (par.phi1[ihit]<-0.3904152 && par.phi1[ihit]>-0.391 && par.eta1[ihit]<-1.457 && par.eta1[ihit]>-1.458)
+         if (par.phi1[ihit]>-0.3904153 && par.phi1[ihit]<-0.3904152 && par.eta1[ihit]>-1.45722 && par.eta1[ihit]<-1.45721)
             continue;
          RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], 1);
          if (gRandom->Rndm()<dropProb) continue;
@@ -135,13 +136,13 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       }
    } else if (layer == 2) {
       for (int ihit = 0; ihit < par.nhits2; ++ihit) {
-         if (par.eta2[ihit]>-1.8578 && par.eta2[ihit]<-1.8575 && par.phi2[ihit]>2.1893 && par.phi2[ihit]<2.1894)
+         if (par.eta2[ihit]>-1.85779 && par.eta2[ihit]<-1.85778 && par.phi2[ihit]>2.18935 && par.phi2[ihit]<2.18936)
             continue;
-         if (par.eta2[ihit]>0.1253 && par.eta2[ihit]<0.1254 && par.phi2[ihit]>1.0334 && par.phi2[ihit]<1.0335)
+         if (par.eta2[ihit]>0.12535 && par.eta2[ihit]<0.12536 && par.phi2[ihit]>1.03344 && par.phi2[ihit]<1.03345)
             continue;
-         if (par.eta2[ihit]>0.1262 && par.eta2[ihit]<0.1264 && par.phi2[ihit]>1.033 && par.phi2[ihit]<1.035)
+         if (par.eta2[ihit]>0.12626 && par.eta2[ihit]<0.12631 && par.phi2[ihit]>1.034 && par.phi2[ihit]<1.03475)
             continue;
-         if (par.eta2[ihit]>-1.2624 && par.eta2[ihit]<-1.2622 && par.phi2[ihit]>2.8905 && par.phi2[ihit]<2.8907)
+         if (par.eta2[ihit]>-1.2623 && par.eta2[ihit]<-1.26229 && par.phi2[ihit]>2.8906 && par.phi2[ihit]<2.8907)
             continue;
          RecoHit tmp(par.eta2[ihit], par.phi2[ihit], par.r2[ihit], par.cs2[ihit], 2);
          if (gRandom->Rndm()<dropProb) continue;
@@ -151,17 +152,17 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       }
    } else if (layer == 3) {
       for (int ihit = 0; ihit < par.nhits3; ++ihit) {
-         if (par.eta3[ihit]>0.76 && par.eta3[ihit]<0.761 && par.phi3[ihit]>-1.223 && par.phi3[ihit]<-1.222)
+         if (par.eta3[ihit]>0.76085 && par.eta3[ihit]<0.76087 && par.phi3[ihit]>-1.22261 && par.phi3[ihit]<-1.2226)
             continue;
-         if (par.eta3[ihit]>-1.391 && par.eta3[ihit]<-1.3905 && par.phi3[ihit]>1.116 && par.phi3[ihit]<1.117)
+         if (par.eta3[ihit]>-1.39076 && par.eta3[ihit]<-1.39074 && par.phi3[ihit]>1.116954 && par.phi3[ihit]<1.116955)
             continue;
-         if (par.eta3[ihit]>-1.0763 && par.eta3[ihit]<-1.07628 && par.phi3[ihit]<-2.5984 && par.phi3[ihit]>-2.5988)
+         if (par.eta3[ihit]>-1.07629 && par.eta3[ihit]<-1.07628 && par.phi3[ihit]>-2.59858 && par.phi3[ihit]<-2.59857)
             continue;
-         if (par.eta3[ihit]>0.9949 && par.eta3[ihit]<0.995 && par.phi3[ihit]<0.7563704 && par.phi3[ihit]>0.7563)
+         if (par.eta3[ihit]>0.99493 && par.eta3[ihit]<0.99494 && par.phi3[ihit]>0.75637 && par.phi3[ihit]<0.7563704)
             continue;
-         if (par.eta3[ihit]>1.3065 && par.eta3[ihit]<1.3066 && par.phi3[ihit]>-0.4913 && par.phi3[ihit]<-0.4912)
+         if (par.eta3[ihit]>1.30654 && par.eta3[ihit]<1.30655 && par.phi3[ihit]>-0.49127 && par.phi3[ihit]<-0.49126)
             continue;
-         if (par.eta3[ihit]>-0.1705 && par.eta3[ihit]<-0.1703 && par.phi3[ihit]>-1.442 && par.phi3[ihit]<-1.441353)
+         if (par.eta3[ihit]>-0.17039 && par.eta3[ihit]<-0.17038 && par.phi3[ihit]>-1.44136 && par.phi3[ihit]<-1.441353)
             continue;
          RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit], 3);
          if (gRandom->Rndm()<dropProb) continue;
