@@ -1,3 +1,6 @@
+#ifndef CLUSTERVERTEXCOMPAT
+#define CLUSTERVERTEXCOMPAT
+
 #include <TFile.h>
 #include <TNtuple.h>
 #include <TTimeStamp.h>
@@ -8,13 +11,13 @@
 
 #include "RecoHit.h"
 
-const Double_t   minZ_ = -30.;          // beginning z-vertex position
-const Double_t   maxZ_ = 30.;           // end z-vertex position
-const Double_t   zStep_ = 0.01;         // size of steps in z-vertex test
-
 Int_t getContainedHits(const std::vector<RecoHit> &hits, double z0, double &diff);
 
 Double_t getClusVtxCompat(const std::vector<RecoHit> &hits) {
+
+  const Double_t   minZ_ = -30.;          // beginning z-vertex position
+  const Double_t   maxZ_ = 30.;           // end z-vertex position
+  const Double_t   zStep_ = 0.01;         // size of steps in z-vertex test
 
   // estimate z-position from cluster lengths
   Double_t zest = 0.;
@@ -64,3 +67,5 @@ Int_t getContainedHits(const std::vector<RecoHit> &hits, double z0, double &diff
   }
   return n;
 }
+
+#endif

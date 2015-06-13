@@ -1,3 +1,6 @@
+#ifndef RECOHIT
+#define RECOHIT
+
 #define maxEntry 4000
 #define maxEntry2 4000
 
@@ -332,3 +335,5 @@ void getPixelTreeBranch(TTree* t, Parameters &par) {
    t->SetBranchAddress("ntrks", &par.ntrks);
    t->SetBranchAddress("ntrksCut", &par.ntrksCut);
 }
+
+#endif /* RECHOHIT */
