@@ -47,7 +47,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          long startEntry = 0,                   // Starting Entry number in the Pixel Tree
                          long endEntry = 1000000000,            // Ending Entry number in the Pixel Tree
-                         double pileUp = 0,                     // Artifically overlap event to mimic pile-up
+                         double pileUp = 0.055,                     // Artifically overlap event to mimic pile-up
                          bool useForwardPixels = 0,             // Use forward pixel detector for vertexing
                          int addL1Bck = 0,                      // Add random background to first pixel layer
                          int addL2Bck = 0,                      // Add random background to second pixel layer
@@ -55,7 +55,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          double splitProb = 0,                  // Splitting probability of the pixel hit
                          bool smearPixels = 0,                  // Smear pixel hits
                          bool cutOnClusterSize = 0,             // Cut on clusterSize to reduce background
-                         bool reWeight = 0,                     // Reweight to Run 123596 vtx distribution
+                         bool reWeight = 1,                     // Reweight to Run 123596 vtx distribution
                          bool reweightMultiplicity = 0,         // Reweight the multiplicity distribution
                          int makeVzCut = 0,                     // Cut on Vz
                          double dropProb = 0,                   // Emulate efficiency loss
@@ -727,6 +727,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       // recoTracklets23 = recoTracklets(combinedhits, 3, 3);
 
       // Cluster Vertex Compatibility =========================================
+      // double clusVtxQual = 0;
       double clusVtxQual = getClusVtxCompat(layer1);
 
       // Move the Vertex back
@@ -860,7 +861,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    tdata##q##w.nBX        = par.nBX;                           \
    tdata##q##w.nHFn       = par.nHFp;                          \
    tdata##q##w.nHFp       = par.nHFn;                          \
-   tdata##q##w.nHits      = 0;                                 \
+   tdata##q##w.nHits      = tdata12.nHits;                     \
    tdata##q##w.nL1ABit    = par.nL1ABit;                       \
    tdata##q##w.nL1TBit    = par.nL1TBit;                       \
    tdata##q##w.xi         = par.xi;                            \
@@ -879,7 +880,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata##q##w.vtxSigma2[j] = vertexSigma2[j];              \
    }                                                           \
 /**/                                                           \
-   for (int j=0; j<nPileUp; j++)                              \
+   for (int j=0; j<nPileUp; j++)                               \
       tdata##q##w.vzPU[j] = vzPileUp[j];                       \
    for (int j=0; j<(int)par.nHltBit; j++)                      \
       tdata##q##w.hltBit[j] = par.hltBit[j];                   \
