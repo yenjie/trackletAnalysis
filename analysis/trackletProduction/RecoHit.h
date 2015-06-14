@@ -128,6 +128,10 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
          if (par.phi1[ihit]>-0.3904153 && par.phi1[ihit]<-0.3904152 && par.eta1[ihit]>-1.45722 && par.eta1[ihit]<-1.45721)
             continue;
+         if (par.phi1[ihit]>1.3385 && par.phi1[ihit]<1.3386 && par.eta1[ihit]>-2.5014 && par.eta1[ihit]<-2.5013)
+            continue;
+         if (par.phi1[ihit]>2.0982 && par.phi1[ihit]<2.0984 && par.eta1[ihit]>-0.9114 && par.eta1[ihit]<-0.9112)
+            continue;
          RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], 1);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
@@ -143,6 +147,8 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
          if (par.eta2[ihit]>0.12626 && par.eta2[ihit]<0.12631 && par.phi2[ihit]>1.034 && par.phi2[ihit]<1.03475)
             continue;
          if (par.eta2[ihit]>-1.2623 && par.eta2[ihit]<-1.26229 && par.phi2[ihit]>2.8906 && par.phi2[ihit]<2.8907)
+            continue;
+         if (par.phi2[ihit]>2.1157 && par.phi2[ihit]<2.1158 && par.eta2[ihit]>-1.9016 && par.eta2[ihit]<-1.9015)
             continue;
          RecoHit tmp(par.eta2[ihit], par.phi2[ihit], par.r2[ihit], par.cs2[ihit], 2);
          if (gRandom->Rndm()<dropProb) continue;
@@ -163,6 +169,28 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
          if (par.eta3[ihit]>1.30654 && par.eta3[ihit]<1.30655 && par.phi3[ihit]>-0.49127 && par.phi3[ihit]<-0.49126)
             continue;
          if (par.eta3[ihit]>-0.17039 && par.eta3[ihit]<-0.17038 && par.phi3[ihit]>-1.44136 && par.phi3[ihit]<-1.441353)
+            continue;
+         if (par.phi3[ihit]>1.11 && par.phi3[ihit]<1.17 && par.eta3[ihit]>-1.4 && par.eta3[ihit]<-1.34)
+            continue;
+         if (par.phi3[ihit]>-0.522 && par.phi3[ihit]<-0.509 && par.eta3[ihit]>0.8862 && par.eta3[ihit]<0.8864)
+            continue;
+         if (par.phi3[ihit]>0.5434 && par.phi3[ihit]<0.5446 && par.eta3[ihit]>0.9554 && par.eta3[ihit]<0.9561)
+            continue;
+         if (par.phi3[ihit]>1.269 && par.phi3[ihit]<1.2694 && par.eta3[ihit]>0.64 && par.eta3[ihit]<0.72)
+            continue;
+         if (par.phi3[ihit]>-0.2274 && par.phi3[ihit]<-0.2271 && par.eta3[ihit]>1.43 && par.eta3[ihit]<1.475)
+            continue;
+         if (par.phi3[ihit]>-1.6671 && par.phi3[ihit]<-1.6669 && par.eta3[ihit]>1.408 && par.eta3[ihit]<1.4084)
+            continue;
+         if (par.phi3[ihit]>0.7193 && par.phi3[ihit]<0.7194 && par.eta3[ihit]>-0.2824 && par.eta3[ihit]<-0.2823)
+            continue;
+         if (par.phi3[ihit]>-1.2439 && par.phi3[ihit]<-1.2438 && par.eta3[ihit]>-0.693 && par.eta3[ihit]<-0.692)
+            continue;
+         if (par.phi3[ihit]>0.064 && par.phi3[ihit]<0.073 && par.eta3[ihit]>-1.04 && par.eta3[ihit]<-0.98)
+            continue;
+         if (par.phi3[ihit]>1.024 && par.phi3[ihit]<1.0242 && par.eta3[ihit]>0.7992 && par.eta3[ihit]<0.7995)
+            continue;
+         if (par.phi3[ihit]>0.07 && par.phi3[ihit]<0.074 && par.eta3[ihit]>-0.63 && par.eta3[ihit]<-0.54)
             continue;
          RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit], 3);
          if (gRandom->Rndm()<dropProb) continue;
