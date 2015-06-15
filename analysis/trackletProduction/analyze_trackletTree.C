@@ -55,7 +55,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          double splitProb = 0,                  // Splitting probability of the pixel hit
                          bool smearPixels = 0,                  // Smear pixel hits
                          bool cutOnClusterSize = 0,             // Cut on clusterSize to reduce background
-                         bool reWeight = 0,                     // Reweight to Run 123596 vtx distribution
+                         bool reWeight = 1,                     // Reweight to Run 123596 vtx distribution
                          bool reweightMultiplicity = 0,         // Reweight the multiplicity distribution
                          int makeVzCut = 0,                     // Cut on Vz
                          double dropProb = 0,                   // Emulate efficiency loss
@@ -199,12 +199,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       if (!isMC) {
          if (par.nLumi < 89)
             continue;
-         if ((par.nBX!=208 || par.nHFp==0 || par.nHFn==0) && useRandomVertex)
-            continue;
-         if (useRandomVertex && trackletTree12->GetEntries()==120093)
-            break;
-      } else {
-         if (useRandomVertex && (par.nHFp==0 || par.nHFn==0))
+         if (par.nBX!=208 && useRandomVertex)
             continue;
       }
 
@@ -646,9 +641,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       }
 
       if (useRandomVertex) {
-         TF1* vz_dist = new TF1("f", "gaus", -16, 12);
-         vz_dist->SetParameters(1, -2.12557, 4.29103);
-         tdata12.vz[1] = vz_dist->GetRandom();
+         tdata12.vz[1] = gRandom->Rndm()*28-16;
          tdata13.vz[1] = tdata12.vz[1];
          tdata23.vz[1] = tdata12.vz[1];
          tdata14.vz[1] = tdata12.vz[1];
