@@ -92,7 +92,7 @@ class TrackletData {
       int nVtx;
       float vtxVz[5000], vtxSigma2[5000];
       int vtxNz[5000];
-      float clusVtxQual;
+      float clusVtxQual1, clusVtxQual2, clusVtxQual3;
 };
 
 bool compareEta(RecoHit a, RecoHit b) {
@@ -190,7 +190,7 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
             continue;
          if (par.phi3[ihit]>1.024 && par.phi3[ihit]<1.0242 && par.eta3[ihit]>0.7992 && par.eta3[ihit]<0.7995)
             continue;
-         if (par.phi3[ihit]>0.07 && par.phi3[ihit]<0.074 && par.eta3[ihit]>-0.63 && par.eta3[ihit]<-0.54)
+         if (par.phi3[ihit]>0.07 && par.phi3[ihit]<0.073 && par.eta3[ihit]>-0.63 && par.eta3[ihit]<-0.54)
             continue;
          RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit], 3);
          if (gRandom->Rndm()<dropProb) continue;

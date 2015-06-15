@@ -66,7 +66,7 @@ int plotFinalResult(int TrackletType, const char* filename,
                     int verbose = 0,                                // set verbose level
                     int makePlot = 0,                               // make alpha plots
                     bool putUA5 = 0,                                // overlap UA5 result
-                    bool doAcceptanceCorrection = 0,                // do acceptance correction
+                    bool doAcceptanceCorrection = 1,                // do acceptance correction
                     bool doBetaCorrection = 0,                      // do beta correction
                     int doMult2 = 0,                                // multiplicity
                     bool doTriggerCorrection = 1,                   // do trigger eff correction
@@ -108,7 +108,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    TFile* fAcceptance;
    if (useCorrectionFile) fCorrection = getCorrectionFile(correctionName, TrackletType);
    if (useCorrectionFile && doAcceptanceCorrection) fAcceptance = getAcceptanceFile(TrackletType);
-   TFile* fCorrectionExternal = new TFile(Form("correction/correction-%d-external.root", TrackletType));
+   // TFile* fCorrectionExternal = new TFile(Form("correction/correction-%d-external.root", TrackletType));
 
    TH3F* hAlphaA;
    TH3F* hAlphaB;
@@ -155,7 +155,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    switch (selection) {
       case 0:
          MCSelection = "1";
-         offlineSelection = "1";// && nBX==208"; // "(nHFp>0 || nHFn>0)";
+         offlineSelection = "nBX==208";// && nTracklets/nHits>log(nHits)/25 && nTracklets/nHits<0.57-log(nHits)/25";
          printf("---------- INELASTIC definition\n");
          break;
       case 1:
@@ -444,11 +444,11 @@ int plotFinalResult(int TrackletType, const char* filename,
          hSDFrac = (TH1F*)fCorrection->FindObjectAny("hSDFrac");
          hEmptyEvtCorrection = (TH1F*)fCorrection->FindObjectAny("hEmptyEvtCorrection");
       }
-      else {
-         hTrigEff = (TH1F*)fCorrectionExternal->FindObjectAny("hTrigEff");
-         hSDFrac = (TH1F*)fCorrectionExternal->FindObjectAny("hSDFrac");
-         hEmptyEvtCorrection = (TH1F*)fCorrectionExternal->FindObjectAny("hEmptyEvtCorrection");
-      }
+      // else {
+      //    hTrigEff = (TH1F*)fCorrectionExternal->FindObjectAny("hTrigEff");
+      //    hSDFrac = (TH1F*)fCorrectionExternal->FindObjectAny("hSDFrac");
+      //    hEmptyEvtCorrection = (TH1F*)fCorrectionExternal->FindObjectAny("hEmptyEvtCorrection");
+      // }
 
       // TCanvas *cTrigEff = new TCanvas("cTrigEff", "TrigEff", canvasSizeX, canvasSizeY);
       // hTrigEff->Draw();
@@ -939,7 +939,7 @@ int plotFinalResult(int TrackletType, const char* filename,
       for (int x=1; x<=nEtaBin; x++)
          hEmptyEvtCorrection->SetBinError(x, 0);
       if (TrackletType % 10 < 4) {
-         hEmptyEvtCorrection->Fit("pol2", "LL", "", -etaLimit+0.1, etaLimit-0.1);
+         hEmptyEvtCorrection->Fit("pol2", "LL", "", -etaLimit+0.3, etaLimit-0.3);
          fEmptyEvt = hEmptyEvtCorrection->GetFunction("pol2");
          fEmptyEvt->SetName("fEmptyEvt");
       } else {

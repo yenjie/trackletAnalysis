@@ -24,14 +24,14 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
    TFile* fData = new TFile(fnData, "READ");
    TTree* tData = (TTree*)fData->Get(Form("TrackletTree%i", TrackletType));
 
-   int nEtaBin = 3000;
+   int nEtaBin = 1500;
    int nVzBin = 1400;
    int VzRangeL = -16;
    int VzRangeH = 12;
 
    TFile *outfile = new TFile(Form("acceptance-%d.root", TrackletType), "recreate");
 
-   TCut myCut = "abs(deta)<0.1&&abs(dphi)<1&&vz[1]>-99";
+   TCut myCut = "abs(deta)<0.1 && abs(dphi)<0.1 && vz[1]>-16 && vz[1]<12";
    TH2F *hData = new TH2F("hData", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
    TH2F *hMC = new TH2F("hMC", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
    TH2F *hAccData = new TH2F("hAccData", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);

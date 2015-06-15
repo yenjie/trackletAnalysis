@@ -487,7 +487,9 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("dphi", tdata.dphi, "dphi[nTracklets]/F");
    trackletTree->Branch("recoPU", &tdata.recoPU, "recoPU/I");
 
-   trackletTree->Branch("clusVtxQual", &tdata.clusVtxQual, "clusVtxQual/F");
+   trackletTree->Branch("clusVtxQual1", &tdata.clusVtxQual1, "clusVtxQual1/F");
+   trackletTree->Branch("clusVtxQual2", &tdata.clusVtxQual2, "clusVtxQual2/F");
+   trackletTree->Branch("clusVtxQual3", &tdata.clusVtxQual3, "clusVtxQual3/F");
 
    trackletTree->Branch("npart", &tdata.npart, "npart/I");
    trackletTree->Branch("eta", tdata.eta, "eta[npart]/F");
