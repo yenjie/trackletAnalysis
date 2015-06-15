@@ -22,6 +22,7 @@ Double_t getClusVtxCompat(const std::vector<RecoHit> &hits, const Int_t layer = 
   Double_t slope = 0.43;
   if(layer==1)      slope = 0.43;
   else if(layer==2) slope = 0.25;
+  else if(layer==3) slope = 0.18;
 
   // estimate z-position from cluster lengths
   Double_t zest = 0.;
