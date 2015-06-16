@@ -616,7 +616,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       // }
 
       if (useRandomVertex) {
-         tdata12.vz[1] = gRandom->Rndm()*22-13;
+         tdata12.vz[1] = gRandom->Rndm()*22-13-vzShift;
          tdata13.vz[1] = tdata12.vz[1];
          tdata23.vz[1] = tdata12.vz[1];
          tdata14.vz[1] = tdata12.vz[1];
