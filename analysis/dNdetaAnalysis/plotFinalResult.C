@@ -118,13 +118,13 @@ int plotFinalResult(int TrackletType, const char* filename,
       hAlphaB = (TH3F*)myFile->FindObjectAny("hAlphaB");
    }
 
-   int VzRangeL = -16;
-   int VzRangeH = 12;
+   int VzRangeL = -13;
+   int VzRangeH = 9;
 
    // Definition of Vz, Eta, Hit bins
    const int nTrackletBin = 12;
    const int nEtaBin = 30;
-   const int nVzBin = 14;
+   const int nVzBin = 11;
 
    double TrackletBins[nTrackletBin+1] = {-5, 1, 10, 15, 20, 25, 30, 36, 42, 50, 60, 72, 300};
    double EtaBins[nEtaBin+1];
@@ -147,7 +147,7 @@ int plotFinalResult(int TrackletType, const char* filename,
       sideBandRegionEtaSignalRegion = "dR>0.1&&dR<0.2";
    }
 
-   TString vtxCut = "(vz[1]<12 && vz[1]>-16)";
+   TString vtxCut = "(vz[1]<9 && vz[1]>-13)";
    TCut MCSelection;
    TString offlineSelection;
    TCut evtSelection;

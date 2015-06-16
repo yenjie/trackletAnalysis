@@ -47,7 +47,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          long startEntry = 0,                   // Starting Entry number in the Pixel Tree
                          long endEntry = 1000000000,            // Ending Entry number in the Pixel Tree
-                         double pileUp = 0.055,                     // Artifically overlap event to mimic pile-up
+                         double pileUp = 0.0542,                     // Artifically overlap event to mimic pile-up
                          bool useForwardPixels = 0,             // Use forward pixel detector for vertexing
                          int addL1Bck = 0,                      // Add random background to first pixel layer
                          int addL2Bck = 0,                      // Add random background to second pixel layer
@@ -55,8 +55,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          double splitProb = 0,                  // Splitting probability of the pixel hit
                          bool smearPixels = 0,                  // Smear pixel hits
                          bool cutOnClusterSize = 0,             // Cut on clusterSize to reduce background
-                         bool reWeight = 1,                     // Reweight to Run 123596 vtx distribution
-                         bool reweightMultiplicity = 0,         // Reweight the multiplicity distribution
+                         bool reWeight = 1,                     // Reweight vertex distribution to match data
+                         bool reweightMultiplicity = 0,         // Reweight multiplicity distribution
                          int makeVzCut = 0,                     // Cut on Vz
                          double dropProb = 0,                   // Emulate efficiency loss
                          bool putBeamHalo = false,              // Adding beam Halo
@@ -154,22 +154,29 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       reWeight = 0;
       pileUp = 0;
    }
-   if (useRandomVertex)
-      printf("Using Random Vertex!\n");
 
    // Event record
    vector<int> events[500];
+
    // Parameters for the tree =================================================
    Parameters par;
    getPixelTreeBranch(t, par);
+
+   // int nBeamHalo = 0;
    // Parameters beamHaloPar;
    // if (putBeamHalo) getPixelTreeBranch(beamHaloTree, beamHaloPar);
    cout << "Number of Events: " << t->GetEntries() << endl;
 
-   int nBeamHalo = 0;
    int nPileUp = 1;
-   if (pileUp != 0)
-      cout << "Do pileup! With probability of " << pileUp << endl;
+   if (pileUp!=0)
+      printf("Do pileup mixing with mean: %.4f\n", pileUp);
+
+   if (useRandomVertex)
+      printf("----------- Using Random Vertex\n");
+   else if (useKKVertex)
+      printf("---- Using Reconstructed Vertex\n");
+   else
+      printf("--------- Using Tracklet Vertex\n");
 
    TF1* csfitf = new TF1("csfit", csfit, -4, 4, 1);
    csfitf->SetParameters(1,8882, 0);
@@ -188,18 +195,12 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
               << trackletTree45->GetEntries()
               // << " Add Beam Halo: " << nBeamHalo << " " << nBeamHalo/(double)i
               << endl;
-         if (reWeight && !i) cout << "Reweighted!!!!!!!" << endl;
-      }
-
-      if (!i) {
-         if (useKKVertex) printf("Use Reconstructed Vertex\n");
-         else printf("Use Tracklet Vertex\n");
       }
 
       if (!isMC) {
-         if (par.nLumi < 89)
+         if (par.nLumi<89)
             continue;
-         if (par.nBX!=208 && useRandomVertex)
+         if (useRandomVertex && par.nBX!=208)
             continue;
       }
 
@@ -215,12 +216,12 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       // }
       // if (flagDuplicateEvent) continue;
 
-      // Reweight MC vertex distribution to be the same as data
+      // Reweight MC vertex distribution to match data
       if (reWeight) {
          double myVz = par.vz[1];
          if (myVz < -90) {
             TF1* f = new TF1("f", "gaus", -30, 30);
-            f->SetParameters(1, -0.471199, 5.35295);
+            f->SetParameters(1, -0.394086, 5.32670);
             myVz = f->GetRandom();
             delete f;
          }
@@ -228,8 +229,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          // 13 TeV Run 246908
          // double DataPdf = TMath::Gaus(myVz, -2.03961-vzShift, 4.2783, 1);
          // 13 TeV Run 247324
-         double DataPdf = TMath::Gaus(myVz, -2.12557-vzShift, 4.29103, 1);
-         double MCPdf = TMath::Gaus(myVz, -0.471199, 5.35295, 1);
+         double DataPdf = TMath::Gaus(myVz, -2.14145, 4.30854, 1);
+         double MCPdf = TMath::Gaus(myVz, -0.394086, 5.32670, 1);
 
          double Ratio = DataPdf / MCPdf;
          double x = gRandom->Rndm()*3;
@@ -336,15 +337,11 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       //    par.nhits3 += bckHits;
       // }
 
-      int nVertices = 0;
-      double vertexVz[5000], vertexSigma2[5000];
-      int vertexNz[5000];
-
-      double trackletVertex = -99;
-
       double vzPileUp[20];
       vzPileUp[0] = par.vz[0];
       int recoPU = 0;
+
+      double trackletVertex = -99;
 
       vector<RecoHit> layer1raw, layer2raw, layer3raw, layer4raw, layer5raw;
       prepareHits(layer1raw, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -618,35 +615,39 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       //    trackletVertex += smear;
       // }
 
-      tdata12.vz[1] = trackletVertex;
-      tdata13.vz[1] = trackletVertex;
-      tdata23.vz[1] = trackletVertex;
-      tdata14.vz[1] = trackletVertex;
-      tdata15.vz[1] = trackletVertex;
-      tdata45.vz[1] = trackletVertex;
-
-      if (useKKVertex) {
-         tdata12.vx[1] = par.vx[1];
-         tdata12.vy[1] = par.vy[1];
-         tdata13.vx[1] = par.vx[1];
-         tdata13.vy[1] = par.vy[1];
-         tdata23.vx[1] = par.vx[1];
-         tdata23.vy[1] = par.vy[1];
-         tdata14.vx[1] = par.vx[1];
-         tdata14.vy[1] = par.vy[1];
-         tdata15.vx[1] = par.vx[1];
-         tdata15.vy[1] = par.vy[1];
-         tdata45.vx[1] = par.vx[1];
-         tdata45.vy[1] = par.vy[1];
-      }
-
       if (useRandomVertex) {
-         tdata12.vz[1] = gRandom->Rndm()*28-16;
+         tdata12.vz[1] = gRandom->Rndm()*22-13;
          tdata13.vz[1] = tdata12.vz[1];
          tdata23.vz[1] = tdata12.vz[1];
          tdata14.vz[1] = tdata12.vz[1];
          tdata15.vz[1] = tdata12.vz[1];
          tdata45.vz[1] = tdata12.vz[1];
+      } else if (useKKVertex) {
+         tdata12.vx[1] = par.vx[1];
+         tdata12.vy[1] = par.vy[1];
+         tdata12.vz[1] = par.vz[1];
+         tdata13.vx[1] = par.vx[1];
+         tdata13.vy[1] = par.vy[1];
+         tdata13.vz[1] = par.vz[1];
+         tdata23.vx[1] = par.vx[1];
+         tdata23.vy[1] = par.vy[1];
+         tdata23.vz[1] = par.vz[1];
+         tdata14.vx[1] = par.vx[1];
+         tdata14.vy[1] = par.vy[1];
+         tdata14.vz[1] = par.vz[1];
+         tdata15.vx[1] = par.vx[1];
+         tdata15.vy[1] = par.vy[1];
+         tdata15.vz[1] = par.vz[1];
+         tdata45.vx[1] = par.vx[1];
+         tdata45.vy[1] = par.vy[1];
+         tdata45.vz[1] = par.vz[1];
+      } else {
+         tdata12.vz[1] = trackletVertex;
+         tdata13.vz[1] = trackletVertex;
+         tdata23.vz[1] = trackletVertex;
+         tdata14.vz[1] = trackletVertex;
+         tdata15.vz[1] = trackletVertex;
+         tdata45.vz[1] = trackletVertex;
       }
 
       // Process hits with Vz constraint:
@@ -730,6 +731,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       double clusVtxQual1 = 0;
       double clusVtxQual2 = 0;
       double clusVtxQual3 = 0;
+
       // double clusVtxQual1 = getClusVtxCompat(layer1, 1);
       // double clusVtxQual2 = getClusVtxCompat(layer2, 2);
       // double clusVtxQual3 = getClusVtxCompat(layer3, 3);
@@ -761,7 +763,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata12.ntrksCut   = par.ntrksCut;
       tdata12.nPU        = nPileUp;
       tdata12.recoPU     = recoPU;
-      tdata12.nVtx       = nVertices;
       tdata12.clusVtxQual1 = clusVtxQual1;
       tdata12.clusVtxQual2 = clusVtxQual2;
       tdata12.clusVtxQual3 = clusVtxQual3;
@@ -871,7 +872,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    tdata##q##w.ntrksCut   = par.ntrksCut;                      \
    tdata##q##w.nPU        = nPileUp;                           \
    tdata##q##w.recoPU     = recoPU;                            \
-   tdata##q##w.nVtx       = nVertices;                         \
    tdata##q##w.clusVtxQual1 = clusVtxQual1;                    \
    tdata##q##w.clusVtxQual2 = clusVtxQual2;                    \
    tdata##q##w.clusVtxQual3 = clusVtxQual3;                    \

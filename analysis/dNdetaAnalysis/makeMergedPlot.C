@@ -19,10 +19,14 @@ void clearNBins(int n, TH1F* h) {
    }
 }
 
-int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0.055) {
+int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
+   TFile *infPYTHIA = new TFile("correction/correction-12-PYTHIA8-CUETP8M1.root");
+   TH1F* hMC = (TH1F*)infPYTHIA->FindObjectAny("hTruthWOSelection");
+   // TFile *infEPOS = new TFile("correction/correction-12-EPOS.root");
+   // TH1F* hMC = (TH1F*)infEPOS->FindObjectAny("hTruthWOSelection");
+
    TFile* inf12 = new TFile(Form("correction/correction-12-%s.root", name));
    TH1F* h12 = (TH1F*)inf12->FindObjectAny("hMeasuredFinal");
-   TH1F* hMC = (TH1F*)inf12->FindObjectAny("hTruthWOSelection");
    h12->SetName("h12");
    h12->SetAxisRange(0, dndetaRange, "Y");
 
@@ -67,7 +71,6 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0.055) 
    leg->SetLineStyle(1);
    leg->SetLineWidth(1);
    leg->SetFillColor(0);
-   leg->SetFillStyle(0);
    leg->AddEntry("hTruth", name, "");
    leg->AddEntry("h12", "Reconstructed (1st+2nd layers)", "pl");
    leg->AddEntry("h13", "Reconstructed (1st+3rd layers)", "pl");
@@ -98,7 +101,13 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0.055) 
       hAvg->SetBinError(i, avgErr);
    }
    hAvg->Draw("p");
-   TGraph* gErrorBand = GetErrorBand(hAvg, syserr, syserr, 0.1);
+   Double_t erreta[30] = {     0,      0,      0,  0.048,  0.048,
+                           0.048,  0.048,  0.048,  0.048,  0.048,
+                           0.048,  0.048,  0.048,  0.048,  0.048,
+                           0.048,  0.048,  0.048,  0.048,  0.048,
+                           0.048,  0.048,  0.048,  0.048,  0.048,
+                           0.048,  0.048,      0,      0,      0};
+   TGraph* gErrorBand = GetErrorBand(hAvg, erreta, erreta, 0.1);
    gErrorBand->Draw("F");
    hMC->Draw("same");
    hAvg->Draw("p same");
@@ -110,7 +119,6 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0.055) 
    leg2->SetLineStyle(1);
    leg2->SetLineWidth(1);
    leg2->SetFillColor(0);
-   leg2->SetFillStyle(0);
 
    leg2->AddEntry("hTruth", name, "");
    leg2->AddEntry(hAvg, "Reconstructed Tracklets", "pl");
@@ -151,7 +159,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0.055) 
       hSym->SetBinError(_NETABIN+1-i, avgErr);
    }
    hSym->Draw("p");
-   TGraph* gErrorBand2 = GetErrorBand(hSym, syserr, syserr, 0.1);
+   TGraph* gErrorBand2 = GetErrorBand(hSym, erreta, erreta, 0.1);
    gErrorBand2->Draw("F");
    hMC->Draw("same");
    hSym->SetLineColor(4);
@@ -165,7 +173,6 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0.055) 
    leg3->SetLineStyle(1);
    leg3->SetLineWidth(1);
    leg3->SetFillColor(0);
-   leg3->SetFillStyle(0);
 
    leg3->AddEntry("hTruth", name, "");
    leg3->AddEntry(hSym, "Reconstructed Tracklets", "pl");
