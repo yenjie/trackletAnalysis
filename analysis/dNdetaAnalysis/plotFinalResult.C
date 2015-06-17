@@ -34,42 +34,20 @@
 void formatHist(TH1* h, int col = 1, double norm = 1, double msize = 1);
 
 // ============================================================================
-// Read Stored correction factors
-// ============================================================================
-
-TFile* getAcceptanceFile(int TrackletType) {
-   TFile* fAcceptance;
-   const char* filename = Form("correction/acceptance-%d.root", TrackletType);
-   fAcceptance = new TFile(filename);
-   cout << "Use Acceptance file : " << filename << endl;
-   return fAcceptance;
-}
-
-TFile* getCorrectionFile(string correctionFileName, int TrackletType) {
-   TFile* fCorrection;
-   const char* filename = Form("correction/correction-%d-%s.root", TrackletType, correctionFileName.data());
-   fCorrection = new TFile(filename);
-   cout << "Use correction file : " << filename << endl;
-   return fCorrection;
-}
-
-// ============================================================================
 // Main Routine
 // ============================================================================
 int plotFinalResult(int TrackletType, const char* filename,
-                    const char* myPlotTitle = "PYTHIA8_Monash13",   // Title of the plot
+                    const char* myPlotTitle = "Default",            // Title of the plot
                     bool useCorrectionFile = 0,                     // use Correction file
-                    string correctionName = "PYTHIA8-REWEIGHTED",   // Correction file name
+                    const char* correctionName = "Default",         // Correction file name
                     int selection = 0,                              // MC selection
-                    int LumiL = 0,                                  // nLumi lower cut
-                    int LumiH = 1000,                               // nLumi higher cut
+                    bool doAcceptanceCorrection = 1,                // do acceptance correction
+                    bool doTriggerCorrection = 1,                   // do trigger eff correction
+                    int doMult2 = 0,                                // multiplicity
                     int verbose = 0,                                // set verbose level
                     int makePlot = 0,                               // make alpha plots
                     bool putUA5 = 0,                                // overlap UA5 result
-                    bool doAcceptanceCorrection = 1,                // do acceptance correction
                     bool doBetaCorrection = 0,                      // do beta correction
-                    int doMult2 = 0,                                // multiplicity
-                    bool doTriggerCorrection = 1,                   // do trigger eff correction
                     int UseExternalSDEff = 0,
                     bool useDR = 0)
 {
@@ -105,9 +83,19 @@ int plotFinalResult(int TrackletType, const char* filename,
 
    // Read alpha, beta, geometry correction from file.
    TFile* fCorrection;
+   if (useCorrectionFile) {
+      const char* correctionfname = Form("correction/correction-%d-%s.root", TrackletType, correctionName);
+      fCorrection = new TFile(correctionfname);
+      printf("Use correction file: %s\n", correctionfname);
+   }
+
    TFile* fAcceptance;
-   if (useCorrectionFile) fCorrection = getCorrectionFile(correctionName, TrackletType);
-   if (useCorrectionFile && doAcceptanceCorrection) fAcceptance = getAcceptanceFile(TrackletType);
+   if (useCorrectionFile && doAcceptanceCorrection) {
+      const char* acceptancefname = Form("correction/acceptance-%d.root", TrackletType);
+      fAcceptance = new TFile(acceptancefname);
+      printf("Use acceptance file: %s\n", acceptancefname);
+   }
+
    // TFile* fCorrectionExternal = new TFile(Form("correction/correction-%d-external.root", TrackletType));
 
    TH3F* hAlphaA;
@@ -272,7 +260,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    bool accepRegion[nEtaBin][nVzBin];
    memset(accepRegion, 0, sizeof(bool)*nEtaBin*nVzBin);
 
-   double etaLimit;
+   double etaLimit = 2.5;
    if (TrackletType % 10 > 3) {
       double etaLL = 1.7;
       double etaHL = 2.7;
