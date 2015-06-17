@@ -170,13 +170,15 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    int nPileUp = 1;
    if (pileUp!=0)
       printf("Do pileup mixing with mean: %.4f\n", pileUp);
-
+   if (reWeight)
+      printf("### REWEIGHT VZ ###############\n");
    if (useRandomVertex)
       printf("----------- Using Random Vertex\n");
    else if (useKKVertex)
       printf("---- Using Reconstructed Vertex\n");
    else
       printf("--------- Using Tracklet Vertex\n");
+   printf("..........................................................\n");
 
    TF1* csfitf = new TF1("csfit", csfit, -4, 4, 1);
    csfitf->SetParameters(1,8882, 0);

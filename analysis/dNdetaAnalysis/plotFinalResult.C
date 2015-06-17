@@ -174,8 +174,9 @@ int plotFinalResult(int TrackletType, const char* filename,
          printf("------- Single Track definition\n");
          break;
    }
-   evtSelection = TCut(vtxCut + "&&" + offlineSelection);
    if (!isMC) MCSelection = "1";
+   if (isMC) offlineSelection = "1"; // Temporary
+   evtSelection = TCut(vtxCut + "&&" + offlineSelection);
 
    // Output file =============================================================
    TFile* outf = new TFile (Form("correction-%i-%s.root", TrackletType, myPlotTitle), "recreate");
@@ -699,9 +700,16 @@ int plotFinalResult(int TrackletType, const char* filename,
                   alphaErr = alphaPlots[x-1][z-1]->GetBinError(y-k);
                   if (alpha!=0) break;
                }
-               if (alpha==0) alpha = 1;
+               // if (alpha==0) alpha = 1;
                // cout << (EtaBins[x]+EtaBins[x-1])/2 << " " << (TrackletBins[y]+TrackletBins[y-1])/2 << " " << (VzBins[z]+VzBins[z-1])/2 << "Used " << alpha << " " << endl;
                // cout << "Empty!!!" << endl;
+            }
+
+            if (alpha==0 || alpha>20) {
+               hAcceptance->SetBinContent(x, z, 0);
+               hHadronAccepted->SetBinContent(x, y, z, 0);
+               hHadronAccepted->SetBinError(x, y, z, 0);
+               continue;
             }
 
             double nCorrected = val*(1-beta)*alpha;
