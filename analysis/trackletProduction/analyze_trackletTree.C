@@ -47,26 +47,25 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          long startEntry = 0,                   // Starting Entry number in the Pixel Tree
                          long endEntry = 1000000000,            // Ending Entry number in the Pixel Tree
-                         double pileUp = 0.0542,                     // Artifically overlap event to mimic pile-up
-                         bool useForwardPixels = 0,             // Use forward pixel detector for vertexing
-                         int addL1Bck = 0,                      // Add random background to first pixel layer
-                         int addL2Bck = 0,                      // Add random background to second pixel layer
-                         int addL3Bck = 0,                      // Add random background to third pixel layer
-                         double splitProb = 0,                  // Splitting probability of the pixel hit
-                         bool smearPixels = 0,                  // Smear pixel hits
-                         bool cutOnClusterSize = 0,             // Cut on clusterSize to reduce background
+                         double pileUp = 0.0542,                // Artifically overlap event to mimic pile-up
                          bool reWeight = 1,                     // Reweight vertex distribution to match data
-                         bool reweightMultiplicity = 0,         // Reweight multiplicity distribution
-                         int makeVzCut = 0,                     // Cut on Vz
+                         bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
+                         bool useForwardPixels = 0,             // Use forward pixel detector for vertexing
+                         double BGfrac = 0.10,                  // Additional background level
+                         bool addL1Bck = 1,                     // Add random background to first pixel layer
+                         bool addL2Bck = 1,                     // Add random background to second pixel layer
+                         bool addL3Bck = 1,                     // Add random background to third pixel layer
+                         double splitProb = 0,                  // Splitting probability of the pixel hit
+                         bool doTwoHitCorrelation = 0,          // Create a pixel counting tree instead of tracklet tree
+                         bool smearPixels = 0,                  // Smear pixel hits
                          double dropProb = 0,                   // Emulate efficiency loss
+                         bool cutOnClusterSize = 0,             // Cut on clusterSize to reduce background
+                         bool reweightMultiplicity = 0,         // Reweight multiplicity distribution
                          bool putBeamHalo = false,              // Adding beam Halo
                          double beamHaloRatio = 0.0,
                          const char* beamHaloFile = "BeamHalo.root",
-                         double smearVertex = 0,                // Add additional smearing to vertex position
                          bool useKKVertex = 0,                  // Use vertex from other recoVtx collection
-                         bool useRandomVertex = 1,              // Use random vertex (instead of the reco one)
-                         bool mimicPixelCounting = 0,           // Create a pixel counting tree instead of tracklet tree
-                         bool checkDuplicateEvent = 0)          // Check if we have duplicates in the sample (slow)
+                         double smearVertex = 0)                // Add additional smearing to vertex position
 {
    // Set Random Seed =========================================================
    TTimeStamp myTime;
@@ -99,6 +98,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    t->AddFriend(hltTree);
    // TTree* outTree = t->CloneTree();
 
+   TFile* fdata = new TFile("/data/biran/pixeltrees/Run247324-PromptReco/PixelTree-Run247324-PromptReco-ZeroBias1.root");
+   TTree* tdata = (TTree*)fdata->Get("ana/PixelTree");
+
    bool isMC = 0;
    double vzShift = 0;
 
@@ -130,19 +132,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    setTrackletTreeBranch(trackletTree15, tdata15);
    setTrackletTreeBranch(trackletTree45, tdata45);
 
-   // TH3D* hLayer1Hit = new TH3D("hLayer1Hit", "", 75, 0, 15, 60, -3, 3, 64, -3.2, 3.2);
-   // TH3D* hLayer2Hit = new TH3D("hLayer2Hit", "", 75, 0, 15, 60, -3, 3, 64, -3.2, 3.2);
-   // TH3D* hLayer3Hit = new TH3D("hLayer3Hit", "", 75, 0, 15, 60, -3, 3, 64, -3.2, 3.2);
-
-   // Prepare hit spectra for random hit
-   // cout << "Projecting...1" << endl;
-   // if (addL1Bck!=0) t->Project("hLayer1Hit", "phi1:eta1:r1");
-   // cout << "Projecting...2" << endl;
-   // if (addL2Bck!=0) t->Project("hLayer2Hit", "phi2:eta2:r2");
-   // cout << "Projecting...3" << endl;
-   // if (addL3Bck!=0) t->Project("hLayer3Hit", "phi3:eta3:r3");
-   // cout << "Projecting...done" << endl;
-
    if (t->GetEntries("nRun<10")!=0) {
       isMC = true;
       cout << "This is a Monte Carlo study." << endl;
@@ -150,13 +139,33 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       cout << "vzShift = " << vzShift << endl;
    } else {
       cout << "This is a data analysis." << endl;
-      smearVertex = 0;
-      reWeight = 0;
       pileUp = 0;
+      reWeight = 0;
+      BGfrac = 0;
+      addL1Bck = 0;
+      addL2Bck = 0;
+      addL3Bck = 0;
+      smearVertex = 0;
    }
 
-   // Event record
-   vector<int> events[500];
+   TH3D* hLayer1Hit = new TH3D("hLayer1Hit", "", 75, 0, 15, 60, -3, 3, 64, -3.2, 3.2);
+   TH3D* hLayer2Hit = new TH3D("hLayer2Hit", "", 75, 0, 15, 60, -3, 3, 64, -3.2, 3.2);
+   TH3D* hLayer3Hit = new TH3D("hLayer3Hit", "", 75, 0, 15, 60, -3, 3, 64, -3.2, 3.2);
+
+   // Prepare hit spectra for random hit
+   if (addL1Bck) {
+      cout << "Projecting...1" << endl;
+      tdata->Project("hLayer1Hit", "phi1:eta1:r1", "!(phi1>-0.3904153 && phi1<-0.3904152 && eta1>-1.45722 && eta1<-1.45721) && !(phi1>1.3385 && phi1<1.3386 && eta1>-2.5014 && eta1<-2.5013) && !(phi1>2.0982 && phi1<2.0984 && eta1>-0.9114 && eta1<-0.9112)");
+   }
+   if (addL2Bck) {
+      cout << "Projecting...2" << endl;
+      tdata->Project("hLayer2Hit", "phi2:eta2:r2", "!(eta2>-1.85779 && eta2<-1.85778 && phi2>2.18935 && phi2<2.18936) && !(eta2>0.12535 && eta2<0.12536 && phi2>1.03344 && phi2<1.03345) && !(eta2>0.12626 && eta2<0.12631 && phi2>1.034 && phi2<1.03475) && !(eta2>-1.2623 && eta2<-1.26229 && phi2>2.8906 && phi2<2.8907) && !(phi2>2.1157 && phi2<2.1158 && eta2>-1.9016 && eta2<-1.9015)");
+   }
+   if (addL3Bck) {
+      cout << "Projecting...3" << endl;
+      tdata->Project("hLayer3Hit", "phi3:eta3:r3", "!(eta3>0.76085 && eta3<0.76087 && phi3>-1.22261 && phi3<-1.2226) && !(eta3>-1.39076 && eta3<-1.39074 && phi3>1.116954 && phi3<1.116955) && !(eta3>-1.07629 && eta3<-1.07628 && phi3>-2.59858 && phi3<-2.59857) && !(eta3>0.99493 && eta3<0.99494 && phi3>0.75637 && phi3<0.7563704) && !(eta3>1.30654 && eta3<1.30655 && phi3>-0.49127 && phi3<-0.49126) && !(eta3>-0.17039 && eta3<-0.17038 && phi3>-1.44136 && phi3<-1.44135) && !(phi3>1.11 && phi3<1.17 && eta3>-1.4 && eta3<-1.34) && !(phi3>-0.522 && phi3<-0.509 && eta3>0.8862 && eta3<0.8864) && !(phi3>0.5434 && phi3<0.5446 && eta3>0.9554 && eta3<0.9561) && !(phi3>1.269 && phi3<1.2694 && eta3>0.64 && eta3<0.72) && !(phi3>-0.2274 && phi3<-0.2271 && eta3>1.43 && eta3<1.475) && !(phi3>-1.6671 && phi3<-1.6669 && eta3>1.408 && eta3<1.4084) && !(phi3>0.7193 && phi3<0.7194 && eta3>-0.2824 && eta3<-0.2823) & !(phi3>-1.2439 && phi3<-1.2438 && eta3>-0.693 && eta3<-0.692) && !(phi3>0.064 && phi3<0.073 && eta3>-1.04 && eta3<-0.98) &&!(phi3>1.024 && phi3<1.0242 && eta3>0.7992 && eta3<0.7995) && !(phi3>0.07 && phi3<0.074 && eta3>-0.63 && eta3<-0.54)");
+   }
+   cout << "Projecting...done" << endl;
 
    // Parameters for the tree =================================================
    Parameters par;
@@ -169,16 +178,16 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
 
    int nPileUp = 1;
    if (pileUp!=0)
-      printf("Do pileup mixing with mean: %.4f\n", pileUp);
+      printf("@@@@@ Do pileup mixing with mean: %.4f\n", pileUp);
    if (reWeight)
-      printf("### REWEIGHT VZ ###############\n");
+      printf("######### REWEIGHT VZ ##################\n");
    if (useRandomVertex)
-      printf("----------- Using Random Vertex\n");
+      printf("-------------------- Using Random Vertex\n");
    else if (useKKVertex)
-      printf("---- Using Reconstructed Vertex\n");
+      printf("------------- Using Reconstructed Vertex\n");
    else
-      printf("--------- Using Tracklet Vertex\n");
-   printf("..........................................................\n");
+      printf("------------------ Using Tracklet Vertex\n");
+   printf("................................................................\n");
 
    TF1* csfitf = new TF1("csfit", csfit, -4, 4, 1);
    csfitf->SetParameters(1,8882, 0);
@@ -205,18 +214,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          if (useRandomVertex && par.nBX!=208)
             continue;
       }
-
-      // bool flagDuplicateEvent = 0;
-      // if (checkDuplicateEvent) {
-      //    for (unsigned int j=0; j<events[par.nLumi].size(); j++) {
-      //       if (par.nEv==events[par.nLumi][j]) {
-      //          flagDuplicateEvent = 1;
-      //          continue;
-      //       }
-      //    }
-      //    if (!flagDuplicateEvent) events[par.nLumi].push_back(par.nEv);
-      // }
-      // if (flagDuplicateEvent) continue;
 
       // Reweight MC vertex distribution to match data
       if (reWeight) {
@@ -299,51 +296,48 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata45.vz[0] = par.vz[0];
 
       // Add background hits
-      // int bckHits = 0;
-      // if (addL1Bck!=0 || addL2Bck!=0 || addL3Bck!=0) {
-      //    for (int i=0; i<par.nhits1; i++)
-      //       if (gRandom->Rndm()<0.01)
-      //          bckHits++;
-      // }
+      int bckHits1 = par.nhits1 * BGfrac;
+      int bckHits2 = par.nhits2 * BGfrac;
+      int bckHits3 = par.nhits3 * BGfrac;
 
-      // if (addL1Bck!=0) {
-      //    for (int i=par.nhits1; i<par.nhits1+bckHits; i++) {
-      //       double eta, phi, r;
-      //       hLayer1Hit->GetRandom3(r, eta, phi);
-      //       par.eta1[i] = eta;
-      //       par.phi1[i] = phi;
-      //       par.r1[i] = r;
-      //    }
-      //    par.nhits1 += bckHits;
-      // }
+      if (addL1Bck!=0) {
+         for (int i=par.nhits1; i<par.nhits1+bckHits1; i++) {
+            double eta, phi, r;
+            hLayer1Hit->GetRandom3(r, eta, phi);
+            par.eta1[i] = eta;
+            par.phi1[i] = phi;
+            par.r1[i] = r;
+         }
+         par.nhits1 += bckHits1;
+      }
 
-      // if (addL2Bck!=0) {
-      //    for (int i=par.nhits2; i<par.nhits2+bckHits; i++) {
-      //       double eta, phi, r;
-      //       hLayer2Hit->GetRandom3(r, eta, phi);
-      //       par.eta2[i] = eta;
-      //       par.phi2[i] = phi;
-      //       par.r2[i] = r;
-      //    }
-      //    par.nhits2 += bckHits;
-      // }
+      if (addL2Bck!=0) {
+         for (int i=par.nhits2; i<par.nhits2+bckHits2; i++) {
+            double eta, phi, r;
+            hLayer2Hit->GetRandom3(r, eta, phi);
+            par.eta2[i] = eta;
+            par.phi2[i] = phi;
+            par.r2[i] = r;
+         }
+         par.nhits2 += bckHits2;
+      }
 
-      // if (addL3Bck!=0) {
-      //    for (int i=par.nhits3; i<par.nhits3+bckHits; i++) {
-      //       double eta, phi, r;
-      //       hLayer3Hit->GetRandom3(r, eta, phi);
-      //       par.eta3[i] = eta;
-      //       par.phi3[i] = phi;
-      //       par.r3[i] = r;
-      //    }
-      //    par.nhits3 += bckHits;
-      // }
+      if (addL3Bck!=0) {
+         for (int i=par.nhits3; i<par.nhits3+bckHits3; i++) {
+            double eta, phi, r;
+            hLayer3Hit->GetRandom3(r, eta, phi);
+            par.eta3[i] = eta;
+            par.phi3[i] = phi;
+            par.r3[i] = r;
+         }
+         par.nhits3 += bckHits3;
+      }
 
-      double vzPileUp[20];
+      Parameters pupar[12];
+      pupar[0] = par;
+      double vzPileUp[12];
       vzPileUp[0] = par.vz[0];
       int recoPU = 0;
-
-      double trackletVertex = -99;
 
       vector<RecoHit> layer1raw, layer2raw, layer3raw, layer4raw, layer5raw;
       prepareHits(layer1raw, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -370,6 +364,45 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
             }
             t->GetEntry(i+p);
             vzPileUp[p] = par.vz[0];
+
+            bckHits1 = par.nhits1 * BGfrac;
+            bckHits2 = par.nhits2 * BGfrac;
+            bckHits3 = par.nhits3 * BGfrac;
+
+            if (addL1Bck!=0) {
+               for (int i=par.nhits1; i<par.nhits1+bckHits1; i++) {
+                  double eta, phi, r;
+                  hLayer1Hit->GetRandom3(r, eta, phi);
+                  par.eta1[i] = eta;
+                  par.phi1[i] = phi;
+                  par.r1[i] = r;
+               }
+               par.nhits1 += bckHits1;
+            }
+
+            if (addL2Bck!=0) {
+               for (int i=par.nhits2; i<par.nhits2+bckHits2; i++) {
+                  double eta, phi, r;
+                  hLayer2Hit->GetRandom3(r, eta, phi);
+                  par.eta2[i] = eta;
+                  par.phi2[i] = phi;
+                  par.r2[i] = r;
+               }
+               par.nhits2 += bckHits2;
+            }
+
+            if (addL3Bck!=0) {
+               for (int i=par.nhits3; i<par.nhits3+bckHits3; i++) {
+                  double eta, phi, r;
+                  hLayer3Hit->GetRandom3(r, eta, phi);
+                  par.eta3[i] = eta;
+                  par.phi3[i] = phi;
+                  par.r3[i] = r;
+               }
+               par.nhits3 += bckHits3;
+            }
+            pupar[p] = par;
+
             prepareHits(layer1raw, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(layer2raw, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             // prepareHits(layer3raw, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -381,14 +414,18 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
             // prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
          }
          t->GetEntry(i);
+         par = pupar[0];
       }
+
+      // Vertex reconstruction ================================================
+      double trackletVertex = -99;
 
       std::sort(allhits.begin(), allhits.end(), sortphi);
       for (unsigned int m=0; m<allhits.size() && allhits[m].phi<_DPHI-_PI; m++) {
          allhits.push_back(allhits[m]);
          allhits.back().phi += 2*_PI;
       }
-      RecoHit fake(0, 4, 0, 0, 1);
+      RecoHit fake(0, 4, 0, 0, 0, 1);
       allhits.push_back(fake);
 
       std::vector<Vertex> vertices;
@@ -403,7 +440,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                   double r2 = (*it).r;
                   double z2 = r2/tan(2*atan(exp(-(*it).eta)));
                   vertex.vz = z1-(z2-z1)/(r2-r1)*r1;
-                  if (fabs(vertex.vz)<20.0)
+                  if (fabs(vertex.vz)<200.0)
                      vertices.push_back(vertex);
                }
                trackcands[q].pop_front();
@@ -660,74 +697,90 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(layer1, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(layer2, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(layer3, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-      prepareHits(layer5, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // prepareHits(layer5, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+
+      // prepareHits(layer2, par, cuts, 24, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // prepareHits(layer2, par, cuts, 25, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // prepareHits(layer3, par, cuts, 34, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+      // prepareHits(layer3, par, cuts, 35, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
       if (nPileUp>0) {
          for (int p=1; p<nPileUp; p++) {
             t->GetEntry(i+p);
+            par = pupar[p];
             prepareHits(layer1, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(layer2, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(layer3, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
-            prepareHits(layer5, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            // prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            // prepareHits(layer5, par, cuts, 5, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+
+            // prepareHits(layer2, par, cuts, 24, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            // prepareHits(layer2, par, cuts, 25, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            // prepareHits(layer3, par, cuts, 34, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
+            // prepareHits(layer3, par, cuts, 35, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
          }
          t->GetEntry(i);
+         par = pupar[0];
       }
 
       std::vector<Tracklet> recoTracklets12, recoTracklets13, recoTracklets23, recoTracklets14, recoTracklets15, recoTracklets45;
 
       std::vector<RecoHit> combinedhits;
-      combinedhits.reserve(layer1.size() + layer2.size());
-      combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
-      combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
-      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets12 = recoTracklets(combinedhits, 1, 2);
+      if (doTwoHitCorrelation) {
+         // Hit correlations in a single layer ================================
+         combinedhits.reserve(layer3.size());
+         combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         recoTracklets12 = recoTracklets(combinedhits, 1, 1);
 
-      combinedhits.clear();
-      combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
-      combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
-      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets13 = recoTracklets(combinedhits, 1, 3);
+         combinedhits.clear();
+         combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
+         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         recoTracklets13 = recoTracklets(combinedhits, 2, 2);
 
-      combinedhits.clear();
-      combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
-      combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
-      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets23 = recoTracklets(combinedhits, 2, 3);
+         combinedhits.clear();
+         combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
+         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         recoTracklets23 = recoTracklets(combinedhits, 3, 3);
+      } else {
+         // Tracklet Reconstruction ===========================================
+         combinedhits.reserve(layer2.size() + layer3.size());
+         combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+         combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
+         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         recoTracklets12 = recoTracklets(combinedhits, 1, 2);
 
-      combinedhits.clear();
-      combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
-      combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
-      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets14 = recoTracklets(combinedhits, 1, 4);
+         combinedhits.clear();
+         combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+         combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
+         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         recoTracklets13 = recoTracklets(combinedhits, 1, 3);
 
-      combinedhits.clear();
-      combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
-      combinedhits.insert(combinedhits.end(), layer5.begin(), layer5.end());
-      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets15 = recoTracklets(combinedhits, 1, 5);
+         combinedhits.clear();
+         combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
+         combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
+         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         recoTracklets23 = recoTracklets(combinedhits, 2, 3);
 
-      combinedhits.clear();
-      combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
-      combinedhits.insert(combinedhits.end(), layer5.begin(), layer5.end());
-      std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      recoTracklets45 = recoTracklets(combinedhits, 4, 5);
+         combinedhits.clear();
+         combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+         combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
+         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         recoTracklets14 = recoTracklets(combinedhits, 1, 4);
 
-      // Hit correlations in a single layer ===================================
-      // combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
-      // std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      // recoTracklets12 = recoTracklets(combinedhits, 1, 1);
+         combinedhits.clear();
+         combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+         combinedhits.insert(combinedhits.end(), layer5.begin(), layer5.end());
+         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         recoTracklets15 = recoTracklets(combinedhits, 1, 5);
 
-      // combinedhits.clear();
-      // combinedhits.insert(combinedhits.end(), layer2.begin(), layer2.end());
-      // std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      // recoTracklets13 = recoTracklets(combinedhits, 2, 2);
-
-      // combinedhits.clear();
-      // combinedhits.insert(combinedhits.end(), layer3.begin(), layer3.end());
-      // std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-      // recoTracklets23 = recoTracklets(combinedhits, 3, 3);
+         combinedhits.clear();
+         combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
+         combinedhits.insert(combinedhits.end(), layer5.begin(), layer5.end());
+         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         recoTracklets45 = recoTracklets(combinedhits, 4, 5);
+      }
 
       // Cluster Vertex Compatibility =========================================
       double clusVtxQual1 = 0;
@@ -791,6 +844,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          tdata12.r2[j]   = recoTracklets12[j].r2();
          tdata12.cs1[j]  = recoTracklets12[j].cs1();
          tdata12.cs2[j]  = recoTracklets12[j].cs2();
+         tdata12.ch1[j]  = recoTracklets12[j].ch1();
+         tdata12.ch2[j]  = recoTracklets12[j].ch2();
          tdata12.phi1[j] = recoTracklets12[j].phi1();
          tdata12.phi2[j] = recoTracklets12[j].phi2();
          tdata12.deta[j] = recoTracklets12[j].deta();
@@ -900,6 +955,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata##q##w.r2[j]   = recoTracklets##q##w[j].r2();       \
       tdata##q##w.cs1[j]  = recoTracklets##q##w[j].cs1();      \
       tdata##q##w.cs2[j]  = recoTracklets##q##w[j].cs2();      \
+      tdata##q##w.ch1[j]  = recoTracklets##q##w[j].ch1();      \
+      tdata##q##w.ch2[j]  = recoTracklets##q##w[j].ch2();      \
       tdata##q##w.phi1[j] = recoTracklets##q##w[j].phi1();     \
       tdata##q##w.phi2[j] = recoTracklets##q##w[j].phi2();     \
       tdata##q##w.deta[j] = recoTracklets##q##w[j].deta();     \
@@ -939,7 +996,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                                                                \
    trackletTree##q##w->Fill();                                 \
 }
-
       fillTrackletTree(1, 3);
       fillTrackletTree(2, 3);
       fillTrackletTree(1, 4);

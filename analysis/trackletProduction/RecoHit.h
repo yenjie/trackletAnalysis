@@ -15,17 +15,19 @@ using namespace std;
 
 class RecoHit {
    public:
-      RecoHit(double _eta, double _phi, double _r, double _cs) {
+      RecoHit(double _eta, double _phi, double _r, double _cs, double _ch) {
          eta = _eta;
          phi = _phi;
          r = _r;
          cs = _cs;
+         ch = _ch;
       };
-      RecoHit(double _eta, double _phi, double _r, double _cs, int _l) {
+      RecoHit(double _eta, double _phi, double _r, double _cs, double _ch, int _l) {
          eta = _eta;
          phi = _phi;
          r = _r;
          cs = _cs;
+         ch = _ch;
          layer = _l;
       };
 
@@ -34,9 +36,9 @@ class RecoHit {
       double eta;
       double phi;
       double r;
-      int layer;
       double cs;   // cluster size
       double ch;   // cluster charge
+      int layer;
 };
 
 class SelectionCriteria {
@@ -88,10 +90,7 @@ class TrackletData {
       bool passDS, passSingleTrack;
       int ntrks, ntrksCut;
       int nPU, recoPU;
-      float vzPU[20];
-      int nVtx;
-      float vtxVz[5000], vtxSigma2[5000];
-      int vtxNz[5000];
+      float vzPU[12];
       float clusVtxQual1, clusVtxQual2, clusVtxQual3;
 };
 
@@ -124,6 +123,11 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       y0 = 0;
    }
 
+   if (vz!=0 && firstCall==0) {
+      cout << "Beamspot X0 = " << x0 << " Y0 = " << y0 << endl;
+      firstCall = 1;
+   }
+
    if (layer == 1) {
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
          if (par.phi1[ihit]>-0.3904153 && par.phi1[ihit]<-0.3904152 && par.eta1[ihit]>-1.45722 && par.eta1[ihit]<-1.45721)
@@ -132,7 +136,7 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
             continue;
          if (par.phi1[ihit]>2.0982 && par.phi1[ihit]<2.0984 && par.eta1[ihit]>-0.9114 && par.eta1[ihit]<-0.9112)
             continue;
-         RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], 1);
+         RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], par.ch1[ihit], 1);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
          // put artifical split hits
@@ -150,7 +154,7 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
             continue;
          if (par.phi2[ihit]>2.1157 && par.phi2[ihit]<2.1158 && par.eta2[ihit]>-1.9016 && par.eta2[ihit]<-1.9015)
             continue;
-         RecoHit tmp(par.eta2[ihit], par.phi2[ihit], par.r2[ihit], par.cs2[ihit], 2);
+         RecoHit tmp(par.eta2[ihit], par.phi2[ihit], par.r2[ihit], par.cs2[ihit], par.ch2[ihit], 2);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
          // put artifical split hits
@@ -192,32 +196,30 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
             continue;
          if (par.phi3[ihit]>0.07 && par.phi3[ihit]<0.073 && par.eta3[ihit]>-0.63 && par.eta3[ihit]<-0.54)
             continue;
-         RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit], 3);
+         RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit], par.ch3[ihit], 3);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
          // put artifical split hits
          if (gRandom->Rndm()<splitProb) hits.push_back(tmp);
       }
-   } else if (layer == 4) {
+   } else if (layer%10 == 4) {
       for (int ihit = 0; ihit < par.nhits4; ++ihit) {
-         RecoHit tmp(par.eta4[ihit], par.phi4[ihit], par.r4[ihit], par.cs4[ihit], 4);
-         if (gRandom->Rndm()<dropProb) continue;
-         hits.push_back(tmp);
-         // put artifical split hits
-         if (gRandom->Rndm()<splitProb) hits.push_back(tmp);
+         if ((layer/10==2 && par.r4[ihit]<9.0) || (layer/10==3 && par.r4[ihit]>9.0)) {
+            RecoHit tmp(par.eta4[ihit], par.phi4[ihit], par.r4[ihit], par.cs4[ihit], par.ch4[ihit], layer/10);
+            hits.push_back(tmp);
+         }
       }
-   } else if (layer == 5) {
+   } else if (layer%10 == 5) {
       for (int ihit = 0; ihit < par.nhits5; ++ihit) {
-         RecoHit tmp(par.eta5[ihit], par.phi5[ihit], par.r5[ihit], par.cs5[ihit], 5);
-         if (gRandom->Rndm()<dropProb) continue;
-         hits.push_back(tmp);
-         // put artifical split hits
-         if (gRandom->Rndm()<splitProb) hits.push_back(tmp);
+         if ((layer/10==2 && par.r5[ihit]<9.0) || (layer/10==3 && par.r5[ihit]>9.0)) {
+            RecoHit tmp(par.eta5[ihit], par.phi5[ihit], par.r5[ihit], par.cs5[ihit], par.ch5[ihit], layer/10);
+            hits.push_back(tmp);
+         }
       }
    }
    sort (hits.begin(), hits.end(), comparePhi);
 
-   for (int ihit = 0; ihit < (int)hits.size(); ++ihit) {
+   for (int ihit = 0; ihit<(int)hits.size(); ++ihit) {
       // double dr = 0;
       // double dphi = 10;
       // double deta = 10;
@@ -244,13 +246,8 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
          z += gRandom->Gaus(0, 0.005);
       }
 
-      if (vz!=0 && firstCall==0) {
-         cout << "Beamspot X0 = " << x0 << " Y0 = " << y0 << endl;
-         firstCall = 1;
-      }
-
       ROOT::Math::XYZVector tmpVector(x-x0, y-y0, z-vz);
-      RecoHit tmpHit(tmpVector.eta(), tmpVector.phi(), tmpVector.rho(), hits[ihit].cs);
+      RecoHit tmpHit(tmpVector.eta(), tmpVector.phi(), tmpVector.rho(), hits[ihit].cs, hits[ihit].ch, hits[ihit].layer);
       double eta = tmpVector.eta();
 
       if (cutOnClusterSize && fabs(eta)<=0.5 &&                  hits[ihit].cs<1) continue;
