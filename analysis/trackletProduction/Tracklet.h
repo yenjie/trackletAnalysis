@@ -20,7 +20,7 @@ typedef struct phit {
 
 class Tracklet {
    public:
-      Tracklet(double eta1, double eta2, double phi1, double phi2, double r1, double r2, double cs1, double cs2);
+      Tracklet(double eta1, double eta2, double phi1, double phi2, double r1, double r2, double cs1, double cs2, double ch1, double ch2);
       ~Tracklet() {};
 
       double eta1() {return eta1_;}
@@ -31,6 +31,8 @@ class Tracklet {
       double r2()   {return r2_;}
       double cs1()  {return cs1_;}
       double cs2()  {return cs2_;}
+      double ch1()  {return ch1_;}
+      double ch2()  {return ch2_;}
 
       double deta() {return eta1_-eta2_;}
       double dphi();
@@ -62,6 +64,8 @@ class Tracklet {
       double r2_;
       double cs1_;
       double cs2_;
+      double ch1_;
+      double ch2_;
 
       int it1_;   // first iterator
       int it2_;   // second iterator
@@ -77,7 +81,7 @@ class Tracklet {
       double dR2_;
 };
 
-Tracklet::Tracklet(double eta1, double eta2, double phi1, double phi2, double r1, double r2, double cs1, double cs2) {
+Tracklet::Tracklet(double eta1, double eta2, double phi1, double phi2, double r1, double r2, double cs1, double cs2, double ch1, double ch2) {
    eta1_ = eta1;
    eta2_ = eta2;
 
@@ -91,6 +95,9 @@ Tracklet::Tracklet(double eta1, double eta2, double phi1, double phi2, double r1
 
    cs1_ = cs1;
    cs2_ = cs2;
+
+   ch1_ = ch1;
+   ch2_ = ch2;
 
    dphi_ = -10000;
    deta_ = -10000;
@@ -162,6 +169,15 @@ vector<Tracklet> recoTracklets(vector<RecoHit> allhits, int l1, int l2) {
       int l = allhits[a].layer - 1;
       int sl = l1 + l2 - l;
 
+      int tl1 = l1;
+      int tl2 = l2;
+      int tsl = sl;
+      if (l1 == l2) {
+         tl1 = l;
+         tl2 = 3 - l;
+         tsl = tl2;
+      }
+
       phit nexthit;
       nexthit.index = a;
       nexthit.paired = 0;
@@ -171,15 +187,13 @@ vector<Tracklet> recoTracklets(vector<RecoHit> allhits, int l1, int l2) {
       std::vector<phit>::iterator thisl = hits[l].end() - 1;
       std::vector<phit>::iterator thatl = hits[sl].end() - 1;
       for (; !hits[sl].empty() && !(*thisl).paired && thatl+1!=hits[sl].begin(); --thatl) {
-         // if ((*thatl).index == (*thisl).index) continue;
+         if ((*thatl).index == (*thisl).index) continue;
          if ((*thatl).paired) {
             valid[(*thatl).cindex] = 0;
             if (abs(allhits[(*thatl).index].eta - allhits[(*thatl).pindex].eta) < abs(allhits[(*thatl).index].eta - allhits[(*thisl).index].eta)) {
                tl[l] = (*thatl).pindex;
-               tl[sl] = (*thatl).index;
-               Tracklet tracklet(allhits[tl[l1]].eta, allhits[tl[l2]].eta, allhits[tl[l1]].phi, allhits[tl[l2]].phi, allhits[tl[l1]].r, allhits[tl[l2]].r, allhits[tl[l1]].cs, allhits[tl[l2]].cs);
-               // tl[3-l] = (*thatl).index;
-               // Tracklet tracklet(allhits[tl[l]].eta, allhits[tl[3-l]].eta, allhits[tl[l]].phi, allhits[tl[3-l]].phi, allhits[tl[l]].r, allhits[tl[3-l]].r, allhits[tl[l]].cs, allhits[tl[3-l]].cs);
+               tl[tsl] = (*thatl).index;
+               Tracklet tracklet(allhits[tl[tl1]].eta, allhits[tl[tl2]].eta, allhits[tl[tl1]].phi, allhits[tl[tl2]].phi, allhits[tl[tl1]].r, allhits[tl[tl2]].r, allhits[tl[tl1]].cs, allhits[tl[tl2]].cs, allhits[tl[tl1]].ch, allhits[tl[tl2]].ch);
                tracklets.push_back(tracklet);
 
                hits[sl].erase(thatl);
@@ -224,11 +238,19 @@ vector<Tracklet> recoTracklets(vector<RecoHit> allhits, int l1, int l2) {
       if (valid[t]) {
          int l = allhits[cands[t].index].layer - 1;
          int sl = l1 + l2 - l;
+
+         int tl1 = l1;
+         int tl2 = l2;
+         int tsl = sl;
+         if (l1 == l2) {
+            tl1 = l;
+            tl2 = 3 - l;
+            tsl = tl2;
+         }
+
          tl[l] = cands[t].index;
-         tl[sl] = cands[t].pindex;
-         Tracklet tracklet(allhits[tl[l1]].eta, allhits[tl[l2]].eta, allhits[tl[l1]].phi, allhits[tl[l2]].phi, allhits[tl[l1]].r, allhits[tl[l2]].r, allhits[tl[l1]].cs, allhits[tl[l2]].cs);
-         // tl[3-l] = cands[t].pindex;
-         // Tracklet tracklet(allhits[tl[l]].eta, allhits[tl[3-l]].eta, allhits[tl[l]].phi, allhits[tl[3-l]].phi, allhits[tl[l]].r, allhits[tl[3-l]].r, allhits[tl[l]].cs, allhits[tl[3-l]].cs);
+         tl[tsl] = cands[t].pindex;
+         Tracklet tracklet(allhits[tl[tl1]].eta, allhits[tl[tl2]].eta, allhits[tl[tl1]].phi, allhits[tl[tl2]].phi, allhits[tl[tl1]].r, allhits[tl[tl2]].r, allhits[tl[tl1]].cs, allhits[tl[tl2]].cs, allhits[tl[tl1]].ch, allhits[tl[tl2]].ch);
          tracklets.push_back(tracklet);
       }
    }
@@ -479,10 +501,12 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("phi1", tdata.phi1, "phi1[nTracklets]/F");
    trackletTree->Branch("r1", tdata.r1, "r1[nTracklets]/F");
    trackletTree->Branch("cs1", tdata.cs1, "cs1[nTracklets]/F");
+   trackletTree->Branch("ch1", tdata.ch1, "ch1[nTracklets]/F");
    trackletTree->Branch("eta2", tdata.eta2, "eta2[nTracklets]/F");
    trackletTree->Branch("phi2", tdata.phi2, "phi2[nTracklets]/F");
    trackletTree->Branch("r2", tdata.r2, "r2[nTracklets]/F");
    trackletTree->Branch("cs2", tdata.cs2, "cs2[nTracklets]/F");
+   trackletTree->Branch("ch2", tdata.ch1, "ch2[nTracklets]/F");
    trackletTree->Branch("deta", tdata.deta, "deta[nTracklets]/F");
    trackletTree->Branch("dphi", tdata.dphi, "dphi[nTracklets]/F");
    trackletTree->Branch("recoPU", &tdata.recoPU, "recoPU/I");
@@ -503,10 +527,6 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
 
    trackletTree->Branch("nPU", &tdata.nPU, "nPU/I");
    trackletTree->Branch("vzPU", tdata.vzPU, "vzPU[nPU]/F");
-   trackletTree->Branch("nVtx", &tdata.nVtx, "nVtx/I");
-   trackletTree->Branch("vtxVz", tdata.vtxVz, "vtxVz[nVtx]/F");
-   trackletTree->Branch("vtxNz", tdata.vtxNz, "vtxNz[nVtx]/I");
-   trackletTree->Branch("vtxSigma2", tdata.vtxSigma2, "vtxSigma2[nVtx]/F");
 
    trackletTree->Branch("xi", &tdata.xi, "xi/F");
    trackletTree->Branch("passDS", &tdata.passDS, "passDS/O");
