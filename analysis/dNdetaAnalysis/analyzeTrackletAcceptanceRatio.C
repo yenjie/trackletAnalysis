@@ -6,11 +6,20 @@
 #include <TMath.h>
 #include <TCut.h>
 
-void normalize(TH2F *hData, int nEtaBin, int nVzBin) {
+void normalize(TH2F *hData, int nEtaBin, int nVzBin, bool reweight = 1) {
+/*
+   1  Constant     1.86973e-01   5.69091e-04   2.02006e-06   3.48340e-01
+   2  Mean        -2.14145e+00   1.08618e-02   4.84445e-05  -5.12350e-04
+   3  Sigma        4.30854e+00 
+  */
+   TH1D *hTmp = (TH1D*)hData->ProjectionY("hTmp");
    for (int x=1; x<=nEtaBin; x++) {
       for (int y=1; y<=nVzBin; y++) {
+         double myVz = hTmp->GetBinCenter(y);
+         double DataPdf = TMath::Gaus(myVz, -2.14145, 4.30854, 1);
+         if (!reweight) DataPdf=1;
          if (hData->GetBinContent(x, y)>0 && x!=0 && x<=nEtaBin && y!=0 && y<=nVzBin) {
-            hData->SetBinContent(x, y, 1);
+            hData->SetBinContent(x, y, DataPdf);
          } else {
             hData->SetBinContent(x, y, 0);
          }
@@ -18,7 +27,7 @@ void normalize(TH2F *hData, int nEtaBin, int nVzBin) {
    }
 }
 
-void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const char* fnData) {
+void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC="/data/biran/trackletAnalysis/analysis/trackletProduction/TrackletTree-PYTHIA8-OFFICIAL-ACCEPTANCE.root", const char* fnData="/data/biran/trackletAnalysis/analysis/trackletProduction/TrackletTree-Run247324-PromptReco-ACCEPTANCE.root") {
    TFile* fMC = new TFile(fnMC, "READ");
    TTree* tMC = (TTree*)fMC->Get(Form("TrackletTree%i", TrackletType));
    TFile* fData = new TFile(fnData, "READ");
