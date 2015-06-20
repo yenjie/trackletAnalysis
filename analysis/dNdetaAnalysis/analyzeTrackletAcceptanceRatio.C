@@ -28,19 +28,20 @@ void normalize(TH2F *hData, int nEtaBin, int nVzBin, bool reweight = 1) {
 }
 
 void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC="/data/biran/trackletAnalysis/analysis/trackletProduction/TrackletTree-PYTHIA8-OFFICIAL-ACCEPTANCE.root", const char* fnData="/data/biran/trackletAnalysis/analysis/trackletProduction/TrackletTree-Run247324-PromptReco-ACCEPTANCE.root") {
+//void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC="../sample/v9-RanSample/TrackletTree-PYTHIA8-aAcceptance.root", const char* fnData="../sample/v9-RanSample/TrackletTree-Run247324_Express_Acceptance.root") {
    TFile* fMC = new TFile(fnMC, "READ");
    TTree* tMC = (TTree*)fMC->Get(Form("TrackletTree%i", TrackletType));
    TFile* fData = new TFile(fnData, "READ");
    TTree* tData = (TTree*)fData->Get(Form("TrackletTree%i", TrackletType));
 
-   int nEtaBin = 1200;
-   int nVzBin = 1100;
+   int nEtaBin = 1200/2.;
+   int nVzBin = 1100/2.;
    int VzRangeL = -13;
    int VzRangeH = 9;
 
    TFile *outfile = new TFile(Form("acceptance-%d.root", TrackletType), "recreate");
 
-   TCut myCut = "abs(deta)<0.04 && abs(dphi)<0.04 && vz[1]>-13 && vz[1]<9";
+   TCut myCut = "abs(deta)<0.1 && abs(dphi)<1 && vz[1]>-13 && vz[1]<9";
    TH2F *hData = new TH2F("hData", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
    TH2F *hMC = new TH2F("hMC", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
    TH2F *hAccData = new TH2F("hAccData", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
