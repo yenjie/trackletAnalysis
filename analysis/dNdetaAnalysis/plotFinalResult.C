@@ -55,7 +55,12 @@ int plotFinalResult(int TrackletType, const char* filename,
 
    // Input trackletTree
    TTree* TrackletTree = (TTree*)f->Get(Form("TrackletTree%d", TrackletType));
-   TrackletTree->SetName("TrackletTree");
+   TTree* TrackletTree12 = (TTree*)f->Get("TrackletTree12");
+   TTree* TrackletTree23 = (TTree*)f->Get("TrackletTree23");
+//   TrackletTree->SetName("TrackletTree");
+   TrackletTree->AddFriend(TrackletTree12);
+   TrackletTree->AddFriend(TrackletTree23);
+
    bool isMC = false;
    if (TrackletTree->GetEntries("npart!=0")!=0) {
       isMC = true;
@@ -139,11 +144,12 @@ int plotFinalResult(int TrackletType, const char* filename,
    TCut MCSelection;
    TString offlineSelection;
    TCut evtSelection;
+   TString vtxComp = "(clusVtxQual1>0.013*TrackletTree12.nhit1||TrackletTree12.nhit1<150)&&(clusVtxQual1>0.008*TrackletTree12.nhit2||TrackletTree12.nhit2<130)&&(clusVtxQual1>(0.85+0.0045*TrackletTree23.nhit2)||TrackletTree23.nhit2<50)";
 
    switch (selection) {
       case 0:
          MCSelection = "1";
-         offlineSelection = "nBX==208";// && nTracklets/nHits>log(nHits)/25 && nTracklets/nHits<0.57-log(nHits)/25";
+         offlineSelection = TString("nBX==208")+TString("&&")+vtxComp;// && nTracklets/nHits>log(nHits)/25 && nTracklets/nHits<0.57-log(nHits)/25";
          printf("---------- INELASTIC definition\n");
          break;
       case 1:
@@ -402,7 +408,7 @@ int plotFinalResult(int TrackletType, const char* filename,
                   double alpha = truth/nsig;
                   if (verbose) cout << "alpha calc: " << x << " " << y << " " << z << " " << truth << " " << val << " " << (1-beta) << " " << endl;
                   double alphaErr = truth/nsig*sqrt(valErr/nsig*valErr/nsig+truthErr/truth*truthErr/truth*0);
-                  if (beta!=1 && alpha/alphaErr>-3 && alpha<500 && alpha>0) {
+                  if (beta!=1 && alpha/alphaErr>-3 && alpha<3 && alpha>0) {
                      alphas->Fill((EtaBins[x]+EtaBins[x-1])/2, (TrackletBins[y]+TrackletBins[y-1])/2, (VzBins[z]+VzBins[z-1])/2, alpha, alphaErr);
                      alphaPlots[x-1][z-1]->SetBinContent(y, alpha);
                      alphaPlots[x-1][z-1]->SetBinError(y, alphaErr);
@@ -672,8 +678,8 @@ int plotFinalResult(int TrackletType, const char* filename,
                if (accData==0 && accMC==0) {
                   cout << "Error in Acceptance Correction!!!! " << x << " " << z << endl;
                } else {
-                  alpha = alpha / accData * accMC;
-                  alphaErr = alphaErr / accData * accMC;
+                  alpha = alpha * accMC / accData;
+                  alphaErr = alphaErr * accMC / accData;
                   // cout << accMC/accData << endl;
                }
             }
