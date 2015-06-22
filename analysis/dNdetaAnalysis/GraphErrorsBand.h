@@ -86,7 +86,7 @@ TGraph* GetErrorBand(TH1F* hist, Double_t* ratio1, Double_t* ratio2, Double_t xo
    if (!ing)  return 0;
    Int_t n = ing->GetN();
    if (!n) return 0;
-   TGraph* outg = new TGraph(2*n-11);
+   TGraph* outg = new TGraph(2*n-13);
    Double_t* x = ing->GetX();
    Double_t* y = ing->GetY();
    Double_t* yerr = ing->GetEY();
@@ -97,20 +97,21 @@ TGraph* GetErrorBand(TH1F* hist, Double_t* ratio1, Double_t* ratio2, Double_t xo
 	    " GetTGraphErrorsBand is written with wrong assumptions");
       return 0;
    }
-   for (Int_t i=3; i<n-3; i++) {
+   for (Int_t i=4; i<n-4; i++) {
       Double_t shiftedx = x[i];
-      if (i == 3) shiftedx -= xoffset;
-      if (i == n-4) shiftedx += xoffset;
+      if (i == 4) shiftedx -= xoffset;
+      if (i == n-5) shiftedx += xoffset;
       outg->SetPoint(i-3, shiftedx, y[i]*(1-ratio2[i]));
-      outg->SetPoint(2*n-i-10, shiftedx, y[i]*(1+ratio1[i]));
+      outg->SetPoint(2*n-i-12, shiftedx, y[i]*(1+ratio1[i]));
    }
-   outg->SetPoint(2*n-12, x[3]-xoffset, y[3]*(1-ratio2[3]));
+   outg->SetPoint(2*n-15, x[4]-xoffset, y[4]*(1-ratio2[4]));
 
    outg->SetLineColor(ing->GetLineColor());
    outg->SetLineWidth(ing->GetLineWidth());
    outg->SetLineStyle(ing->GetLineStyle());
    outg->SetFillColor(17);
    outg->SetFillStyle(1002);
+   outg->Print();
    return outg;
 }
 
