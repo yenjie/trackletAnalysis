@@ -51,9 +51,9 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    h13->SetMarkerSize(1);
    h23->SetMarkerSize(1);
 
-   clearNBins(3, h12);
-   clearNBins(5, h13);
-   clearNBins(5, h23);
+   clearNBins(4, h12);
+   clearNBins(6, h13);
+   clearNBins(6, h23);
 
    h12->SetXTitle("#eta");
    h12->SetYTitle("dN/d#eta");
@@ -70,7 +70,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    leg->SetLineColor(1);
    leg->SetLineStyle(1);
    leg->SetLineWidth(1);
-   leg->SetFillColor(0);
+   leg->SetFillStyle(0);
    leg->AddEntry("hTruth", name, "");
    leg->AddEntry("h12", "Reconstructed (1st+2nd layers)", "pl");
    leg->AddEntry("h13", "Reconstructed (1st+3rd layers)", "pl");
@@ -92,7 +92,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
       avg += h23->GetBinContent(i);
       avgErr += h23->GetBinError(i)*h23->GetBinError(i);
       avgErr = sqrt(avgErr);
-      if (i>5&&i<=_NETABIN-5) {
+      if (i>6&&i<=_NETABIN-6) {
          avg /= 3.0;
          avgErr /= 3.0;
       }
@@ -118,7 +118,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    leg2->SetLineColor(1);
    leg2->SetLineStyle(1);
    leg2->SetLineWidth(1);
-   leg2->SetFillColor(0);
+   leg2->SetFillStyle(0);
 
    leg2->AddEntry("hTruth", name, "");
    leg2->AddEntry(hAvg, "Reconstructed Tracklets", "pl");
@@ -145,7 +145,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
       avg += h23->GetBinContent(_NETABIN+1-i);
       avgErr += h23->GetBinError(_NETABIN+1-i)*h23->GetBinError(_NETABIN+1-i);
       avgErr = sqrt(avgErr);
-      if (i>5) {
+      if (i>6) {
          avg /= 6.0;
          avgErr /= 6.0;
       } else {
@@ -172,7 +172,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    leg3->SetLineColor(1);
    leg3->SetLineStyle(1);
    leg3->SetLineWidth(1);
-   leg3->SetFillColor(0);
+   leg3->SetFillStyle(0);
 
    leg3->AddEntry("hTruth", name, "");
    leg3->AddEntry(hSym, "Reconstructed Tracklets", "pl");
@@ -181,5 +181,32 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
 
    outfile->Write();
 
+   TCanvas *cRatio = new TCanvas("cRatio","",600,600);
+   TH1D *h13Ratio = (TH1D*)h13->Clone("h13Ratio");
+   TH1D *h23Ratio = (TH1D*)h23->Clone("h23Ratio");
+   h13Ratio->Divide(h12);
+   h23Ratio->Divide(h12);
+   h13Ratio->Draw();
+   h23Ratio->Draw("same");
+   
+   TFile *infAcc12 = new TFile("correction/acceptance-12.root");
+   TFile *infAcc13 = new TFile("correction/acceptance-13.root");
+   TFile *infAcc23 = new TFile("correction/acceptance-23.root");
+   
+   TH1D *hRatio12 = (TH1D*)infAcc12->Get("hRatio");
+   hRatio12->SetName("hRatio12");
+   TH1D *hRatio13 = (TH1D*)infAcc13->Get("hRatio");
+   hRatio13->SetName("hRatio13");
+   TH1D *hRatio23 = (TH1D*)infAcc23->Get("hRatio");
+   hRatio23->SetName("hRatio23");
+   
+   TH1D *hDoubleRatio13=(TH1D*)hRatio12->Clone("hDoubleRatio13");
+   TH1D *hDoubleRatio23=(TH1D*)hRatio12->Clone("hDoubleRatio23");
+   
+   hDoubleRatio13->Divide(hRatio13);
+   hDoubleRatio23->Divide(hRatio23);
+//   hDoubleRatio13->Draw("same");
+//   hDoubleRatio23->Draw("same");
+   
    return 0;
 }
