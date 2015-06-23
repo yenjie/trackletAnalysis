@@ -1,4 +1,4 @@
-#define dndetaRange 9
+#define dndetaRange 8
 #define _NETABIN 30
 
 #include <iostream>
@@ -19,12 +19,19 @@ void clearNBins(int n, TH1F* h) {
    }
 }
 
-int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
-   TFile *infPYTHIA = new TFile("correction/correction-12-PYTHIA8-CUETP8M1.root");
-   TH1F* hMC = (TH1F*)infPYTHIA->FindObjectAny("hTruthWOSelection");
-   // TFile *infEPOS = new TFile("correction/correction-12-EPOS.root");
-   // TH1F* hMC = (TH1F*)infEPOS->FindObjectAny("hTruthWOSelection");
-
+int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
+   TFile *infPYTHIA = new TFile("gen/pythia_CUETP8M1.root");
+   TH1F* hPYTHIA = (TH1F*)infPYTHIA->FindObjectAny("h");
+   hPYTHIA->SetName("hPYTHIA");
+   TFile *infPYTHIAM = new TFile("gen/pythia_Monash.root");
+   TH1F* hPYTHIAM = (TH1F*)infPYTHIAM->FindObjectAny("h");
+   hPYTHIAM->SetName("hPYTHIAM");
+   TFile *infEPOS = new TFile("gen/EPOS.root");
+   TH1F* hEPOS = (TH1F*)infEPOS->FindObjectAny("h");
+   hEPOS->SetName("hEPOS");
+   TFile *infQGSJet = new TFile("gen/QGSJet.root");
+   TH1F* hQGSJet = (TH1F*)infQGSJet->FindObjectAny("h");
+   hQGSJet->SetName("hQGSJet");
    TFile* inf12 = new TFile(Form("correction/correction-12-%s.root", name));
    TH1F* h12 = (TH1F*)inf12->FindObjectAny("hMeasuredFinal");
    h12->SetName("h12");
@@ -57,9 +64,17 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
 
    h12->SetXTitle("#eta");
    h12->SetYTitle("dN/d#eta");
-   hMC->SetLineColor(1);
-   hMC->SetMarkerColor(1);
-   hMC->Draw("same");
+   hPYTHIA->SetLineColor(4);
+   hPYTHIA->SetMarkerColor(4);
+   hPYTHIAM->SetLineColor(2);
+   hPYTHIAM->SetMarkerColor(2);
+   hQGSJet->SetLineColor(kGreen+1);
+   hQGSJet->SetMarkerColor(kGreen+1);
+   hEPOS->SetLineColor(6);
+   hEPOS->SetMarkerColor(6);
+   hPYTHIA->Draw("hist c same");
+   hPYTHIAM->Draw("hist c same");
+   hEPOS->Draw("hist c same");
    h12->Draw("same");
    h13->Draw("same");
    h23->Draw("same");
@@ -71,7 +86,11 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    leg->SetLineStyle(1);
    leg->SetLineWidth(1);
    leg->SetFillStyle(0);
-   leg->AddEntry("hTruth", name, "");
+   leg->AddEntry("hTruth", title, "");
+   leg->AddEntry("hPYTHIA", "PYTHIA8 CUETP8M1", "l");
+   leg->AddEntry("hPYTHIAM", "PYTHIA8 Monash", "l");
+   leg->AddEntry("hEPOS", "EPOS LHC", "l");
+   leg->AddEntry("hQGSJet", "QGSJet-II", "l");
    leg->AddEntry("h12", "Reconstructed (1st+2nd layers)", "pl");
    leg->AddEntry("h13", "Reconstructed (1st+3rd layers)", "pl");
    leg->AddEntry("h23", "Reconstructed (2nd+3rd layers)", "pl");
@@ -109,7 +128,10 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
                            0.048,  0.048,      0,      0,      0};
    TGraph* gErrorBand = GetErrorBand(hAvg, erreta, erreta, 0.1);
    gErrorBand->Draw("F");
-   hMC->Draw("same");
+   hPYTHIA->Draw("hist c same");
+   hPYTHIAM->Draw("hist c same");
+   hQGSJet->Draw("hist c same");
+   hEPOS->Draw("hist c same");
    hAvg->Draw("p same");
 
    TLegend* leg2 = new TLegend(0.2, 0.18, 0.9, 0.35);
@@ -120,7 +142,11 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    leg2->SetLineWidth(1);
    leg2->SetFillStyle(0);
 
-   leg2->AddEntry("hTruth", name, "");
+   leg2->AddEntry("hTruth", title, "");
+   leg2->AddEntry("hPYTHIA", "PYTHIA8 CUETP8M1", "l");
+   leg2->AddEntry("hPYTHIAM", "PYTHIA8 Monash", "l");
+   leg2->AddEntry("hEPOS", "EPOS LHC", "l");
+   leg2->AddEntry("hQGSJet", "QGSJet-II", "l");
    leg2->AddEntry(hAvg, "Reconstructed Tracklets", "pl");
    leg2->Draw();
    c2->SaveAs(Form("merged/avg-%s.pdf", name));
@@ -161,7 +187,10 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    hSym->Draw("p");
    TGraph* gErrorBand2 = GetErrorBand(hSym, erreta, erreta, 0.1);
    gErrorBand2->Draw("F");
-   hMC->Draw("same");
+   hPYTHIA->Draw("hist c same");
+   hPYTHIAM->Draw("hist c same");
+   hQGSJet->Draw("hist c same");
+   hEPOS->Draw("hist c same");
    hSym->SetLineColor(4);
    hSym->SetMarkerColor(4);
    hSym->Draw("p same");
@@ -174,7 +203,11 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13") {
    leg3->SetLineWidth(1);
    leg3->SetFillStyle(0);
 
-   leg3->AddEntry("hTruth", name, "");
+   leg3->AddEntry("hTruth", title, "");
+   leg3->AddEntry("hPYTHIA", "PYTHIA8 CUETP8M1", "l");
+   leg3->AddEntry("hPYTHIAM", "PYTHIA8 Monash", "l");
+   leg3->AddEntry("hEPOS", "EPOS LHC", "l");
+   leg3->AddEntry("hQGSJet", "QGSJet-II", "l");
    leg3->AddEntry(hSym, "Reconstructed Tracklets", "pl");
    leg3->Draw();
    c3->SaveAs(Form("merged/avgsym-%s.pdf", name));
