@@ -6,6 +6,7 @@
 #include <TFile.h>
 #include <TCanvas.h>
 #include <TH1F.h>
+#include <TH2D.h>
 #include <TLegend.h>
 
 #include "GraphErrorsBand.h"
@@ -21,16 +22,16 @@ void clearNBins(int n, TH1F* h) {
 
 int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    TFile *infPYTHIA = new TFile("gen/pythia_CUETP8M1.root");
-   TH1F* hPYTHIA = (TH1F*)infPYTHIA->FindObjectAny("h");
+   TH1F* hPYTHIA = (TH1F*)infPYTHIA->FindObjectAny("hEta");
    hPYTHIA->SetName("hPYTHIA");
    TFile *infPYTHIAM = new TFile("gen/pythia_Monash.root");
-   TH1F* hPYTHIAM = (TH1F*)infPYTHIAM->FindObjectAny("h");
+   TH1F* hPYTHIAM = (TH1F*)infPYTHIAM->FindObjectAny("hEta");
    hPYTHIAM->SetName("hPYTHIAM");
    TFile *infEPOS = new TFile("gen/EPOS.root");
-   TH1F* hEPOS = (TH1F*)infEPOS->FindObjectAny("h");
+   TH1F* hEPOS = (TH1F*)infEPOS->FindObjectAny("hEta");
    hEPOS->SetName("hEPOS");
    TFile *infQGSJet = new TFile("gen/QGSJet.root");
-   TH1F* hQGSJet = (TH1F*)infQGSJet->FindObjectAny("h");
+   TH1F* hQGSJet = (TH1F*)infQGSJet->FindObjectAny("hEta");
    hQGSJet->SetName("hQGSJet");
    TFile* inf12 = new TFile(Form("correction/correction-12-%s.root", name));
    TH1F* h12 = (TH1F*)inf12->FindObjectAny("hMeasuredFinal");
@@ -66,20 +67,20 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    h12->SetYTitle("dN/d#eta");
    hPYTHIA->SetLineColor(4);
    hPYTHIA->SetMarkerColor(4);
-   hPYTHIAM->SetLineColor(2);
-   hPYTHIAM->SetMarkerColor(2);
-   hQGSJet->SetLineColor(kGreen+1);
-   hQGSJet->SetMarkerColor(kGreen+1);
+   hPYTHIAM->SetLineColor(kGreen+2);
+   hPYTHIAM->SetMarkerColor(kGreen+2);
+   hQGSJet->SetLineColor(2);
+   hQGSJet->SetMarkerColor(2);
    hEPOS->SetLineColor(6);
    hEPOS->SetMarkerColor(6);
-   hPYTHIA->Draw("hist c same");
-   hPYTHIAM->Draw("hist c same");
-   hEPOS->Draw("hist c same");
+   //hPYTHIA->Draw("hist c same");
+   //hPYTHIAM->Draw("hist c same");
+   //hEPOS->Draw("hist c same");
    h12->Draw("same");
    h13->Draw("same");
    h23->Draw("same");
 
-   TLegend* leg = new TLegend(0.2, 0.18, 1, 0.35);
+   TLegend* leg = new TLegend(0.2, 0.18, 0.9, 0.55);
    leg->SetBorderSize(0);
    leg->SetTextFont(62);
    leg->SetLineColor(1);
@@ -87,10 +88,10 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    leg->SetLineWidth(1);
    leg->SetFillStyle(0);
    leg->AddEntry("hTruth", title, "");
-   leg->AddEntry("hPYTHIA", "PYTHIA8 CUETP8M1", "l");
-   leg->AddEntry("hPYTHIAM", "PYTHIA8 Monash", "l");
-   leg->AddEntry("hEPOS", "EPOS LHC", "l");
-   leg->AddEntry("hQGSJet", "QGSJet-II", "l");
+   //leg->AddEntry("hPYTHIA", "PYTHIA8 CUETP8M1", "l");
+   //leg->AddEntry("hPYTHIAM", "PYTHIA8 Monash", "l");
+   //leg->AddEntry("hEPOS", "EPOS LHC", "l");
+   //leg->AddEntry("hQGSJet", "QGSJet-II", "l");
    leg->AddEntry("h12", "Reconstructed (1st+2nd layers)", "pl");
    leg->AddEntry("h13", "Reconstructed (1st+3rd layers)", "pl");
    leg->AddEntry("h23", "Reconstructed (2nd+3rd layers)", "pl");
@@ -134,7 +135,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    hEPOS->Draw("hist c same");
    hAvg->Draw("p same");
 
-   TLegend* leg2 = new TLegend(0.2, 0.18, 0.9, 0.35);
+   TLegend* leg2 = new TLegend(0.2, 0.18, 0.9, 0.55);
    leg2->SetBorderSize(0);
    leg2->SetTextFont(62);
    leg2->SetLineColor(1);
@@ -195,7 +196,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    hSym->SetMarkerColor(4);
    hSym->Draw("p same");
 
-   TLegend* leg3 = new TLegend(0.2, 0.18, 0.9, 0.35);
+   TLegend* leg3 = new TLegend(0.2, 0.18, 0.9, 0.55);
    leg3->SetBorderSize(0);
    leg3->SetTextFont(62);
    leg3->SetLineColor(1);
@@ -215,12 +216,20 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    outfile->Write();
 
    TCanvas *cRatio = new TCanvas("cRatio","",600,600);
+   TH1D *h12Ratio = (TH1D*)h12->Clone("h12Ratio");
    TH1D *h13Ratio = (TH1D*)h13->Clone("h13Ratio");
    TH1D *h23Ratio = (TH1D*)h23->Clone("h23Ratio");
-   h13Ratio->Divide(h12);
-   h23Ratio->Divide(h12);
-   h13Ratio->Draw();
+   h12Ratio->Divide(hSym);
+   h13Ratio->Divide(hSym);
+   h23Ratio->Divide(hSym);
+   
+   TH2D *hRatioTmp = new TH2D("hRatioTmp",";#eta;dN/d#eta / <dN/d#eta>",100,-3,3,100,0.8,1.1);
+   hRatioTmp->Draw();
+   h12Ratio->Draw("same");
+   h13Ratio->Draw("same");
    h23Ratio->Draw("same");
+   
+   leg->Draw();
    
    TFile *infAcc12 = new TFile("correction/acceptance-12.root");
    TFile *infAcc13 = new TFile("correction/acceptance-13.root");
@@ -235,6 +244,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    
    TH1D *hDoubleRatio13=(TH1D*)hRatio12->Clone("hDoubleRatio13");
    TH1D *hDoubleRatio23=(TH1D*)hRatio12->Clone("hDoubleRatio23");
+   
    
    hDoubleRatio13->Divide(hRatio13);
    hDoubleRatio23->Divide(hRatio23);
