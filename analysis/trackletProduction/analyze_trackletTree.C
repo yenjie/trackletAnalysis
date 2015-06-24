@@ -47,7 +47,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          long startEntry = 0,                   // Starting Entry number in the Pixel Tree
                          long endEntry = 1000000000,            // Ending Entry number in the Pixel Tree
-                         double pileUp = 0.0542,                // Artifically overlap event to mimic pile-up
+                         double pileUp = 0.005,                 // Artifically overlap event to mimic pile-up, nBX=208: 0.0542, nBX!=208: 0.005
                          bool reWeight = 1,                     // Reweight vertex distribution to match data
                          bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
                          bool useForwardPixels = 0,             // Use forward pixel detector for vertexing
@@ -219,10 +219,12 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       if (reWeight) {
          double myVz = par.vz[1];
          if (myVz < -90) {
-            TF1* f = new TF1("f", "gaus", -30, 30);
-            f->SetParameters(1, -0.394086, 5.32670);
+//            TF1* f = new TF1("f", "gaus", -30, 30);
+            TF1* f = new TF1("f", "1", -20, 20);
+//            f->SetParameters(1, -0.394086, 5.32670);
             myVz = f->GetRandom();
             delete f;
+            myVz=par.vz[0];
          }
 
          // 13 TeV Run 246908
@@ -783,13 +785,14 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       }
 
       // Cluster Vertex Compatibility =========================================
+/*
       double clusVtxQual1 = 0;
       double clusVtxQual2 = 0;
       double clusVtxQual3 = 0;
-
-      // double clusVtxQual1 = getClusVtxCompat(layer1, 1);
-      // double clusVtxQual2 = getClusVtxCompat(layer2, 2);
-      // double clusVtxQual3 = getClusVtxCompat(layer3, 3);
+*/
+       double clusVtxQual1 = getClusVtxCompat(layer1, 1);
+       double clusVtxQual2 = getClusVtxCompat(layer2, 2);
+       double clusVtxQual3 = getClusVtxCompat(layer3, 3);
 
       // Move the Vertex back
       // if (smearVertex!=0) {
