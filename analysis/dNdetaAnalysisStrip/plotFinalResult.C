@@ -66,7 +66,7 @@ int plotFinalResult(int TrackletType, const char* filename,
                     int verbose = 0,                                // set verbose level
                     int makePlot = 0,                               // make alpha plots
                     bool putUA5 = 0,                                // overlap UA5 result
-                    bool doAcceptanceCorrection = 1,                // do acceptance correction
+                    bool doAcceptanceCorrection = 0,                // do acceptance correction
                     bool doBetaCorrection = 0,                      // do beta correction
                     int doMult2 = 0,                                // multiplicity
                     bool doTriggerCorrection = 1,                   // do trigger eff correction
@@ -118,8 +118,8 @@ int plotFinalResult(int TrackletType, const char* filename,
       hAlphaB = (TH3F*)myFile->FindObjectAny("hAlphaB");
    }
 
-   int VzRangeL = -10;
-   int VzRangeH = 10;
+   int VzRangeL = -12;
+   int VzRangeH = 8;
 
    // Definition of Vz, Eta, Hit bins
    const int nTrackletBin = 12;
@@ -137,8 +137,8 @@ int plotFinalResult(int TrackletType, const char* filename,
       VzBins[i] = (double)i*(VzRangeH-VzRangeL)/(double)nVzBin+VzRangeL;
 
    // Signal and Sideband regions =============================================
-   double signalRegionCut = 1;   // dphi cut for signal region
-   double sideBandRegionCut = 2; // dphi cut for side-band region
+   double signalRegionCut = 1.0;   // dphi cut for signal region
+   double sideBandRegionCut = 2.0; // dphi cut for side-band region
    double detaCut = 0.2;           // deta cut
 
    TCut signalRegion                  = Form("abs(dphi)<%f&&abs(deta)<%f", signalRegionCut, detaCut);
@@ -148,7 +148,7 @@ int plotFinalResult(int TrackletType, const char* filename,
       signalRegion                  = "dR<0.1";
       sideBandRegionEtaSignalRegion = "dR>0.1&&dR<0.2";
    }
-   TString vtxCut = "abs(vz[1])<10";
+   TString vtxCut = "vz[1]>-12 && vz[1]<8";
    TCut MCSelection;
    TString offlineSelection;
    TCut evtSelection;
@@ -156,8 +156,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    switch (selection) {
       case 0:
          MCSelection = "1";
-//         offlineSelection = "(nHFp>0 || nHFn>0)";
-         offlineSelection = "abs(vz[1])<10";//&&(nHFp>0 || nHFn>0)";
+         offlineSelection = "1";
          printf("---------- INELASTIC definition\n");
          break;
       case 1:
@@ -177,12 +176,14 @@ int plotFinalResult(int TrackletType, const char* filename,
          break;
    }
    
-   if (!isMC) jsonSelection = "((nLumi>=11&&nLumi<=96)||(nLumi>=104&&nLumi<=145)||(nLumi>=152&&nLumi<=191)||(nLumi>=199&&nLumi<=239))";
+//   if (!isMC) jsonSelection = "((nLumi>=11&&nLumi<=96)||(nLumi>=104&&nLumi<=145)||(nLumi>=152&&nLumi<=191)||(nLumi>=199&&nLumi<=239))";
 //   if (!isMC) jsonSelection = "((nLumi>=11&&nLumi<=96))";
+   if (!isMC) jsonSelection = "nLumi>88 && nBX==208";
    else jsonSelection = "1";
    evtSelection = TCut(vtxCut + "&&" + offlineSelection + "&&" + jsonSelection);
 
    cout <<jsonSelection<<endl;
+   cout <<evtSelection<<endl;
 
    if (!isMC) MCSelection = "1";
    // Output file =============================================================

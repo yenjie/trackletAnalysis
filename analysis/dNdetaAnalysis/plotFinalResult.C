@@ -119,7 +119,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    const int nEtaBin = 30;
    const int nVzBin = 11;
 
-   double TrackletBins[nTrackletBin+1] = {-5, 1, 10, 15, 20, 25, 30, 36, 42, 50, 60, 72, 300};
+   double TrackletBins[nTrackletBin+1] = {-5, 2, 10, 15, 20, 25, 30, 36, 42, 50, 60, 72, 300};
    double EtaBins[nEtaBin+1];
    for (int i=0; i<=nEtaBin; i++)
       EtaBins[i] = (double)i*6.0/(double)nEtaBin-3.0;
@@ -144,12 +144,12 @@ int plotFinalResult(int TrackletType, const char* filename,
    TCut MCSelection;
    TString offlineSelection;
    TCut evtSelection;
-   TString vtxComp = "(clusVtxQual1>0.013*TrackletTree12.nhit1||TrackletTree12.nhit1<150)&&(clusVtxQual1>0.008*TrackletTree12.nhit2||TrackletTree12.nhit2<130)&&(clusVtxQual1>(0.85+0.0045*TrackletTree23.nhit2)||TrackletTree23.nhit2<50)";
+   TString vtxComp = "(clusVtxQual1>0.013*TrackletTree12.nhit1||TrackletTree12.nhit1<150)&&(clusVtxQual2>0.008*TrackletTree12.nhit2||TrackletTree12.nhit2<130)&&(clusVtxQual3>(0.85+0.0045*TrackletTree23.nhit2)||TrackletTree23.nhit2<50)";
 
    switch (selection) {
       case 0:
          MCSelection = "1";
-         offlineSelection = TString("nBX==208")+TString("&&")+vtxComp;// && nTracklets/nHits>log(nHits)/25 && nTracklets/nHits<0.57-log(nHits)/25";
+         offlineSelection = TString("nBX==208")+TString("&&")+vtxComp;
          printf("---------- INELASTIC definition\n");
          break;
       case 1:
@@ -266,7 +266,7 @@ int plotFinalResult(int TrackletType, const char* filename,
    bool accepRegion[nEtaBin][nVzBin];
    memset(accepRegion, 0, sizeof(bool)*nEtaBin*nVzBin);
 
-   double etaLimit = 2.5;
+   double etaLimit = 2.3;
    if (TrackletType % 10 > 3) {
       double etaLL = 1.7;
       double etaHL = 2.7;
@@ -281,17 +281,17 @@ int plotFinalResult(int TrackletType, const char* filename,
    } else {
    double endpoint2 = 30.0; // 26.66 (old)
       double rho = 7.6; // Second layer rho
-      etaLimit = 2.5;
+      etaLimit = 2.3;
       if (TrackletType % 10 == 3) {
          rho = 10.5; // Third layer rho
-         etaLimit = 2.1;
+         etaLimit = 1.9;
       }
       for (int i=0; i<nEtaBin; i++) {
          for (int j=0; j<nVzBin; j++) {
             double minEta = EtaBins[i];
             double maxEta = EtaBins[i+1];
-            double maxEdge = VzBins[j+1]-rho/tan(atan(exp(maxEta-0.1))*2);
-            double minEdge = VzBins[j]-rho/tan(atan(exp(minEta+0.1))*2);
+            double maxEdge = VzBins[j+1]-rho/tan(atan(exp(maxEta-0.2))*2);
+            double minEdge = VzBins[j]-rho/tan(atan(exp(minEta+0.2))*2);
             if (maxEdge>-endpoint2 && minEdge<endpoint2 && maxEta<etaLimit && minEta>-etaLimit)
                accepRegion[i][j] = 1;
          }
@@ -967,7 +967,8 @@ int plotFinalResult(int TrackletType, const char* filename,
    hMeasuredFinal->SetMarkerStyle(20);
    if (doTriggerCorrection) {
       for (int x=1; x<=nEtaBin; x++) {
-         double emptyCorrection = fEmptyEvt->Eval((EtaBins[x-1]+EtaBins[x])/2);
+         // double emptyCorrection = fEmptyEvt->Eval((EtaBins[x-1]+EtaBins[x])/2);
+         double emptyCorrection = hEmptyEvtCorrection->GetBinContent(x);
          hMeasuredFinal->SetBinContent(x, hMeasuredFinal->GetBinContent(x)*emptyCorrection);
          hMeasuredFinal->SetBinError(x, hMeasuredFinal->GetBinError(x)*emptyCorrection);
       }

@@ -6,11 +6,15 @@
 #include <TMath.h>
 #include <TCut.h>
 
-void normalize(TH2F *hData, int nEtaBin, int nVzBin) {
+void normalize(TH2F *hData, int nEtaBin, int nVzBin, bool reweight = 1) {
+   TH1D *hTmp = (TH1D*)hData->ProjectionY("hTmp");
    for (int x=1; x<=nEtaBin; x++) {
       for (int y=1; y<=nVzBin; y++) {
+         double myVz = hTmp->GetBinCenter(y);
+         double DataPdf = TMath::Gaus(myVz, -2.68363, 4.55798, 1);
+         if (!reweight) DataPdf=1;
          if (hData->GetBinContent(x, y)>0 && x!=0 && x<=nEtaBin && y!=0 && y<=nVzBin) {
-            hData->SetBinContent(x, y, 1);
+            hData->SetBinContent(x, y, DataPdf);
          } else {
             hData->SetBinContent(x, y, 0);
          }
@@ -18,20 +22,20 @@ void normalize(TH2F *hData, int nEtaBin, int nVzBin) {
    }
 }
 
-void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const char* fnData) {
+void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC = "/data/biran/trackletAnalysis/analysis/stripTrackletProduction/TrackletTree-PYTHIA8-OFFICIAL-ACCEPTANCE.root", const char* fnData = "/data/biran/trackletAnalysis/analysis/stripTrackletProduction/TrackletTree-Run247324-PromptReco-ACCEPTANCE.root") {
    TFile* fMC = new TFile(fnMC, "READ");
    TTree* tMC = (TTree*)fMC->Get(Form("TrackletTree%i", TrackletType));
    TFile* fData = new TFile(fnData, "READ");
    TTree* tData = (TTree*)fData->Get(Form("TrackletTree%i", TrackletType));
 
-   int nEtaBin = 1200;
-   int nVzBin = 1200;
-   int VzRangeL = -10;
-   int VzRangeH = 10;
+   int nEtaBin = 600;
+   int nVzBin = 500;
+   int VzRangeL = -12;
+   int VzRangeH = 8;
 
    TFile *outfile = new TFile(Form("acceptance-%d.root", TrackletType), "recreate");
 
-   TCut myCut = "abs(deta)<0.1&&abs(dphi)<1&&vz[1]>-99";
+   TCut myCut = "abs(deta)<0.1 && abs(dphi)<1 && vz[1]>-12 && vz[1]<8";
    TH2F *hData = new TH2F("hData", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
    TH2F *hMC = new TH2F("hMC", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
    TH2F *hAccData = new TH2F("hAccData", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
@@ -50,7 +54,7 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
    hMC->SetLineColor(4);
    hMC->Draw("box");
 
-   // TCanvas *c3 = new TCanvas("c3", "Data & MC", 600, 600);
+   TCanvas *c3 = new TCanvas("c3", "Data & MC", 600, 600);
    TH1F *hDataEta = (TH1F*)hData->ProjectionX();
    TH1F *hMCEta = (TH1F*)hMC->ProjectionX();
 
@@ -59,8 +63,8 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
    hDataEta->Rebin(nEtaBin/12);
    hMCEta->SetLineColor(2);
    hMCEta->Rebin(nEtaBin/12);
-   // hDataEta->Draw();
-   // hMCEta->Draw("same");
+   hDataEta->Draw();
+   hMCEta->Draw("same");
 
    TCanvas *c4 = new TCanvas("c4", "Ratio", 600, 600);
    TH1F* hRatio = (TH1F*) hMCEta->Clone();
@@ -71,12 +75,12 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
    TH2F *hDataAcc = (TH2F*)hData->Clone();
    hDataAcc->SetName("hDataAcc");
    hDataAcc->RebinX(nEtaBin/12);
-   hDataAcc->RebinY(nVzBin/5);
+   hDataAcc->RebinY(nVzBin/10);
 
    TH2F *hMCAcc = (TH2F*)hMC->Clone();
    hMCAcc->SetName("hMCAcc");
    hMCAcc->RebinX(nEtaBin/12);
-   hMCAcc->RebinY(nVzBin/5);
+   hMCAcc->RebinY(nVzBin/10);
 
    outfile->Write();
 }

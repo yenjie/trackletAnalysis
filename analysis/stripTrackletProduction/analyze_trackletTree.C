@@ -51,13 +51,13 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          int addL3Bck = 0,                      // Add random background to third pixel layer
                          bool smearPixels = 0,                  // Smear pixel hits
                          double smearVertex = 0,                // Add additional smearing to vertex position
-                         bool reWeight = 0,                     // Reweight to Run 123596 vtx distribution
+                         bool reWeight = 1,                     // Reweight to Run 123596 vtx distribution
                          bool reweightMultiplicity = 0,         // Reweight the multiplicity distribution
                          bool cutOnClusterSize = 0,             // Cut on clusterSize to reduce background
                          int makeVzCut = 0,                     // Cut on Vz
                          double splitProb = 0,                  // Splitting probability of the pixel hit
                          double dropProb = 0,                   // Emulate efficiency loss
-                         double pileUp = 0,                     // Artifically overlap event to mimic pile-up
+                         double pileUp = 0.0542,                     // Artifically overlap event to mimic pile-up
                          bool putBeamHalo = false,              // Adding beam Halo
                          double beamHaloRatio = 0.0,
                          const char* beamHaloFile = "BeamHalo.root",
@@ -144,14 +144,15 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    // if (addL4Bck!=0) t->Project("hLayer4Hit", "phi4:eta4:r4");
    // cout << "Projecting...done" << endl;
 
-   if (t->FindBranch("npart")!=0) {
+   if (t->GetEntries("nRun<10")!=0) {
       isMC = true;
       cout << "This is a Monte Carlo study." << endl;
       vzShift = -0.4847;
       cout << "vzShift = " << vzShift << endl;
    } else {
       cout << "This is a data analysis." << endl;
-      smearVertex = 0;
+      pileUp = 0;
+      reWeight = 0;
    }
 
    // Event record
@@ -164,7 +165,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    cout << "Number of Events: " << t->GetEntries() << endl;
 
    int nBeamHalo = 0;
-   int nPileUp = 0;
+   int nPileUp = 1;
    if (pileUp != 0)
       cout << "Do pileup! With probability of " << pileUp << endl;
 
@@ -173,7 +174,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    // csfitf->SetParLimits(0, 1.8882, 1.8882);
 
    // Main loop ===============================================================
-   for (int i=startEntry; i<t->GetEntries()&&i<endEntry; i=i+1+nPileUp) {
+   for (int i=startEntry; i<t->GetEntries()&&i<endEntry; i=i+nPileUp) {
       t->GetEntry(i);
       if (i % 1000 == 0) {
          cout << "Run " << par.nRun << " Event " << i << " "
@@ -191,8 +192,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       if (par.nhits1>10000 || par.nhits2>10000 || par.nhits3>10000 || par.nhits4>10000)
          continue;
 
-      // if (par.nLumi<11 || par.nLumi>96)
-      //    continue;
+      if (par.nLumi<89)
+         continue;
 
       // bool flagDuplicateEvent = 0;
       // if (checkDuplicateEvent) {
@@ -212,15 +213,16 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          reWeightDropFlag = 0;
          double myVz = par.vz[1];
          if (myVz<-90) {
-            TF1* f = new TF1("f", "gaus", -30, 30);
-            f->SetParameters(1, -0.471441, 5.34835);
-            myVz = f->GetRandom();
-            delete f;
+            myVz = par.vz[0];
          }
 
-         // 13 TeV PromptReco
-         double MCPdf = TMath::Gaus(myVz, -0.471441, 5.34835, 1);
-         double DataPdf = TMath::Gaus(myVz, -1.82911-vzShift, 5.54808, 1);
+         // 13 TeV Run245194 PromptReco
+         // double MCPdf = TMath::Gaus(myVz, -0.471441, 5.34835, 1);
+         // double DataPdf = TMath::Gaus(myVz, -1.82911-vzShift, 5.54808, 1);
+
+         // Run247324 PromptReco
+         double MCPdf = TMath::Gaus(myVz, -0.656327, 5.2834, 1);
+         double DataPdf = TMath::Gaus(myVz, -2.68363, 4.55798, 1);
 
          double Ratio = DataPdf / MCPdf;
          double x = gRandom->Rndm()*2.5;
@@ -350,8 +352,12 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(layer4raw, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
       if (pileUp!=0) {
-         nPileUp = gRandom->Poisson(pileUp);
-         for (int p=1; p<=nPileUp; p++) {
+         nPileUp = 0;
+         do {
+            nPileUp = gRandom->Poisson(pileUp);
+         } while (nPileUp == 0);
+
+         for (int p=1; p<nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(layer1raw, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(layer2raw, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -378,8 +384,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(allhits, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(allhits, par, cuts, 4, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
-      if (nPileUp>0) {
-         for (int p=1; p<=nPileUp; p++) {
+      if (nPileUp>1) {
+         for (int p=1; p<nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(allhits, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(allhits, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -608,8 +614,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       prepareHits(layer3, par, cuts, 3, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(layer4, par, cuts, 4, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
 
-      if (nPileUp>0) {
-         for (int p=1; p<=nPileUp; p++) {
+      if (nPileUp>1) {
+         for (int p=1; p<nPileUp; p++) {
             t->GetEntry(i+p);
             prepareHits(layer1, par, cuts, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
             prepareHits(layer2, par, cuts, 2, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -704,7 +710,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata12.passSingleTrack = par.passSingleTrack;
       tdata12.ntrks      = par.ntrks;
       tdata12.ntrksCut   = par.ntrksCut;
-      tdata12.nPU        = nPileUp + 1;
+      tdata12.nPU        = nPileUp;
       tdata12.recoPU     = recoPU;
 
       for (int j=0; j<(int)par.nHltBit; j++)
@@ -804,7 +810,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    tdata##q##w.passSingleTrack = par.passSingleTrack;          \
    tdata##q##w.ntrks      = par.ntrks;                         \
    tdata##q##w.ntrksCut   = par.ntrksCut;                      \
-   tdata##q##w.nPU        = nPileUp + 1;                       \
+   tdata##q##w.nPU        = nPileUp;                           \
    tdata##q##w.recoPU     = recoPU;                            \
                                                                \
    for (int j=0; j<(int)par.nHltBit; j++)                      \

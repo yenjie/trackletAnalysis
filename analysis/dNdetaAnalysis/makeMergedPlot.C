@@ -20,7 +20,7 @@ void clearNBins(int n, TH1F* h) {
    }
 }
 
-int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
+int makeMergedPlot(const char* name = "PYTHIA_Monash13", const char* title = "") {
    TFile *infPYTHIA = new TFile("gen/pythia_CUETP8M1.root");
    TH1F* hPYTHIA = (TH1F*)infPYTHIA->FindObjectAny("hEta");
    hPYTHIA->SetName("hPYTHIA");
@@ -97,6 +97,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    leg->AddEntry("h23", "Reconstructed (2nd+3rd layers)", "pl");
    leg->Draw();
    c1->SaveAs(Form("merged/merged-%s.pdf", name));
+   c1->SaveAs(Form("merged/merged-%s.C", name));
 
    TCanvas* c2 = new TCanvas("c2", "", 600, 600);
    TH1F* hAvg = (TH1F*)h12->Clone();
@@ -151,6 +152,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    leg2->AddEntry(hAvg, "Reconstructed Tracklets", "pl");
    leg2->Draw();
    c2->SaveAs(Form("merged/avg-%s.pdf", name));
+   c2->SaveAs(Form("merged/avg-%s.C", name));
 
    TCanvas* c3 = new TCanvas("c3", "", 600, 600);
    TH1F* hSym = (TH1F*)h12->Clone();
@@ -212,6 +214,7 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    leg3->AddEntry(hSym, "Reconstructed Tracklets", "pl");
    leg3->Draw();
    c3->SaveAs(Form("merged/avgsym-%s.pdf", name));
+   c3->SaveAs(Form("merged/avgsym-%s.C", name));
 
    outfile->Write();
 
@@ -222,30 +225,29 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13",char *title = "") {
    h12Ratio->Divide(hSym);
    h13Ratio->Divide(hSym);
    h23Ratio->Divide(hSym);
-   
+
    TH2D *hRatioTmp = new TH2D("hRatioTmp",";#eta;dN/d#eta / <dN/d#eta>",100,-3,3,100,0.8,1.1);
    hRatioTmp->Draw();
    h12Ratio->Draw("same");
    h13Ratio->Draw("same");
    h23Ratio->Draw("same");
-   
+
    leg->Draw();
-   
+
    TFile *infAcc12 = new TFile("correction/acceptance-12.root");
    TFile *infAcc13 = new TFile("correction/acceptance-13.root");
    TFile *infAcc23 = new TFile("correction/acceptance-23.root");
-   
+
    TH1D *hRatio12 = (TH1D*)infAcc12->Get("hRatio");
    hRatio12->SetName("hRatio12");
    TH1D *hRatio13 = (TH1D*)infAcc13->Get("hRatio");
    hRatio13->SetName("hRatio13");
    TH1D *hRatio23 = (TH1D*)infAcc23->Get("hRatio");
    hRatio23->SetName("hRatio23");
-   
+
    TH1D *hDoubleRatio13=(TH1D*)hRatio12->Clone("hDoubleRatio13");
    TH1D *hDoubleRatio23=(TH1D*)hRatio12->Clone("hDoubleRatio23");
-   
-   
+
    hDoubleRatio13->Divide(hRatio13);
    hDoubleRatio23->Divide(hRatio23);
 //   hDoubleRatio13->Draw("same");

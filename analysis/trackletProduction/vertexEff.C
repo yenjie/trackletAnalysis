@@ -20,7 +20,7 @@ void vertexEff(const char* fname) {
    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
    hTracklet->SetAxisRange(0.0, 1.1, "Y");
    hTracklet->SetTitle("Vertex reconstruction efficiency");
-   hTracklet->SetXTitle("N_{Hits}");
+   hTracklet->SetXTitle("Layer 1 N_{Hits}");
    hTracklet->SetYTitle("Efficiency");
    hTracklet->SetStats(0);
    hTracklet->Draw();

@@ -212,8 +212,8 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", double syserr = 0) {
    hAvg2->SetLineColor(4);
    hAvg2->SetMarkerColor(4);
    hAvg2->Draw("p");
-   TGraph* gErrorBand = GetErrorBand(hAvg2, syserr, syserr, 0.25);
-   gErrorBand->Draw("F");
+   TGraph* gErrorBand2 = GetErrorBand(hAvg2, syserr, syserr, 0.25);
+   gErrorBand2->Draw("F");
    hMC->Draw("same");
    hAvg2->Draw("p same");
 

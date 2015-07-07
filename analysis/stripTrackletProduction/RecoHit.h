@@ -110,6 +110,12 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
 
    if (layer == 1) {
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
+         if (par.eta1[ihit]>-1.7 && par.eta1[ihit]<0.1 && par.phi1[ihit]>-1 && par.phi1[ihit]<0)
+            continue;
+         if (par.eta1[ihit]>0.06 && par.eta1[ihit]<0.45 && par.phi1[ihit]>-0.04 && par.phi1[ihit]<0.22)
+            continue;
+         if (par.eta1[ihit]>0.84 && par.eta1[ihit]<1.1 && par.phi1[ihit]>-0.24 && par.phi1[ihit]<0.22)
+            continue;
          RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], 1);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);

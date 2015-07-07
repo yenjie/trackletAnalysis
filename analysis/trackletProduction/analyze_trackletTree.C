@@ -1,5 +1,5 @@
 #define _DZ 0.12
-#define _DPHI 0.05
+#define _DPHI 0.04
 
 #define _PI 3.14159265358979
 
@@ -47,14 +47,14 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          long startEntry = 0,                   // Starting Entry number in the Pixel Tree
                          long endEntry = 1000000000,            // Ending Entry number in the Pixel Tree
-                         double pileUp = 0.005,                 // Artifically overlap event to mimic pile-up, nBX=208: 0.0542, nBX!=208: 0.005
+                         double pileUp = 0.0542,                // Artifically overlap event to mimic pile-up, nBX=208: 0.0542, nBX!=208: 0.005
                          bool reWeight = 1,                     // Reweight vertex distribution to match data
                          bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
                          bool useForwardPixels = 0,             // Use forward pixel detector for vertexing
-                         double BGfrac = 0.10,                  // Additional background level
-                         bool addL1Bck = 1,                     // Add random background to first pixel layer
-                         bool addL2Bck = 1,                     // Add random background to second pixel layer
-                         bool addL3Bck = 1,                     // Add random background to third pixel layer
+                         double BGfrac = 0,                     // Additional background level
+                         bool addL1Bck = 0,                     // Add random background to first pixel layer
+                         bool addL2Bck = 0,                     // Add random background to second pixel layer
+                         bool addL3Bck = 0,                     // Add random background to third pixel layer
                          double splitProb = 0,                  // Splitting probability of the pixel hit
                          bool doTwoHitCorrelation = 0,          // Create a pixel counting tree instead of tracklet tree
                          bool smearPixels = 0,                  // Smear pixel hits
@@ -155,15 +155,15 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    // Prepare hit spectra for random hit
    if (addL1Bck) {
       cout << "Projecting...1" << endl;
-      tdata->Project("hLayer1Hit", "phi1:eta1:r1", "!(phi1>-0.3904153 && phi1<-0.3904152 && eta1>-1.45722 && eta1<-1.45721) && !(phi1>1.3385 && phi1<1.3386 && eta1>-2.5014 && eta1<-2.5013) && !(phi1>2.0982 && phi1<2.0984 && eta1>-0.9114 && eta1<-0.9112)");
+      t->Project("hLayer1Hit", "phi1:eta1:r1", "!(phi1>-0.3904153 && phi1<-0.3904152 && eta1>-1.45722 && eta1<-1.45721) && !(phi1>1.3385 && phi1<1.3386 && eta1>-2.5014 && eta1<-2.5013) && !(phi1>2.0982 && phi1<2.0984 && eta1>-0.9114 && eta1<-0.9112)");
    }
    if (addL2Bck) {
       cout << "Projecting...2" << endl;
-      tdata->Project("hLayer2Hit", "phi2:eta2:r2", "!(eta2>-1.85779 && eta2<-1.85778 && phi2>2.18935 && phi2<2.18936) && !(eta2>0.12535 && eta2<0.12536 && phi2>1.03344 && phi2<1.03345) && !(eta2>0.12626 && eta2<0.12631 && phi2>1.034 && phi2<1.03475) && !(eta2>-1.2623 && eta2<-1.26229 && phi2>2.8906 && phi2<2.8907) && !(phi2>2.1157 && phi2<2.1158 && eta2>-1.9016 && eta2<-1.9015)");
+      t->Project("hLayer2Hit", "phi2:eta2:r2", "!(eta2>-1.85779 && eta2<-1.85778 && phi2>2.18935 && phi2<2.18936) && !(eta2>0.12535 && eta2<0.12536 && phi2>1.03344 && phi2<1.03345) && !(eta2>0.12626 && eta2<0.12631 && phi2>1.034 && phi2<1.03475) && !(eta2>-1.2623 && eta2<-1.26229 && phi2>2.8906 && phi2<2.8907) && !(phi2>2.1157 && phi2<2.1158 && eta2>-1.9016 && eta2<-1.9015)");
    }
    if (addL3Bck) {
       cout << "Projecting...3" << endl;
-      tdata->Project("hLayer3Hit", "phi3:eta3:r3", "!(eta3>0.76085 && eta3<0.76087 && phi3>-1.22261 && phi3<-1.2226) && !(eta3>-1.39076 && eta3<-1.39074 && phi3>1.116954 && phi3<1.116955) && !(eta3>-1.07629 && eta3<-1.07628 && phi3>-2.59858 && phi3<-2.59857) && !(eta3>0.99493 && eta3<0.99494 && phi3>0.75637 && phi3<0.7563704) && !(eta3>1.30654 && eta3<1.30655 && phi3>-0.49127 && phi3<-0.49126) && !(eta3>-0.17039 && eta3<-0.17038 && phi3>-1.44136 && phi3<-1.44135) && !(phi3>1.11 && phi3<1.17 && eta3>-1.4 && eta3<-1.34) && !(phi3>-0.522 && phi3<-0.509 && eta3>0.8862 && eta3<0.8864) && !(phi3>0.5434 && phi3<0.5446 && eta3>0.9554 && eta3<0.9561) && !(phi3>1.269 && phi3<1.2694 && eta3>0.64 && eta3<0.72) && !(phi3>-0.2274 && phi3<-0.2271 && eta3>1.43 && eta3<1.475) && !(phi3>-1.6671 && phi3<-1.6669 && eta3>1.408 && eta3<1.4084) && !(phi3>0.7193 && phi3<0.7194 && eta3>-0.2824 && eta3<-0.2823) & !(phi3>-1.2439 && phi3<-1.2438 && eta3>-0.693 && eta3<-0.692) && !(phi3>0.064 && phi3<0.073 && eta3>-1.04 && eta3<-0.98) &&!(phi3>1.024 && phi3<1.0242 && eta3>0.7992 && eta3<0.7995) && !(phi3>0.07 && phi3<0.074 && eta3>-0.63 && eta3<-0.54)");
+      t->Project("hLayer3Hit", "phi3:eta3:r3", "!(eta3>0.76085 && eta3<0.76087 && phi3>-1.22261 && phi3<-1.2226) && !(eta3>-1.39076 && eta3<-1.39074 && phi3>1.116954 && phi3<1.116955) && !(eta3>-1.07629 && eta3<-1.07628 && phi3>-2.59858 && phi3<-2.59857) && !(eta3>0.99493 && eta3<0.99494 && phi3>0.75637 && phi3<0.7563704) && !(eta3>1.30654 && eta3<1.30655 && phi3>-0.49127 && phi3<-0.49126) && !(eta3>-0.17039 && eta3<-0.17038 && phi3>-1.44136 && phi3<-1.44135) && !(phi3>1.11 && phi3<1.17 && eta3>-1.4 && eta3<-1.34) && !(phi3>-0.522 && phi3<-0.509 && eta3>0.8862 && eta3<0.8864) && !(phi3>0.5434 && phi3<0.5446 && eta3>0.9554 && eta3<0.9561) && !(phi3>1.269 && phi3<1.2694 && eta3>0.64 && eta3<0.72) && !(phi3>-0.2274 && phi3<-0.2271 && eta3>1.43 && eta3<1.475) && !(phi3>-1.6671 && phi3<-1.6669 && eta3>1.408 && eta3<1.4084) && !(phi3>0.7193 && phi3<0.7194 && eta3>-0.2824 && eta3<-0.2823) & !(phi3>-1.2439 && phi3<-1.2438 && eta3>-0.693 && eta3<-0.692) && !(phi3>0.064 && phi3<0.073 && eta3>-1.04 && eta3<-0.98) &&!(phi3>1.024 && phi3<1.0242 && eta3>0.7992 && eta3<0.7995) && !(phi3>0.07 && phi3<0.074 && eta3>-0.63 && eta3<-0.54)");
    }
    cout << "Projecting...done" << endl;
 
@@ -179,6 +179,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    int nPileUp = 1;
    if (pileUp!=0)
       printf("@@@@@ Do pileup mixing with mean: %.4f\n", pileUp);
+   if (addL1Bck)
+      printf("$$$$$$$$$$$$$$$$$ ADDING NOISE $$$$$$$$$\n");
    if (reWeight)
       printf("######### REWEIGHT VZ ##################\n");
    if (useRandomVertex)
@@ -211,8 +213,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       if (!isMC) {
          if (par.nLumi<89)
             continue;
-         if (useRandomVertex && par.nBX!=208)
-            continue;
       }
 
       // Reweight MC vertex distribution to match data
@@ -231,7 +231,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          // double DataPdf = TMath::Gaus(myVz, -2.03961-vzShift, 4.2783, 1);
          // 13 TeV Run 247324
          double DataPdf = TMath::Gaus(myVz, -2.14145, 4.30854, 1);
-         double MCPdf = TMath::Gaus(myVz, -0.394086, 5.32670, 1);
+         // double MCPdf = TMath::Gaus(myVz, -0.394086, 5.32670, 1);
+         double MCPdf = TMath::Gaus(myVz, -0.356413, 5.33904, 1);
 
          double Ratio = DataPdf / MCPdf;
          double x = gRandom->Rndm()*3;
@@ -588,55 +589,55 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          recoPU = pileupcands.size();
 
          // Use chi2 and sigma2 ===============================================
-         // for (unsigned int d=0; d<candidates.size(); d++) {
-         //    TGraph* csveta_g = new TGraph(layer1raw.size()+layer2raw.size());
+         for (unsigned int d=0; d<candidates.size(); d++) {
+            TGraph* csveta_g = new TGraph(layer1raw.size()+layer2raw.size());
 
-         //    int g = 0;
-         //    for (unsigned int c1=0; c1<layer1raw.size(); c1++) {
-         //       double r1 = layer1raw[c1].r;
-         //       double z1 = r1/tan(2*atan(exp(-layer1raw[c1].eta)));
-         //       double neweta = (z1 - candidates[d].vzmean > 0) ? -log(tan(atan(r1/(z1-candidates[d].vzmean))/2)) : log(tan(atan(r1/(candidates[d].vzmean-z1))/2));
-         //       if (layer1raw[c1].cs<24 && layer1raw[c1].cs>=0.9*cosh(neweta))
-         //          csveta_g->SetPoint(g++, neweta, layer1raw[c1].cs);
-         //    }
-         //    for (unsigned int c2=0; c2<layer2raw.size(); c2++) {
-         //       double r2 = layer2raw[c2].r;
-         //       double z2 = r2/tan(2*atan(exp(-layer2raw[c2].eta)));
-         //       double neweta = (z2 - candidates[d].vzmean > 0) ? -log(tan(atan(r2/(z2-candidates[d].vzmean))/2)) : log(tan(atan(r2/(candidates[d].vzmean-z2))/2));
-         //       if (layer2raw[c2].cs<24)
-         //          csveta_g->SetPoint(g++, neweta, layer2raw[c2].cs);
-         //    }
-         //    csveta_g->Set(g);
-         //    if (g) {
-         //       TFitResultPtr csveta_g_r = csveta_g->Fit("csfit", "WBQS");
-         //       candidates[d].chi2 = csveta_g_r->Chi2();
-         //       candidates[d].par0 = csveta_g_r->Parameter(0);
-         //    } else {
-         //       candidates[d].chi2 = 9999.9;
-         //       candidates[d].par0 = 9999.9;
-         //    }
-         // }
+            int g = 0;
+            for (unsigned int c1=0; c1<layer1raw.size(); c1++) {
+               double r1 = layer1raw[c1].r;
+               double z1 = r1/tan(2*atan(exp(-layer1raw[c1].eta)));
+               double neweta = (z1 - candidates[d].vzmean > 0) ? -log(tan(atan(r1/(z1-candidates[d].vzmean))/2)) : log(tan(atan(r1/(candidates[d].vzmean-z1))/2));
+               if (layer1raw[c1].cs<24 && layer1raw[c1].cs>=0.9*cosh(neweta))
+                  csveta_g->SetPoint(g++, neweta, layer1raw[c1].cs);
+            }
+            for (unsigned int c2=0; c2<layer2raw.size(); c2++) {
+               double r2 = layer2raw[c2].r;
+               double z2 = r2/tan(2*atan(exp(-layer2raw[c2].eta)));
+               double neweta = (z2 - candidates[d].vzmean > 0) ? -log(tan(atan(r2/(z2-candidates[d].vzmean))/2)) : log(tan(atan(r2/(candidates[d].vzmean-z2))/2));
+               if (layer2raw[c2].cs<24)
+                  csveta_g->SetPoint(g++, neweta, layer2raw[c2].cs);
+            }
+            csveta_g->Set(g);
+            if (g) {
+               TFitResultPtr csveta_g_r = csveta_g->Fit("csfit", "WBQS");
+               candidates[d].chi2 = csveta_g_r->Chi2();
+               candidates[d].par0 = csveta_g_r->Parameter(0);
+            } else {
+               candidates[d].chi2 = 9999.9;
+               candidates[d].par0 = 9999.9;
+            }
+         }
 
-         // std::vector<Vertex>::iterator eqnz = candidates.begin();
-         // for (; eqnz!=candidates.end() && (*eqnz).nz==candidates[0].nz; eqnz++);
-         // std::sort(candidates.begin(), eqnz, sortchi2);
-         // std::sort(eqnz, candidates.end(), sortchi2);
-
-         // std::vector<Vertex>::iterator eqchi2 = candidates.begin();
-         // for (; eqchi2!=eqnz && (*eqchi2).chi2/candidates[0].chi2<1.12; eqchi2++);
-         // std::sort(candidates.begin(), eqchi2, sortsigma2);
-
-         // std::vector<Vertex>::iterator nzminusone = eqnz;
-         // for (; nzminusone!=candidates.end() && (*nzminusone).chi2<candidates[0].chi2/2; nzminusone++);
-         // if (eqnz != nzminusone) {
-         //    std::stable_sort(eqnz, nzminusone, sortsigma2);
-         //    candidates.insert(candidates.begin(), *eqnz);
-         // }
-
-         // Use sigma2 only ===================================================
          std::vector<Vertex>::iterator eqnz = candidates.begin();
          for (; eqnz!=candidates.end() && (*eqnz).nz==candidates[0].nz; eqnz++);
-         std::sort(candidates.begin(), eqnz, sortsigma2);
+         std::sort(candidates.begin(), eqnz, sortchi2);
+         std::sort(eqnz, candidates.end(), sortchi2);
+
+         std::vector<Vertex>::iterator eqchi2 = candidates.begin();
+         for (; eqchi2!=eqnz && (*eqchi2).chi2/candidates[0].chi2<1.12; eqchi2++);
+         std::sort(candidates.begin(), eqchi2, sortsigma2);
+
+         std::vector<Vertex>::iterator nzminusone = eqnz;
+         for (; nzminusone!=candidates.end() && (*nzminusone).chi2<candidates[0].chi2/2; nzminusone++);
+         if (eqnz != nzminusone) {
+            std::stable_sort(eqnz, nzminusone, sortsigma2);
+            candidates.insert(candidates.begin(), *eqnz);
+         }
+
+         // // Use sigma2 only ===================================================
+         // std::vector<Vertex>::iterator eqnz = candidates.begin();
+         // for (; eqnz!=candidates.end() && (*eqnz).nz==candidates[0].nz; eqnz++);
+         // std::sort(candidates.begin(), eqnz, sortsigma2);
 
          trackletVertex = candidates[0].vzmean;
       }
@@ -785,14 +786,13 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       }
 
       // Cluster Vertex Compatibility =========================================
-/*
-      double clusVtxQual1 = 0;
-      double clusVtxQual2 = 0;
-      double clusVtxQual3 = 0;
-*/
-       double clusVtxQual1 = getClusVtxCompat(layer1, 1);
-       double clusVtxQual2 = getClusVtxCompat(layer2, 2);
-       double clusVtxQual3 = getClusVtxCompat(layer3, 3);
+      // double clusVtxQual1 = 0;
+      // double clusVtxQual2 = 0;
+      // double clusVtxQual3 = 0;
+
+      double clusVtxQual1 = getClusVtxCompat(layer1, 1);
+      double clusVtxQual2 = getClusVtxCompat(layer2, 2);
+      double clusVtxQual3 = getClusVtxCompat(layer3, 3);
 
       // Move the Vertex back
       // if (smearVertex!=0) {

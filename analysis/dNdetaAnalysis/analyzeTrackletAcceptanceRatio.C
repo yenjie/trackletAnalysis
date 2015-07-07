@@ -7,11 +7,6 @@
 #include <TCut.h>
 
 void normalize(TH2F *hData, int nEtaBin, int nVzBin, bool reweight = 1) {
-/*
-   1  Constant     1.86973e-01   5.69091e-04   2.02006e-06   3.48340e-01
-   2  Mean        -2.14145e+00   1.08618e-02   4.84445e-05  -5.12350e-04
-   3  Sigma        4.30854e+00 
-  */
    TH1D *hTmp = (TH1D*)hData->ProjectionY("hTmp");
    for (int x=1; x<=nEtaBin; x++) {
       for (int y=1; y<=nVzBin; y++) {
@@ -28,14 +23,13 @@ void normalize(TH2F *hData, int nEtaBin, int nVzBin, bool reweight = 1) {
 }
 
 void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC="/data/biran/trackletAnalysis/analysis/trackletProduction/TrackletTree-PYTHIA8-OFFICIAL-ACCEPTANCE.root", const char* fnData="/data/biran/trackletAnalysis/analysis/trackletProduction/TrackletTree-Run247324-PromptReco-ACCEPTANCE.root") {
-//void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC="../sample/v9-RanSample/TrackletTree-PYTHIA8-aAcceptance.root", const char* fnData="../sample/v9-RanSample/TrackletTree-Run247324_Express_Acceptance.root") {
    TFile* fMC = new TFile(fnMC, "READ");
    TTree* tMC = (TTree*)fMC->Get(Form("TrackletTree%i", TrackletType));
    TFile* fData = new TFile(fnData, "READ");
    TTree* tData = (TTree*)fData->Get(Form("TrackletTree%i", TrackletType));
 
-   int nEtaBin = 1200/2.;
-   int nVzBin = 1100/2.;
+   int nEtaBin = 600;
+   int nVzBin = 550;
    int VzRangeL = -13;
    int VzRangeH = 9;
 
