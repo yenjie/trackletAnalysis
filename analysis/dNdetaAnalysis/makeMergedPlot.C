@@ -34,20 +34,27 @@ int makeMergedPlot(const char* name = "PYTHIA_Monash13", const char* title = "")
    TH1F* hQGSJet = (TH1F*)infQGSJet->FindObjectAny("hEta");
    hQGSJet->SetName("hQGSJet");
    TFile* inf12 = new TFile(Form("correction/correction-12-%s.root", name));
-   TH1F* h12 = (TH1F*)inf12->FindObjectAny("hMeasuredFinal");
-   h12->SetName("h12");
-   h12->SetAxisRange(0, dndetaRange, "Y");
+   TH1F* h12o = (TH1F*)inf12->FindObjectAny("hMeasuredFinal");
+   h12o->SetName("h12o");
+   h12o->SetAxisRange(0, dndetaRange, "Y");
 
    TFile* inf13 = new TFile(Form("correction/correction-13-%s.root", name));
-   TH1F* h13 = (TH1F*)inf13->FindObjectAny("hMeasuredFinal");
-   h13->SetName("h13");
+   TH1F* h13o = (TH1F*)inf13->FindObjectAny("hMeasuredFinal");
+   h13o->SetName("h13o");
 
    TFile* inf23 = new TFile(Form("correction/correction-23-%s.root", name));
-   TH1F* h23 = (TH1F*)inf23->FindObjectAny("hMeasuredFinal");
-   h23->SetName("h23");
+   TH1F* h23o = (TH1F*)inf23->FindObjectAny("hMeasuredFinal");
+   h23o->SetName("h23o");
 
    TFile* outfile = new TFile(Form("merged/merged-%s.root", name), "recreate");
    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
+
+   TH1F* h12 = (TH1F*)h12o->Clone();
+   h12->SetName("h12");
+   TH1F* h13 = (TH1F*)h13o->Clone();
+   h13->SetName("h13");
+   TH1F* h23 = (TH1F*)h23o->Clone();
+   h23->SetName("h23");
 
    h13->SetMarkerStyle(26);
    h13->SetMarkerColor(1);
