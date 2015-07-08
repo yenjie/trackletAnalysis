@@ -32,13 +32,13 @@ int combineSystematics(const char* fname = "merged/merged-DATA-C-NEWEST-0BG.root
 
    TFile* resultf = new TFile(fname, "read");
 
-   const char* fsys[7] = {"systematics/systematics-DATA-C-SYS-WITH-MCBG.root",
-                          "systematics/systematics-DATA-C-STD2-MULT-2.root",
-                          "systematics/systematics-DATA-C-STD2-SB-NEW2.root",
+   const char* fsys[7] = {"systematics/systematics-DATA-C-WITH-BG.root",
+                          "systematics/systematics-DATA-C-STD2-MULT.root",
+                          "systematics/systematics-DATA-C-STD2-SB.root",
                           "systematics/systematics-DATA-C-STD2-SPLIT.root",
                           "systematics/systematics-DATA-DROP-C-STD2.root",
                           "systematics/systematics-DATA-SMEARED-C-STD2.root",
-                          "systematics/systematics-PYTHIA8-C.root"};
+                          "systematics/systematics-PYTHIA8-C-EPOS.root"};
    const char* descrip[7] = {"Noise",
                              "Efficiency correction parametrization",
                              "Side-band region definition",
@@ -46,13 +46,13 @@ int combineSystematics(const char* fname = "merged/merged-DATA-C-NEWEST-0BG.root
                              "Pixel hit reconstruction efficiency",
                              "Misalignment",
                              "EPOS vs PYTHIA8"};
-   const char* namesys[7] = {"systematics-DATA-C-STD2-BG.pdf",
-                             "systematics-DATA-C-STD2-MULT-2.pdf",
-                             "systematics-DATA-C-STD2-SB.pdf",
-                             "systematics-DATA-C-STD2-SPLIT.pdf",
-                             "systematics-DATA-DROP-C-STD2.pdf",
-                             "systematics-DATA-SMEARED-C-STD2.pdf",
-                             "systematics-PYTHIA8-C-EPOS-CF.pdf"};
+   const char* namesys[7] = {"systematics-background.pdf",
+                             "systematics-multiplicity.pdf",
+                             "systematics-sideband.pdf",
+                             "systematics-splitting.pdf",
+                             "systematics-hitrecoeff.pdf",
+                             "systematics-misalignment.pdf",
+                             "systematics-eposvspythia.pdf"};
 
    TFile* fadd[7];
    for (int j=0; j<7; j++)
@@ -559,7 +559,7 @@ int combineSystematics(const char* fname = "merged/merged-DATA-C-NEWEST-0BG.root
 
    TLegend* leg1 = new TLegend(0.24, 0.3, 0.84, 0.45);
    leg1->SetBorderSize(0);
-   leg1->AddEntry("NULL", "Run 247324 PromptReco");
+   leg1->AddEntry("NULL", "Run 247324 PromptReco", "");
    // leg1->AddEntry("h121", "Reconstructed (1st+2nd layers)", "pl");
    // leg1->AddEntry("h132", "Reconstructed (1st+3rd layers)", "pl");
    // leg1->AddEntry("h233", "Reconstructed (2nd+3rd layers)", "pl");

@@ -1,5 +1,5 @@
 #define _DZ 0.12
-#define _DPHI 0.04
+#define _DPHI 0.05
 
 #define _PI 3.14159265358979
 
@@ -47,7 +47,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          long startEntry = 0,                   // Starting Entry number in the Pixel Tree
                          long endEntry = 1000000000,            // Ending Entry number in the Pixel Tree
-                         double pileUp = 0.0542,                // Artifically overlap event to mimic pile-up, nBX=208: 0.0542, nBX!=208: 0.005
+                         double pileUp = 0,                // Artifically overlap event to mimic pile-up, nBX=208: 0.0542, nBX!=208: 0.005
                          bool reWeight = 1,                     // Reweight vertex distribution to match data
                          bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
                          bool useForwardPixels = 0,             // Use forward pixel detector for vertexing
