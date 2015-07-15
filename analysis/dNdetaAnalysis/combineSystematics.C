@@ -148,7 +148,7 @@ int combineSystematics(const char* fname = "merged/merged-DATA-C-NEWEST-0BG.root
 
    Double_t erreta[30];
    for (int i=0; i<30; i++)
-      erreta[i] = htotal->GetBinContent(i+1) / 100;
+      erreta[i] = (htotal->GetBinContent(i+1) + htotal->GetBinContent(30-i)) / 200;
 
    TCanvas* c3 = new TCanvas("c3", "", 600, 600);
    gStyle->SetOptFit(1);
