@@ -40,7 +40,7 @@ int plotFinalResult(int TrackletType, const char* filename,
                     const char* myPlotTitle = "Default",            // Title of the plot
                     bool useCorrectionFile = 0,                     // use Correction file
                     const char* correctionName = "Default",         // Correction file name
-                    int selection = 0,                              // MC selection
+                    int selection = 1,                              // MC selection
                     bool doAcceptanceCorrection = 0,                // do acceptance correction
                     bool doTriggerCorrection = 1,                   // do trigger eff correction
                     int doMult2 = 0,                                // multiplicity
@@ -154,7 +154,8 @@ int plotFinalResult(int TrackletType, const char* filename,
          break;
       case 1:
          MCSelection = "(evtType!=103&&evtType!=104)";
-         offlineSelection = "(nHFp>0 && nHFn>0)";
+         // offlineSelection = "(nHFp>0 && nHFn>0)";
+         offlineSelection = "1";
          printf("---------------- NSD definition\n");
          break;
       case 2:
@@ -1008,8 +1009,8 @@ int plotFinalResult(int TrackletType, const char* filename,
 
    // Compare with Truth ======================================================
    TCanvas *cDNdEtaCompare = new TCanvas("cDNdEtaCompare", "Compare", canvasSizeX, canvasSizeY);
-   // hMeasuredFinal->SetAxisRange(0, 9.0, "y");
-   hUncorrected->Draw();
+
+   hMeasuredFinal->SetAxisRange(0, dndetaRange, "y");
    hMeasuredFinal->Draw("e same");
 
    hTruthWOSelection->Draw("hist same");
