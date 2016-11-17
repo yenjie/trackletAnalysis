@@ -1,7 +1,7 @@
 // Plot final results
 #define canvasSizeX 600
 #define canvasSizeY 600
-#define dndetaRange 9.0
+#define dndetaRange 40.0
 #define SDFactor 1
 
 // Standard library
@@ -41,7 +41,7 @@ int plotFinalResult(int TrackletType, const char* filename,
                     bool useCorrectionFile = 0,                     // use Correction file
                     const char* correctionName = "Default",         // Correction file name
                     int selection = 0,                              // MC selection
-                    bool doAcceptanceCorrection = 1,                // do acceptance correction
+                    bool doAcceptanceCorrection = 0,                // do acceptance correction
                     bool doTriggerCorrection = 1,                   // do trigger eff correction
                     int doMult2 = 0,                                // multiplicity
                     int verbose = 0,                                // set verbose level
@@ -111,13 +111,13 @@ int plotFinalResult(int TrackletType, const char* filename,
       hAlphaB = (TH3F*)myFile->FindObjectAny("hAlphaB");
    }
 
-   int VzRangeL = -13;
-   int VzRangeH = 9;
+   int VzRangeL = -15;
+   int VzRangeH = 15;
 
    // Definition of Vz, Eta, Hit bins
    const int nTrackletBin = 12;
    const int nEtaBin = 30;
-   const int nVzBin = 11;
+   const int nVzBin = 15;
 
    double TrackletBins[nTrackletBin+1] = {-5, 2, 10, 15, 20, 25, 30, 36, 42, 50, 60, 72, 300};
    double EtaBins[nEtaBin+1];
@@ -140,16 +140,16 @@ int plotFinalResult(int TrackletType, const char* filename,
       sideBandRegionEtaSignalRegion = "dR>0.1&&dR<0.2";
    }
 
-   TString vtxCut = "(vz[1]<9 && vz[1]>-13)";
+   TString vtxCut = "(vz[1]<15 && vz[1]>-15)";
    TCut MCSelection;
    TString offlineSelection;
    TCut evtSelection;
-   TString vtxComp = "(clusVtxQual1>0.013*TrackletTree12.nhit1||TrackletTree12.nhit1<150)&&(clusVtxQual2>0.008*TrackletTree12.nhit2||TrackletTree12.nhit2<130)&&(clusVtxQual3>(0.85+0.0045*TrackletTree23.nhit2)||TrackletTree23.nhit2<50)";
+   //TString vtxComp = "(clusVtxQual1>0.013*TrackletTree12.nhit1||TrackletTree12.nhit1<150)&&(clusVtxQual2>0.008*TrackletTree12.nhit2||TrackletTree12.nhit2<130)&&(clusVtxQual3>(0.85+0.0045*TrackletTree23.nhit2)||TrackletTree23.nhit2<50)";
 
    switch (selection) {
       case 0:
          MCSelection = "1";
-         offlineSelection = TString("nBX==208")+TString("&&")+vtxComp;
+         offlineSelection = "1";
          printf("---------- INELASTIC definition\n");
          break;
       case 1:

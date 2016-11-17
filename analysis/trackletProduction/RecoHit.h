@@ -118,9 +118,12 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
    if (par.nRun == 247324) {
       x0 = 0.052;
       y0 = 0.160;
+   } else if (par.nRun == 285090) {
+      x0 = 0.06149;
+      y0 = 0.1056;
    } else {
-      x0 = 0.032;
-      y0 = 0;
+      x0 = 0.07782;
+      y0 = 0.09594;
    }
 
    if (vz!=0 && firstCall==0) {

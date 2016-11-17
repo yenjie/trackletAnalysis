@@ -47,8 +47,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          long startEntry = 0,                   // Starting Entry number in the Pixel Tree
                          long endEntry = 1000000000,            // Ending Entry number in the Pixel Tree
-                         double pileUp = 0,                // Artifically overlap event to mimic pile-up, nBX=208: 0.0542, nBX!=208: 0.005
-                         bool reWeight = 1,                     // Reweight vertex distribution to match data
+                         double pileUp = 0,                     // Artifically overlap event to mimic pile-up, nBX=208: 0.0542, nBX!=208: 0.005
+                         bool reWeight = 0,                     // Reweight vertex distribution to match data
                          bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
                          bool useForwardPixels = 0,             // Use forward pixel detector for vertexing
                          double BGfrac = 0,                     // Additional background level
@@ -73,7 +73,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    cout << "Randomize " << gRandom->Rndm() << endl;
 
    // Input file ==============================================================
-   TFile* inf = new TFile(infile);
+   TFile* inf = TFile::Open(infile);
    TTree* t = dynamic_cast<TTree*>(inf->Get("ana/PixelTree"));
    // TFile* beamHaloInf;
    // TTree* beamHaloTree;
@@ -90,16 +90,11 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    TTree* trackletTree12 = new TTree("TrackletTree12", "Tree of Reconstructed Tracklets");
    TTree* trackletTree13 = new TTree("TrackletTree13", "Tree of Reconstructed Tracklets");
    TTree* trackletTree23 = new TTree("TrackletTree23", "Tree of Reconstructed Tracklets");
-   TTree* trackletTree14 = new TTree("TrackletTree14", "Tree of Reconstructed Tracklets");
-   TTree* trackletTree15 = new TTree("TrackletTree15", "Tree of Reconstructed Tracklets");
-   TTree* trackletTree45 = new TTree("TrackletTree45", "Tree of Reconstructed Tracklets");
-   // TTree* hltTree = ((TTree*)inf->Get("hltanalysis/HltTree"))->CloneTree();
-   TTree* hltTree = (TTree*)inf->Get("hltanalysis/HltTree");
-   t->AddFriend(hltTree);
-   // TTree* outTree = t->CloneTree();
+   // TTree* trackletTree14 = new TTree("TrackletTree14", "Tree of Reconstructed Tracklets");
+   // TTree* trackletTree15 = new TTree("TrackletTree15", "Tree of Reconstructed Tracklets");
+   // TTree* trackletTree45 = new TTree("TrackletTree45", "Tree of Reconstructed Tracklets");
 
-   TFile* fdata = new TFile("/data/biran/pixeltrees/Run247324-PromptReco/PixelTree-Run247324-PromptReco-ZeroBias1.root");
-   TTree* tdata = (TTree*)fdata->Get("ana/PixelTree");
+   TTree* hltTree = ((TTree*)inf->Get("hltanalysis/HltTree"))->CloneTree();
 
    bool isMC = 0;
    double vzShift = 0;
@@ -121,16 +116,16 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    TrackletData tdata12;
    TrackletData tdata13;
    TrackletData tdata23;
-   TrackletData tdata14;
-   TrackletData tdata15;
-   TrackletData tdata45;
+   // TrackletData tdata14;
+   // TrackletData tdata15;
+   // TrackletData tdata45;
 
    setTrackletTreeBranch(trackletTree12, tdata12);
    setTrackletTreeBranch(trackletTree13, tdata13);
    setTrackletTreeBranch(trackletTree23, tdata23);
-   setTrackletTreeBranch(trackletTree14, tdata14);
-   setTrackletTreeBranch(trackletTree15, tdata15);
-   setTrackletTreeBranch(trackletTree45, tdata45);
+   // setTrackletTreeBranch(trackletTree14, tdata14);
+   // setTrackletTreeBranch(trackletTree15, tdata15);
+   // setTrackletTreeBranch(trackletTree45, tdata45);
 
    if (t->GetEntries("nRun<10")!=0) {
       isMC = true;
@@ -155,15 +150,15 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    // Prepare hit spectra for random hit
    if (addL1Bck) {
       cout << "Projecting...1" << endl;
-      t->Project("hLayer1Hit", "phi1:eta1:r1", "!(phi1>-0.3904153 && phi1<-0.3904152 && eta1>-1.45722 && eta1<-1.45721) && !(phi1>1.3385 && phi1<1.3386 && eta1>-2.5014 && eta1<-2.5013) && !(phi1>2.0982 && phi1<2.0984 && eta1>-0.9114 && eta1<-0.9112)");
+      t->Project("hLayer1Hit", "phi1:eta1:r1");
    }
    if (addL2Bck) {
       cout << "Projecting...2" << endl;
-      t->Project("hLayer2Hit", "phi2:eta2:r2", "!(eta2>-1.85779 && eta2<-1.85778 && phi2>2.18935 && phi2<2.18936) && !(eta2>0.12535 && eta2<0.12536 && phi2>1.03344 && phi2<1.03345) && !(eta2>0.12626 && eta2<0.12631 && phi2>1.034 && phi2<1.03475) && !(eta2>-1.2623 && eta2<-1.26229 && phi2>2.8906 && phi2<2.8907) && !(phi2>2.1157 && phi2<2.1158 && eta2>-1.9016 && eta2<-1.9015)");
+      t->Project("hLayer2Hit", "phi2:eta2:r2");
    }
    if (addL3Bck) {
       cout << "Projecting...3" << endl;
-      t->Project("hLayer3Hit", "phi3:eta3:r3", "!(eta3>0.76085 && eta3<0.76087 && phi3>-1.22261 && phi3<-1.2226) && !(eta3>-1.39076 && eta3<-1.39074 && phi3>1.116954 && phi3<1.116955) && !(eta3>-1.07629 && eta3<-1.07628 && phi3>-2.59858 && phi3<-2.59857) && !(eta3>0.99493 && eta3<0.99494 && phi3>0.75637 && phi3<0.7563704) && !(eta3>1.30654 && eta3<1.30655 && phi3>-0.49127 && phi3<-0.49126) && !(eta3>-0.17039 && eta3<-0.17038 && phi3>-1.44136 && phi3<-1.44135) && !(phi3>1.11 && phi3<1.17 && eta3>-1.4 && eta3<-1.34) && !(phi3>-0.522 && phi3<-0.509 && eta3>0.8862 && eta3<0.8864) && !(phi3>0.5434 && phi3<0.5446 && eta3>0.9554 && eta3<0.9561) && !(phi3>1.269 && phi3<1.2694 && eta3>0.64 && eta3<0.72) && !(phi3>-0.2274 && phi3<-0.2271 && eta3>1.43 && eta3<1.475) && !(phi3>-1.6671 && phi3<-1.6669 && eta3>1.408 && eta3<1.4084) && !(phi3>0.7193 && phi3<0.7194 && eta3>-0.2824 && eta3<-0.2823) & !(phi3>-1.2439 && phi3<-1.2438 && eta3>-0.693 && eta3<-0.692) && !(phi3>0.064 && phi3<0.073 && eta3>-1.04 && eta3<-0.98) &&!(phi3>1.024 && phi3<1.0242 && eta3>0.7992 && eta3<0.7995) && !(phi3>0.07 && phi3<0.074 && eta3>-0.63 && eta3<-0.54)");
+      t->Project("hLayer3Hit", "phi3:eta3:r3");
    }
    cout << "Projecting...done" << endl;
 
@@ -203,9 +198,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
               << trackletTree12->GetEntries() << " "
               << trackletTree13->GetEntries() << " "
               << trackletTree23->GetEntries() << " "
-              << trackletTree14->GetEntries() << " "
-              << trackletTree15->GetEntries() << " "
-              << trackletTree45->GetEntries()
+              // << trackletTree14->GetEntries() << " "
+              // << trackletTree15->GetEntries() << " "
+              // << trackletTree45->GetEntries()
               // << " Add Beam Halo: " << nBeamHalo << " " << nBeamHalo/(double)i
               << endl;
       }
@@ -219,9 +214,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       if (reWeight) {
          double myVz = par.vz[1];
          if (myVz < -90) {
-//            TF1* f = new TF1("f", "gaus", -30, 30);
+            // TF1* f = new TF1("f", "gaus", -30, 30);
             TF1* f = new TF1("f", "1", -20, 20);
-//            f->SetParameters(1, -0.394086, 5.32670);
+            // f->SetParameters(1, -0.394086, 5.32670);
             myVz = f->GetRandom();
             delete f;
             myVz=par.vz[0];
@@ -255,9 +250,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata12.nv = par.nv+1;
       tdata13.nv = par.nv+1;
       tdata23.nv = par.nv+1;
-      tdata14.nv = par.nv+1;
-      tdata15.nv = par.nv+1;
-      tdata45.nv = par.nv+1;
+      // tdata14.nv = par.nv+1;
+      // tdata15.nv = par.nv+1;
+      // tdata45.nv = par.nv+1;
       for (int j=1; j<par.nv; j++) {
          tdata12.vz[j+1] = par.vz[j];
          tdata13.vz[j+1] = par.vz[j];
@@ -268,15 +263,15 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          tdata12.vy[j+1] = par.vy[j];
          tdata13.vy[j+1] = par.vy[j];
          tdata23.vy[j+1] = par.vy[j];
-         tdata14.vz[j+1] = par.vz[j];
-         tdata15.vz[j+1] = par.vz[j];
-         tdata45.vz[j+1] = par.vz[j];
-         tdata14.vx[j+1] = par.vx[j];
-         tdata15.vx[j+1] = par.vx[j];
-         tdata45.vx[j+1] = par.vx[j];
-         tdata14.vy[j+1] = par.vy[j];
-         tdata15.vy[j+1] = par.vy[j];
-         tdata45.vy[j+1] = par.vy[j];
+         // tdata14.vz[j+1] = par.vz[j];
+         // tdata15.vz[j+1] = par.vz[j];
+         // tdata45.vz[j+1] = par.vz[j];
+         // tdata14.vx[j+1] = par.vx[j];
+         // tdata15.vx[j+1] = par.vx[j];
+         // tdata45.vx[j+1] = par.vx[j];
+         // tdata14.vy[j+1] = par.vy[j];
+         // tdata15.vy[j+1] = par.vy[j];
+         // tdata45.vy[j+1] = par.vy[j];
       }
       // Fill MC vertex
       tdata12.vx[0] = par.vx[0];
@@ -288,15 +283,15 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata12.vz[0] = par.vz[0];
       tdata13.vz[0] = par.vz[0];
       tdata23.vz[0] = par.vz[0];
-      tdata14.vx[0] = par.vx[0];
-      tdata15.vx[0] = par.vx[0];
-      tdata45.vx[0] = par.vx[0];
-      tdata14.vy[0] = par.vy[0];
-      tdata15.vy[0] = par.vy[0];
-      tdata45.vy[0] = par.vy[0];
-      tdata14.vz[0] = par.vz[0];
-      tdata15.vz[0] = par.vz[0];
-      tdata45.vz[0] = par.vz[0];
+      // tdata14.vx[0] = par.vx[0];
+      // tdata15.vx[0] = par.vx[0];
+      // tdata45.vx[0] = par.vx[0];
+      // tdata14.vy[0] = par.vy[0];
+      // tdata15.vy[0] = par.vy[0];
+      // tdata45.vy[0] = par.vy[0];
+      // tdata14.vz[0] = par.vz[0];
+      // tdata15.vz[0] = par.vz[0];
+      // tdata45.vz[0] = par.vz[0];
 
       // Add background hits
       int bckHits1 = par.nhits1 * BGfrac;
@@ -661,9 +656,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          tdata12.vz[1] = gRandom->Rndm()*22-13-vzShift;
          tdata13.vz[1] = tdata12.vz[1];
          tdata23.vz[1] = tdata12.vz[1];
-         tdata14.vz[1] = tdata12.vz[1];
-         tdata15.vz[1] = tdata12.vz[1];
-         tdata45.vz[1] = tdata12.vz[1];
+         // tdata14.vz[1] = tdata12.vz[1];
+         // tdata15.vz[1] = tdata12.vz[1];
+         // tdata45.vz[1] = tdata12.vz[1];
       } else if (useKKVertex) {
          tdata12.vx[1] = par.vx[1];
          tdata12.vy[1] = par.vy[1];
@@ -674,22 +669,22 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          tdata23.vx[1] = par.vx[1];
          tdata23.vy[1] = par.vy[1];
          tdata23.vz[1] = par.vz[1];
-         tdata14.vx[1] = par.vx[1];
-         tdata14.vy[1] = par.vy[1];
-         tdata14.vz[1] = par.vz[1];
-         tdata15.vx[1] = par.vx[1];
-         tdata15.vy[1] = par.vy[1];
-         tdata15.vz[1] = par.vz[1];
-         tdata45.vx[1] = par.vx[1];
-         tdata45.vy[1] = par.vy[1];
-         tdata45.vz[1] = par.vz[1];
+         // tdata14.vx[1] = par.vx[1];
+         // tdata14.vy[1] = par.vy[1];
+         // tdata14.vz[1] = par.vz[1];
+         // tdata15.vx[1] = par.vx[1];
+         // tdata15.vy[1] = par.vy[1];
+         // tdata15.vz[1] = par.vz[1];
+         // tdata45.vx[1] = par.vx[1];
+         // tdata45.vy[1] = par.vy[1];
+         // tdata45.vz[1] = par.vz[1];
       } else {
          tdata12.vz[1] = trackletVertex;
          tdata13.vz[1] = trackletVertex;
          tdata23.vz[1] = trackletVertex;
-         tdata14.vz[1] = trackletVertex;
-         tdata15.vz[1] = trackletVertex;
-         tdata45.vz[1] = trackletVertex;
+         // tdata14.vz[1] = trackletVertex;
+         // tdata15.vz[1] = trackletVertex;
+         // tdata45.vz[1] = trackletVertex;
       }
 
       // Process hits with Vz constraint:
@@ -766,33 +761,33 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
          std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
          recoTracklets23 = recoTracklets(combinedhits, 2, 3);
 
-         combinedhits.clear();
-         combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
-         combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
-         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-         recoTracklets14 = recoTracklets(combinedhits, 1, 4);
+         // combinedhits.clear();
+         // combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+         // combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
+         // std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         // recoTracklets14 = recoTracklets(combinedhits, 1, 4);
 
-         combinedhits.clear();
-         combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
-         combinedhits.insert(combinedhits.end(), layer5.begin(), layer5.end());
-         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-         recoTracklets15 = recoTracklets(combinedhits, 1, 5);
+         // combinedhits.clear();
+         // combinedhits.insert(combinedhits.end(), layer1.begin(), layer1.end());
+         // combinedhits.insert(combinedhits.end(), layer5.begin(), layer5.end());
+         // std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         // recoTracklets15 = recoTracklets(combinedhits, 1, 5);
 
-         combinedhits.clear();
-         combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
-         combinedhits.insert(combinedhits.end(), layer5.begin(), layer5.end());
-         std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
-         recoTracklets45 = recoTracklets(combinedhits, 4, 5);
+         // combinedhits.clear();
+         // combinedhits.insert(combinedhits.end(), layer4.begin(), layer4.end());
+         // combinedhits.insert(combinedhits.end(), layer5.begin(), layer5.end());
+         // std::sort(combinedhits.begin(), combinedhits.end(), sorteta);
+         // recoTracklets45 = recoTracklets(combinedhits, 4, 5);
       }
 
       // Cluster Vertex Compatibility =========================================
-      // double clusVtxQual1 = 0;
-      // double clusVtxQual2 = 0;
-      // double clusVtxQual3 = 0;
+      double clusVtxQual1 = 0;
+      double clusVtxQual2 = 0;
+      double clusVtxQual3 = 0;
 
-      double clusVtxQual1 = getClusVtxCompat(layer1, 1);
-      double clusVtxQual2 = getClusVtxCompat(layer2, 2);
-      double clusVtxQual3 = getClusVtxCompat(layer3, 3);
+      // double clusVtxQual1 = getClusVtxCompat(layer1, 1);
+      // double clusVtxQual2 = getClusVtxCompat(layer2, 2);
+      // double clusVtxQual3 = getClusVtxCompat(layer3, 3);
 
       // Move the Vertex back
       // if (smearVertex!=0) {
@@ -812,11 +807,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
       tdata12.nHFn       = par.nHFp;
       tdata12.nHFp       = par.nHFn;
       tdata12.nHits      = layer1.size() + layer2.size() + layer3.size();
-      tdata12.nL1ABit    = par.nL1ABit;
-      tdata12.nL1TBit    = par.nL1TBit;
-      tdata12.xi         = par.xi;
-      tdata12.passDS     = par.passDS;
-      tdata12.passSingleTrack = par.passSingleTrack;
       tdata12.ntrks      = par.ntrks;
       tdata12.ntrksCut   = par.ntrksCut;
       tdata12.nPU        = nPileUp;
@@ -827,16 +817,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
 
       for (int j=0; j<nPileUp; j++)
          tdata12.vzPU[j] = vzPileUp[j];
-      for (int j=0; j<(int)par.nHltBit; j++)
-         tdata12.hltBit[j] = par.hltBit[j];
-      for (int j=0; j<(int)par.nL1ABit; j++)
-         tdata12.l1ABit[j] = par.l1ABit[j];
-      for (int j=0; j<(int)par.nL1TBit; j++)
-         tdata12.l1TBit[j] = par.l1TBit[j];
-      tdata12.L1_BPTX_AND = par.L1_BPTX_AND;
-      tdata12.L1_BPTX_OR = par.L1_BPTX_OR;
-      tdata12.L1_BPTX_plus = par.L1_BPTX_plus;
-      tdata12.L1_BPTX_minus = par.L1_BPTX_minus;
 
       int ntracklet12s = 0;
       int ntracklet12b = 0;
@@ -923,11 +903,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
    tdata##q##w.nHFn       = par.nHFp;                          \
    tdata##q##w.nHFp       = par.nHFn;                          \
    tdata##q##w.nHits      = tdata12.nHits;                     \
-   tdata##q##w.nL1ABit    = par.nL1ABit;                       \
-   tdata##q##w.nL1TBit    = par.nL1TBit;                       \
-   tdata##q##w.xi         = par.xi;                            \
-   tdata##q##w.passDS     = par.passDS;                        \
-   tdata##q##w.passSingleTrack = par.passSingleTrack;          \
    tdata##q##w.ntrks      = par.ntrks;                         \
    tdata##q##w.ntrksCut   = par.ntrksCut;                      \
    tdata##q##w.nPU        = nPileUp;                           \
@@ -938,16 +913,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
                                                                \
    for (int j=0; j<nPileUp; j++)                               \
       tdata##q##w.vzPU[j] = vzPileUp[j];                       \
-   for (int j=0; j<(int)par.nHltBit; j++)                      \
-      tdata##q##w.hltBit[j] = par.hltBit[j];                   \
-   for (int j=0; j<(int)par.nL1ABit; j++)                      \
-      tdata##q##w.l1ABit[j] = par.l1ABit[j];                   \
-   for (int j=0; j<(int)par.nL1TBit; j++)                      \
-      tdata##q##w.l1TBit[j] = par.l1TBit[j];                   \
-      tdata##q##w.L1_BPTX_AND = par.L1_BPTX_AND;               \
-      tdata##q##w.L1_BPTX_OR = par.L1_BPTX_OR;                 \
-      tdata##q##w.L1_BPTX_plus = par.L1_BPTX_plus;             \
-      tdata##q##w.L1_BPTX_minus = par.L1_BPTX_minus;           \
                                                                \
    int ntracklet##q##w##s = 0;                                 \
    int ntracklet##q##w##b = 0;                                 \
@@ -1001,12 +966,17 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input Pixel T
 }
       fillTrackletTree(1, 3);
       fillTrackletTree(2, 3);
+      /*
       fillTrackletTree(1, 4);
       fillTrackletTree(1, 5);
       fillTrackletTree(4, 5);
+      */
    }
 
-   outf->Write();
+   inf->Close();
+
+   hltTree->Write("", TObject::kOverwrite);
+   outf->Write("", TObject::kOverwrite);
    outf->Close();
 
    return 0;

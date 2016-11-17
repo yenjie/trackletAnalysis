@@ -111,12 +111,11 @@ void setBranchAddress(TTree *trackletTree, TrackletData &tdata)
 */
 }
 
-void matchGenParticle(char *infname, char *outfname)
+void matchGenParticle(const char *infname, const char *outfname)
 {
    TFile *inf = new TFile(infname);
-   TTree *t = (TTree*)inf->Get("TrackletTree14");
+   TTree *t = (TTree*)inf->Get("TrackletTree13");
    
-
    TFile *outf = new TFile(outfname,"recreate");
    TNtuple *nt = new TNtuple("nt","","pt:eta:phi:eta1:phi1:dphi:deta:dR");
    TrackletData tdata;
@@ -143,5 +142,4 @@ void matchGenParticle(char *infname, char *outfname)
    }
    
    nt->Write();
-   
 }

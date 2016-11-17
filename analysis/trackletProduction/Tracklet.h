@@ -476,17 +476,17 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("nHFp", &tdata.nHFp, "nHFp/I");
    trackletTree->Branch("nHits", &tdata.nHits, "nHits/I");
 
-   trackletTree->Branch("nHltBit", &tdata.nHltBit, "nHltBit/I");
-   trackletTree->Branch("hltBit", tdata.hltBit, "hltBit[nHltBit]/O");
-   trackletTree->Branch("nL1ABit", &tdata.nL1ABit, "nL1ABit/I");
-   trackletTree->Branch("l1ABit", tdata.l1ABit, "l1ABit[nL1ABit]/O");
-   trackletTree->Branch("nL1TBit", &tdata.nL1TBit, "nL1TBit/I");
-   trackletTree->Branch("l1TBit", tdata.l1TBit, "l1TBit[nL1TBit]/O");
+   // trackletTree->Branch("nHltBit", &tdata.nHltBit, "nHltBit/I");
+   // trackletTree->Branch("hltBit", tdata.hltBit, "hltBit[nHltBit]/O");
+   // trackletTree->Branch("nL1ABit", &tdata.nL1ABit, "nL1ABit/I");
+   // trackletTree->Branch("l1ABit", tdata.l1ABit, "l1ABit[nL1ABit]/O");
+   // trackletTree->Branch("nL1TBit", &tdata.nL1TBit, "nL1TBit/I");
+   // trackletTree->Branch("l1TBit", tdata.l1TBit, "l1TBit[nL1TBit]/O");
 
-   trackletTree->Branch("L1_BPTX_AND", &tdata.L1_BPTX_AND, "L1_BPTX_AND/I");
-   trackletTree->Branch("L1_BPTX_OR", &tdata.L1_BPTX_OR, "L1_BPTX_OR/I");
-   trackletTree->Branch("L1_BPTX_plus", &tdata.L1_BPTX_plus, "L1_BPTX_plus/I");
-   trackletTree->Branch("L1_BPTX_minus", &tdata.L1_BPTX_minus, "L1_BPTX_minus/I");
+   // trackletTree->Branch("L1_BPTX_AND", &tdata.L1_BPTX_AND, "L1_BPTX_AND/I");
+   // trackletTree->Branch("L1_BPTX_OR", &tdata.L1_BPTX_OR, "L1_BPTX_OR/I");
+   // trackletTree->Branch("L1_BPTX_plus", &tdata.L1_BPTX_plus, "L1_BPTX_plus/I");
+   // trackletTree->Branch("L1_BPTX_minus", &tdata.L1_BPTX_minus, "L1_BPTX_minus/I");
 
    trackletTree->Branch("nTracklets", &tdata.nTracklet, "nTracklets/I");
    trackletTree->Branch("nhit1", &tdata.nhit1, "nhit1/I");
@@ -528,9 +528,9 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("nPU", &tdata.nPU, "nPU/I");
    trackletTree->Branch("vzPU", tdata.vzPU, "vzPU[nPU]/F");
 
-   trackletTree->Branch("xi", &tdata.xi, "xi/F");
-   trackletTree->Branch("passDS", &tdata.passDS, "passDS/O");
-   trackletTree->Branch("passSingleTrack", &tdata.passSingleTrack, "passSingleTrack/O");
+   // trackletTree->Branch("xi", &tdata.xi, "xi/F");
+   // trackletTree->Branch("passDS", &tdata.passDS, "passDS/O");
+   // trackletTree->Branch("passSingleTrack", &tdata.passSingleTrack, "passSingleTrack/O");
    trackletTree->Branch("ntrks", &tdata.ntrks, "ntrks/I");
    trackletTree->Branch("ntrksCut", &tdata.ntrksCut, "ntrksCut/I");
 
@@ -543,3 +543,4 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->SetAlias("y1", "r1*sin(phi1)");
    trackletTree->SetAlias("y2", "r2*sin(phi2)");
 }
+
