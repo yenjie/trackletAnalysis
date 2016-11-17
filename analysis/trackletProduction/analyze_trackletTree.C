@@ -47,8 +47,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          uint64_t start_entry = 0,              // Starting entry number in the PixelTree
                          uint64_t end_entry = 1000000000,       // Ending entry number in the PixelTree
-                         double pileUp = 0,                     // Artifically overlap event to mimic pile-up
-                         bool reWeight = 0,                     // Reweight vertex distribution to match data
+                         double pileUp = 0.005,                 // Artifically overlap event to mimic pile-up
+                         bool reWeight = 1,                     // Reweight vertex distribution to match data
                          bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
                          double BGfrac = 0,                     // Additional background level
                          bool addL1Bck = 0,                     // Add random background to first pixel layer
@@ -183,6 +183,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       }
 
       hltTree->GetEntry(i);
+      if (!isMC) // MC does not have HLT paths yet
       if (!HLT_MB_path)
          continue;
 
@@ -192,7 +193,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
          if (myVz < -90) {
             // TF1* f = new TF1("f", "1", -20, 20);
             // TF1* f = new TF1("f", "gaus", -30, 30);
-            // f->SetParameters(1, -0.356413, 5.33904);
+            // f->SetParameters(1, -1.79326, 6.50467);
             // myVz = f->GetRandom();
             // delete f;
             myVz = par.vz[0];
@@ -201,9 +202,12 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
          // 13 TeV Run 246908
          // double DataPdf = TMath::Gaus(myVz, -2.03961-vzShift, 4.2783, 1);
          // 13 TeV Run 247324
-         double DataPdf = TMath::Gaus(myVz, -2.14145, 4.30854, 1);
+         // double DataPdf = TMath::Gaus(myVz, -2.14145, 4.30854, 1);
+         // 5 TeV pPb Run 285090
+         double DataPdf = TMath::Gaus(myVz, 1.09219, 6.27013, 1);
 
-         double MCPdf = TMath::Gaus(myVz, -0.356413, 5.33904, 1);
+         // /export/d00/scratch/biran/pixeltrees/PixelTree-EPOS-5TeV-HLT.root
+         double MCPdf = TMath::Gaus(myVz, -1.79326, 6.50467, 1);
 
          double Ratio = DataPdf / MCPdf;
          double x = gRandom->Rndm()*3;
