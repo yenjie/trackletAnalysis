@@ -1,0 +1,15 @@
+# root compilation
+*_C.d
+*.so
+*.pcm
+
+# output
+*.root
+*.log
+
+# graphics
+*.gif
+*.png
+*.pdf
+*.eps
+
