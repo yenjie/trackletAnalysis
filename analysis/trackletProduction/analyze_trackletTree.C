@@ -814,7 +814,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
 
    inf->Close();
 
-   hltTree->Write("", TObject::kOverwrite);
    outf->Write("", TObject::kOverwrite);
    outf->Close();
 
