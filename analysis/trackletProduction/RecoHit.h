@@ -89,7 +89,7 @@ class TrackletData {
       float xi;
       bool passDS, passSingleTrack;
       int ntrks, ntrksCut;
-      int nPU, recoPU;
+      int nPUEvents, recoPU;
       float vzPU[12];
       float clusVtxQual1, clusVtxQual2, clusVtxQual3;
 };
@@ -122,8 +122,9 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       x0 = 0.06149;
       y0 = 0.1056;
    } else {
-      x0 = 0.07782;
-      y0 = 0.09594;
+      // HIJING 8TeV
+      x0 = 0.1048;
+      y0 = 0.1687;
    }
 
    if (vz!=0 && firstCall==0) {
@@ -133,12 +134,6 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
 
    if (layer == 1) {
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
-         if (par.phi1[ihit]>-0.3904153 && par.phi1[ihit]<-0.3904152 && par.eta1[ihit]>-1.45722 && par.eta1[ihit]<-1.45721)
-            continue;
-         if (par.phi1[ihit]>1.3385 && par.phi1[ihit]<1.3386 && par.eta1[ihit]>-2.5014 && par.eta1[ihit]<-2.5013)
-            continue;
-         if (par.phi1[ihit]>2.0982 && par.phi1[ihit]<2.0984 && par.eta1[ihit]>-0.9114 && par.eta1[ihit]<-0.9112)
-            continue;
          RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], par.ch1[ihit], 1);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
@@ -147,16 +142,6 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       }
    } else if (layer == 2) {
       for (int ihit = 0; ihit < par.nhits2; ++ihit) {
-         if (par.eta2[ihit]>-1.85779 && par.eta2[ihit]<-1.85778 && par.phi2[ihit]>2.18935 && par.phi2[ihit]<2.18936)
-            continue;
-         if (par.eta2[ihit]>0.12535 && par.eta2[ihit]<0.12536 && par.phi2[ihit]>1.03344 && par.phi2[ihit]<1.03345)
-            continue;
-         if (par.eta2[ihit]>0.12626 && par.eta2[ihit]<0.12631 && par.phi2[ihit]>1.034 && par.phi2[ihit]<1.03475)
-            continue;
-         if (par.eta2[ihit]>-1.2623 && par.eta2[ihit]<-1.26229 && par.phi2[ihit]>2.8906 && par.phi2[ihit]<2.8907)
-            continue;
-         if (par.phi2[ihit]>2.1157 && par.phi2[ihit]<2.1158 && par.eta2[ihit]>-1.9016 && par.eta2[ihit]<-1.9015)
-            continue;
          RecoHit tmp(par.eta2[ihit], par.phi2[ihit], par.r2[ihit], par.cs2[ihit], par.ch2[ihit], 2);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
@@ -165,59 +150,11 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
       }
    } else if (layer == 3) {
       for (int ihit = 0; ihit < par.nhits3; ++ihit) {
-         if (par.eta3[ihit]>0.76085 && par.eta3[ihit]<0.76087 && par.phi3[ihit]>-1.22261 && par.phi3[ihit]<-1.2226)
-            continue;
-         if (par.eta3[ihit]>-1.39076 && par.eta3[ihit]<-1.39074 && par.phi3[ihit]>1.116954 && par.phi3[ihit]<1.116955)
-            continue;
-         if (par.eta3[ihit]>-1.07629 && par.eta3[ihit]<-1.07628 && par.phi3[ihit]>-2.59858 && par.phi3[ihit]<-2.59857)
-            continue;
-         if (par.eta3[ihit]>0.99493 && par.eta3[ihit]<0.99494 && par.phi3[ihit]>0.75637 && par.phi3[ihit]<0.7563704)
-            continue;
-         if (par.eta3[ihit]>1.30654 && par.eta3[ihit]<1.30655 && par.phi3[ihit]>-0.49127 && par.phi3[ihit]<-0.49126)
-            continue;
-         if (par.eta3[ihit]>-0.17039 && par.eta3[ihit]<-0.17038 && par.phi3[ihit]>-1.44136 && par.phi3[ihit]<-1.441353)
-            continue;
-         if (par.phi3[ihit]>1.11 && par.phi3[ihit]<1.17 && par.eta3[ihit]>-1.4 && par.eta3[ihit]<-1.34)
-            continue;
-         if (par.phi3[ihit]>-0.522 && par.phi3[ihit]<-0.509 && par.eta3[ihit]>0.8862 && par.eta3[ihit]<0.8864)
-            continue;
-         if (par.phi3[ihit]>0.5434 && par.phi3[ihit]<0.5446 && par.eta3[ihit]>0.9554 && par.eta3[ihit]<0.9561)
-            continue;
-         if (par.phi3[ihit]>1.269 && par.phi3[ihit]<1.2694 && par.eta3[ihit]>0.64 && par.eta3[ihit]<0.72)
-            continue;
-         if (par.phi3[ihit]>-0.2274 && par.phi3[ihit]<-0.2271 && par.eta3[ihit]>1.43 && par.eta3[ihit]<1.475)
-            continue;
-         if (par.phi3[ihit]>-1.6671 && par.phi3[ihit]<-1.6669 && par.eta3[ihit]>1.408 && par.eta3[ihit]<1.4084)
-            continue;
-         if (par.phi3[ihit]>0.7193 && par.phi3[ihit]<0.7194 && par.eta3[ihit]>-0.2824 && par.eta3[ihit]<-0.2823)
-            continue;
-         if (par.phi3[ihit]>-1.2439 && par.phi3[ihit]<-1.2438 && par.eta3[ihit]>-0.693 && par.eta3[ihit]<-0.692)
-            continue;
-         if (par.phi3[ihit]>0.064 && par.phi3[ihit]<0.073 && par.eta3[ihit]>-1.04 && par.eta3[ihit]<-0.98)
-            continue;
-         if (par.phi3[ihit]>1.024 && par.phi3[ihit]<1.0242 && par.eta3[ihit]>0.7992 && par.eta3[ihit]<0.7995)
-            continue;
-         if (par.phi3[ihit]>0.07 && par.phi3[ihit]<0.073 && par.eta3[ihit]>-0.63 && par.eta3[ihit]<-0.54)
-            continue;
          RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit], par.ch3[ihit], 3);
          if (gRandom->Rndm()<dropProb) continue;
          hits.push_back(tmp);
          // put artifical split hits
          if (gRandom->Rndm()<splitProb) hits.push_back(tmp);
-      }
-   } else if (layer%10 == 4) {
-      for (int ihit = 0; ihit < par.nhits4; ++ihit) {
-         if ((layer/10==2 && par.r4[ihit]<9.0) || (layer/10==3 && par.r4[ihit]>9.0)) {
-            RecoHit tmp(par.eta4[ihit], par.phi4[ihit], par.r4[ihit], par.cs4[ihit], par.ch4[ihit], layer/10);
-            hits.push_back(tmp);
-         }
-      }
-   } else if (layer%10 == 5) {
-      for (int ihit = 0; ihit < par.nhits5; ++ihit) {
-         if ((layer/10==2 && par.r5[ihit]<9.0) || (layer/10==3 && par.r5[ihit]>9.0)) {
-            RecoHit tmp(par.eta5[ihit], par.phi5[ihit], par.r5[ihit], par.cs5[ihit], par.ch5[ihit], layer/10);
-            hits.push_back(tmp);
-         }
       }
    }
    sort (hits.begin(), hits.end(), comparePhi);
@@ -300,18 +237,6 @@ void getPixelTreeBranch(TTree* t, Parameters &par) {
    t->SetBranchAddress("nHFn", &par.nHFn);
    t->SetBranchAddress("nHFp", &par.nHFp);
 
-   t->SetBranchAddress("nHLTBit", &par.nHltBit);
-   t->SetBranchAddress("hltBit", par.hltBit);
-   t->SetBranchAddress("nL1A", &par.nL1ABit);
-   t->SetBranchAddress("L1A", par.l1ABit);
-   t->SetBranchAddress("nL1T", &par.nL1TBit);
-   t->SetBranchAddress("L1T", par.l1TBit);
-
-   t->SetBranchAddress("L1Tech_BPTX_plus_AND_minus.v0", &par.L1_BPTX_AND);
-   t->SetBranchAddress("L1Tech_BPTX_plus_OR_minus.v0", &par.L1_BPTX_OR);
-   t->SetBranchAddress("L1Tech_BPTX_plus.v0", &par.L1_BPTX_plus);
-   t->SetBranchAddress("L1Tech_BPTX_minus.v0", &par.L1_BPTX_minus);
-
    t->SetBranchAddress("eta1", par.eta1);
    t->SetBranchAddress("phi1", par.phi1);
    t->SetBranchAddress("r1", par.r1);
@@ -358,9 +283,6 @@ void getPixelTreeBranch(TTree* t, Parameters &par) {
    t->SetBranchAddress("pdg", &par.pdg);
    t->SetBranchAddress("evtType", &par.evtType);
 
-   t->SetBranchAddress("xi", &par.xi);
-   t->SetBranchAddress("passDS", &par.passDS);
-   t->SetBranchAddress("passSingleTrack", &par.passSingleTrack);
    t->SetBranchAddress("ntrks", &par.ntrks);
    t->SetBranchAddress("ntrksCut", &par.ntrksCut);
 }
