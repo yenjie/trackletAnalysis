@@ -115,14 +115,14 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
 
    double x0, y0;
    // The beamspot for each run
-   if (par.nRun == 247324) {
-      x0 = 0.052;
-      y0 = 0.160;
-   } else if (par.nRun == 285090) {
+   if (par.nRun == 285090) {
       x0 = 0.06149;
       y0 = 0.1056;
+   } else if (par.nRun == 285517) {
+      x0 = 0.05746;
+      y0 = 0.1051;
    } else {
-      // HIJING 8TeV
+      // MC
       x0 = 0.1048;
       y0 = 0.1687;
    }
