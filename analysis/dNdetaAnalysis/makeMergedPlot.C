@@ -18,9 +18,9 @@ int makeMergedPlot(const char* name = "EPOS-8TeV", const char* title = "") {
    TFile* inf23 = new TFile(Form("correction/correction-23-%s.root", name));
    TH1F* h23 = (TH1F*)((TH1F*)inf23->FindObjectAny("hMeasuredFinal"))->Clone("h23");
 
-   TFile* infepos = new TFile("correction/correction-12-EPOS-5TeV.root");
-   TH1F* hepos = (TH1F*)((TH1F*)infepos->FindObjectAny("hMeasuredFinal"))->Clone("hepos");
-   hepos->SetAxisRange(0, 30, "Y");
+   TFile* infepos = new TFile("correction/correction-12-EPOS-8TeV.root");
+   TH1F* hepos = (TH1F*)((TH1F*)infepos->FindObjectAny("hTruthWOSelection"))->Clone("hepos");
+   hepos->SetAxisRange(0, 27, "Y");
 
    TFile* outfile = new TFile(Form("merged/merged-%s.root", name), "recreate");
    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
@@ -42,7 +42,7 @@ int makeMergedPlot(const char* name = "EPOS-8TeV", const char* title = "") {
    hepos->SetMarkerColor(kGreen+2);
    hepos->SetLineColor(kGreen+2);
 
-   hepos->Draw("hist ][");
+   hepos->Draw("hist c ][");
 
    h12->Draw("same");
    h13->Draw("same");
