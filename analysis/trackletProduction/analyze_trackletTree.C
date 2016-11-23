@@ -206,7 +206,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
          // PixelTree-EPOS-5TeV-HLT.root
          // double MCPdf = TMath::Gaus(myVz, -1.79326, 6.50467, 1);
          // PixelTree-EPOS-8TeV-HLT.root
-         double MCPdf = TMath::Gaus(myVz, 0.9672, 6.2021, 1);
+         double MCPdf = TMath::Gaus(myVz, -1.5776, 6.4147, 1);
 
          double Ratio = DataPdf / MCPdf;
          double x = gRandom->Rndm()*3;
