@@ -1,7 +1,7 @@
 // Plot final results
 #define canvasSizeX 600
 #define canvasSizeY 600
-#define dndetaRange 27.0
+#define dndetaRange 30.0
 #define SDFactor 1
 
 // Standard library

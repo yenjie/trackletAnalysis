@@ -20,7 +20,7 @@ int makeMergedPlot(const char* name = "EPOS-8TeV", const char* title = "") {
 
    TFile* infepos = new TFile("correction/correction-12-EPOS-8TeV.root");
    TH1F* hepos = (TH1F*)((TH1F*)infepos->FindObjectAny("hTruthWOSelection"))->Clone("hepos");
-   hepos->SetAxisRange(0, 27, "Y");
+   hepos->SetAxisRange(0, 30, "Y");
 
    TFile* outfile = new TFile(Form("merged/merged-%s.root", name), "recreate");
    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
