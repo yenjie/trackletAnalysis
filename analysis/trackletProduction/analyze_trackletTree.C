@@ -183,7 +183,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       }
 
       hltTree->GetEntry(i);
-      if (!isMC) // MC does not have HLT paths yet
       if (!HLT_MB_path)
          continue;
 
@@ -199,15 +198,15 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
             myVz = par.vz[0];
          }
 
-         // 13 TeV Run 246908
-         // double DataPdf = TMath::Gaus(myVz, -2.03961-vzShift, 4.2783, 1);
-         // 13 TeV Run 247324
-         // double DataPdf = TMath::Gaus(myVz, -2.14145, 4.30854, 1);
          // 5 TeV pPb Run 285090
-         double DataPdf = TMath::Gaus(myVz, 1.09219, 6.27013, 1);
+         // double DataPdf = TMath::Gaus(myVz, 1.09219, 6.27013, 1);
+         // 8 TeV pPb Run 285517
+         double DataPdf = TMath::Gaus(myVz, -0.3164, 4.7283, 1);
 
-         // /export/d00/scratch/biran/pixeltrees/PixelTree-EPOS-5TeV-HLT.root
-         double MCPdf = TMath::Gaus(myVz, -1.79326, 6.50467, 1);
+         // PixelTree-EPOS-5TeV-HLT.root
+         // double MCPdf = TMath::Gaus(myVz, -1.79326, 6.50467, 1);
+         // PixelTree-EPOS-8TeV-HLT.root
+         double MCPdf = TMath::Gaus(myVz, 0.9672, 6.2021, 1);
 
          double Ratio = DataPdf / MCPdf;
          double x = gRandom->Rndm()*3;
