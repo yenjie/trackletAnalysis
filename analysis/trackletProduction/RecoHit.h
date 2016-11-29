@@ -121,6 +121,9 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
    } else if (par.nRun == 285517) {
       x0 = 0.05746;
       y0 = 0.1051;
+   } else if (par.nRun == 285832) {
+      x0 = 0.05774;
+      y0 = 0.10872;
    } else {
       // MC
       x0 = 0.1048;
@@ -135,26 +138,39 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
    if (layer == 1) {
       for (int ihit = 0; ihit < par.nhits1; ++ihit) {
          RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], par.ch1[ihit], 1);
-         if (gRandom->Rndm()<dropProb) continue;
+         // Run 285517
+         // if (!(fabs(phi1-1.78408)>0.00001 && fabs(eta1+1.16674)>0.00001)) continue;
+         // Run 285832
+         // if (!(fabs(phi1-1.78421)>0.00001 && fabs(eta1+1.16703)>0.00001 && fabs(phi1-1.43093)>0.00001 && fabs(eta1+0.66483)>0.00001 && fabs(phi1-1.42661)>0.00001 && fabs(eta1+0.66445)>0.00001 && fabs(phi1-1.40936)>0.00001 && fabs(eta1+0.66284)>0.00001 && fabs(phi1-1.40721)>0.00001 && fabs(eta1+0.66262)>0.00001 && fabs(phi1-2.62996)>0.00001 && fabs(eta1+2.10101)>0.00001 && fabs(phi1-1.35537)>0.00001 && fabs(eta1+2.48903)>0.00001 && fabs(phi1-1.35055)>0.00001 && fabs(eta1+2.48966)>0.00001 && fabs(phi1-1.40721)>0.00001 && fabs(eta1+0.66262)>0.00001 && fabs(phi1-1.40936)>0.00001 && fabs(eta1+0.66284)>0.00001 && fabs(phi1-1.41582)>0.00001 && fabs(eta1+0.66346)>0.00001 && fabs(phi1-1.42661)>0.00001 && fabs(eta1+0.66445)>0.00001 && fabs(phi1-1.43093)>0.00001 && fabs(eta1+0.66483)>0.00001 && fabs(phi1-3.09539)>0.00001 && fabs(eta1-2.08781)>0.00001)) continue;
+         if (gRandom->Rndm() < dropProb) continue;
          hits.push_back(tmp);
          // put artifical split hits
-         if (gRandom->Rndm()<splitProb) hits.push_back(tmp);
+         if (gRandom->Rndm() < splitProb) hits.push_back(tmp);
       }
    } else if (layer == 2) {
       for (int ihit = 0; ihit < par.nhits2; ++ihit) {
          RecoHit tmp(par.eta2[ihit], par.phi2[ihit], par.r2[ihit], par.cs2[ihit], par.ch2[ihit], 2);
-         if (gRandom->Rndm()<dropProb) continue;
+         // Run 285517
+         // if (!(fabs(phi2+2.02799)>0.00001 && (eta2-0.34798)>0.00001 && fabs(phi2+2.03061)>0.00001 && (eta2-0.34795)>0.00001 && fabs(phi2+2.29179)>0.00001 && (eta2-0.70377)>0.00001 && fabs(phi2-1.50481)>0.00001 && (eta2-1.41267)>0.00001 && fabs(phi2+1.91605)>0.00001 && (eta2-1.12815)>0.00001 && fabs(phi2-0.11765)>0.00001 && (eta2-0.43056)>0.00001)) continue;
+         // Run 285832
+         // if (!(fabs(phi2+2.02809)>0.00001 && fabs(eta2-0.34774)>0.00001 && fabs(phi2+2.03070)>0.00001 && fabs(eta2-0.34771)>0.00001 && fabs(phi2+2.29325)>0.00001 && fabs(eta2-0.70344)>0.00001 && fabs(phi2+2.29048)>0.00001 && fabs(eta2-0.70358)>0.00001 && fabs(phi2-1.50475)>0.00001 && fabs(eta2-1.41259)>0.00001 && fabs(phi2+1.91616)>0.00001 && fabs(eta2-1.12794)>0.00001 && fabs(phi2+0.96467)>0.00001 && fabs(eta2-0.65614)>0.00001 && fabs(phi2+0.96730)>0.00001 && fabs(eta2-0.65611)>0.00001 && fabs(phi2+0.34368)>0.00001 && fabs(eta2-1.84190)>0.00001 && fabs(phi2+2.50245)>0.00001 && fabs(eta2-0.28293)>0.00001 && fabs(phi2+2.50521)>0.00001 && fabs(eta2-0.28301)>0.00001 && fabs(phi2+0.88593)>0.00001 && fabs(eta2-0.68248)>0.00001 && fabs(phi2+0.96467)>0.00001 && fabs(eta2-0.65614)>0.00001 && fabs(phi2+0.96730)>0.00001 && fabs(eta2-0.65611)>0.00001 && fabs(phi2+2.12876)>0.00001 && fabs(eta2+0.34704)>0.00001 && fabs(phi2+2.13015)>0.00001 && fabs(eta2+0.34905)>0.00001 && fabs(phi2+2.13154)>0.00001 && fabs(eta2+0.34711)>0.00001 && fabs(phi2+0.96534)>0.00001 && fabs(eta2+0.24780)>0.00001)) continue;
+         if (gRandom->Rndm() < dropProb) continue;
          hits.push_back(tmp);
          // put artifical split hits
-         if (gRandom->Rndm()<splitProb) hits.push_back(tmp);
+         if (gRandom->Rndm() < splitProb) hits.push_back(tmp);
       }
    } else if (layer == 3) {
       for (int ihit = 0; ihit < par.nhits3; ++ihit) {
          RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit], par.ch3[ihit], 3);
-         if (gRandom->Rndm()<dropProb) continue;
+         // Run 285517
+         // if (!(fabs(phi3-0.01456)>0.00001 && fabs(eta3+0.06655)>0.00001)) continue;
+         // Run 285832
+         // if (!(fabs(phi3-0.01456)>0.00001 && fabs(eta3+0.06675)>0.00001 && fabs(phi3+0.72997)>0.00001 && fabs(eta3+0.62795)>0.00001)) continue;
+         if (fabs(par.eta3[ihit]+0.0665)<0.0001 && fabs(par.phi3[ihit]-0.0145)<0.0001) continue;
+         if (gRandom->Rndm() < dropProb) continue;
          hits.push_back(tmp);
          // put artifical split hits
-         if (gRandom->Rndm()<splitProb) hits.push_back(tmp);
+         if (gRandom->Rndm() < splitProb) hits.push_back(tmp);
       }
    }
    sort (hits.begin(), hits.end(), comparePhi);

@@ -144,12 +144,12 @@ int plotFinalResult(int TrackletType,
 
    switch (selection) {
       case 0:
-         MCSelection = "1";
+         MCSelection = "(evtType!=102)";
          offlineSelection = "1";
          printf("---------- INELASTIC definition\n");
          break;
       case 1:
-         MCSelection = "(evtType!=103&&evtType!=104)";
+         MCSelection = "(evtType!=102&&evtType!=103&&evtType!=104)";
          offlineSelection = "1"; // effectively HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1
          // offlineSelection = "(nHFp>0 && nHFn>0)";
          printf("---------------- NSD definition\n");
@@ -250,35 +250,21 @@ int plotFinalResult(int TrackletType,
    bool accepRegion[nEtaBin][nVzBin];
    memset(accepRegion, 0, sizeof(bool)*nEtaBin*nVzBin);
 
+   double endpoint2 = 30.0; // 26.66 (old)
+   double rho = 7.6; // Second layer rho
    double etaLimit = 2.3;
-   if (TrackletType % 10 > 3) {
-      double etaLL = 1.7;
-      double etaHL = 2.7;
-      if (TrackletType % 10 == 5)
-         etaLL = 1.9;
-      for (int i=0; i<nEtaBin; i++) {
-         for (int j=0; j<nVzBin; j++) {
-            if (((EtaBins[i]>-etaHL && EtaBins[i]<-etaLL) || (EtaBins[i+1]>etaLL && EtaBins[i+1]<etaHL)) && VzBins[j]>-7.5 && VzBins[j+1]<7.5)
-               accepRegion[i][j] = 1;
-         }
-      }
-   } else {
-      double endpoint2 = 30.0; // 26.66 (old)
-      double rho = 7.6; // Second layer rho
-      etaLimit = 2.3;
-      if (TrackletType % 10 == 3) {
-         rho = 10.5; // Third layer rho
-         etaLimit = 1.9;
-      }
-      for (int i=0; i<nEtaBin; i++) {
-         for (int j=0; j<nVzBin; j++) {
-            double minEta = EtaBins[i];
-            double maxEta = EtaBins[i+1];
-            double maxEdge = VzBins[j+1]-rho/tan(atan(exp(maxEta-0.2))*2);
-            double minEdge = VzBins[j]-rho/tan(atan(exp(minEta+0.2))*2);
-            if (maxEdge>-endpoint2 && minEdge<endpoint2 && maxEta<etaLimit && minEta>-etaLimit)
-               accepRegion[i][j] = 1;
-         }
+   if (TrackletType % 10 == 3) {
+      rho = 10.5; // Third layer rho
+      etaLimit = 1.9;
+   }
+   for (int i=0; i<nEtaBin; i++) {
+      for (int j=0; j<nVzBin; j++) {
+         double minEta = EtaBins[i];
+         double maxEta = EtaBins[i+1];
+         double maxEdge = VzBins[j+1]-rho/tan(atan(exp(maxEta-0.2))*2);
+         double minEdge = VzBins[j]-rho/tan(atan(exp(minEta+0.2))*2);
+         if (maxEdge>-endpoint2 && minEdge<endpoint2 && maxEta<etaLimit && minEta>-etaLimit)
+            accepRegion[i][j] = 1;
       }
    }
 

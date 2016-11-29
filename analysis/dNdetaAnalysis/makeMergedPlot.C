@@ -42,7 +42,7 @@ int makeMergedPlot(const char* name = "EPOS-8TeV", const char* title = "") {
    hepos->SetMarkerColor(kGreen+2);
    hepos->SetLineColor(kGreen+2);
 
-   hepos->Draw("hist c ][");
+   hepos->Draw("c");
 
    h12->Draw("same");
    h13->Draw("same");
@@ -87,7 +87,7 @@ int makeMergedPlot(const char* name = "EPOS-8TeV", const char* title = "") {
       hAvg->SetBinError(i, avgErr);
    }
 
-   hepos->Draw("hist ][");
+   hepos->Draw("c");
    hAvg->Draw("p same");
 
    TLegend* l2 = new TLegend(0.2, 0.2, 0.8, 0.4);

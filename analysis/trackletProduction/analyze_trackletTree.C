@@ -47,13 +47,13 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          uint64_t start_entry = 0,              // Starting entry number in the PixelTree
                          uint64_t end_entry = 1000000000,       // Ending entry number in the PixelTree
-                         double pileUp = 0.26,                  // Artifically overlap event to mimic pile-up | Run 285090: 0.005, Run 285517: 0.26
+                         double pileUp = 0.005,                 // Artifically overlap event to mimic pile-up
+                         // Run 285090: 0.005, Run 285517: 0.2, Run 285832: 0.005
                          bool reWeight = 1,                     // Reweight vertex distribution to match data
                          bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
-                         double BGfrac = 0,                     // Additional background level
-                         bool addL1Bck = 0,                     // Add random background to first pixel layer
-                         bool addL2Bck = 0,                     // Add random background to second pixel layer
-                         bool addL3Bck = 0,                     // Add random background to third pixel layer
+                         float addL1Bck = 0,                    // Add random background to first pixel layer
+                         float addL2Bck = 0,                    // Add random background to second pixel layer
+                         float addL3Bck = 0,                    // Add random background to third pixel layer
                          double splitProb = 0,                  // Splitting probability of the pixel hit
                          bool doTwoHitCorrelation = 0,          // Create a pixel counting tree instead of tracklet tree
                          bool smearPixels = 0,                  // Smear pixel hits
@@ -114,7 +114,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       cout << "This is a data analysis." << endl;
       pileUp = 0;
       reWeight = 0;
-      BGfrac = 0;
       addL1Bck = 0;
       addL2Bck = 0;
       addL3Bck = 0;
@@ -128,14 +127,29 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    // Prepare hit spectra for random hit
    if (addL1Bck) {
       cout << "Projecting...1" << endl;
+      // Run 285517
+      // t->Project("hLayer1Hit", "phi1:eta1:r1", "fabs(phi1-1.78408)>0.00001 && fabs(eta1+1.16674)>0.00001");
+      // Run 285832
+      // t->Project("hLayer1Hit", "phi1:eta1:r1", "nLumi>164 && fabs(phi1-1.78421)>0.00001 && fabs(eta1+1.16703)>0.00001 && fabs(phi1-1.43093)>0.00001 && fabs(eta1+0.66483)>0.00001 && fabs(phi1-1.42661)>0.00001 && fabs(eta1+0.66445)>0.00001 && fabs(phi1-1.40936)>0.00001 && fabs(eta1+0.66284)>0.00001 && fabs(phi1-1.40721)>0.00001 && fabs(eta1+0.66262)>0.00001 && fabs(phi1-2.62996)>0.00001 && fabs(eta1+2.10101)>0.00001 && fabs(phi1-1.35537)>0.00001 && fabs(eta1+2.48903)>0.00001 && fabs(phi1-1.35055)>0.00001 && fabs(eta1+2.48966)>0.00001 && fabs(phi1-1.40721)>0.00001 && fabs(eta1+0.66262)>0.00001 && fabs(phi1-1.40936)>0.00001 && fabs(eta1+0.66284)>0.00001 && fabs(phi1-1.41582)>0.00001 && fabs(eta1+0.66346)>0.00001 && fabs(phi1-1.42661)>0.00001 && fabs(eta1+0.66445)>0.00001 && fabs(phi1-1.43093)>0.00001 && fabs(eta1+0.66483)>0.00001 && fabs(phi1-3.09539)>0.00001 && fabs(eta1-2.08781)>0.00001");
+      // MC
       t->Project("hLayer1Hit", "phi1:eta1:r1");
    }
    if (addL2Bck) {
       cout << "Projecting...2" << endl;
+      // Run 285517
+      // t->Project("hLayer2Hit", "phi2:eta2:r2", "fabs(phi2+2.02799)>0.00001 && (eta2-0.34798)>0.00001 && fabs(phi2+2.03061)>0.00001 && (eta2-0.34795)>0.00001 && fabs(phi2+2.29179)>0.00001 && (eta2-0.70377)>0.00001 && fabs(phi2-1.50481)>0.00001 && (eta2-1.41267)>0.00001 && fabs(phi2+1.91605)>0.00001 && (eta2-1.12815)>0.00001 && fabs(phi2-0.11765)>0.00001 && (eta2-0.43056)>0.00001");
+      // Run 285832
+      // t->Project("hLayer2Hit", "phi2:eta2:r2", "nLumi>164 && fabs(phi2+2.02809)>0.00001 && fabs(eta2-0.34774)>0.00001 && fabs(phi2+2.03070)>0.00001 && fabs(eta2-0.34771)>0.00001 && fabs(phi2+2.29325)>0.00001 && fabs(eta2-0.70344)>0.00001 && fabs(phi2+2.29048)>0.00001 && fabs(eta2-0.70358)>0.00001 && fabs(phi2-1.50475)>0.00001 && fabs(eta2-1.41259)>0.00001 && fabs(phi2+1.91616)>0.00001 && fabs(eta2-1.12794)>0.00001 && fabs(phi2+0.96467)>0.00001 && fabs(eta2-0.65614)>0.00001 && fabs(phi2+0.96730)>0.00001 && fabs(eta2-0.65611)>0.00001 && fabs(phi2+0.34368)>0.00001 && fabs(eta2-1.84190)>0.00001 && fabs(phi2+2.50245)>0.00001 && fabs(eta2-0.28293)>0.00001 && fabs(phi2+2.50521)>0.00001 && fabs(eta2-0.28301)>0.00001 && fabs(phi2+0.88593)>0.00001 && fabs(eta2-0.68248)>0.00001 && fabs(phi2+0.96467)>0.00001 && fabs(eta2-0.65614)>0.00001 && fabs(phi2+0.96730)>0.00001 && fabs(eta2-0.65611)>0.00001 && fabs(phi2+2.12876)>0.00001 && fabs(eta2+0.34704)>0.00001 && fabs(phi2+2.13015)>0.00001 && fabs(eta2+0.34905)>0.00001 && fabs(phi2+2.13154)>0.00001 && fabs(eta2+0.34711)>0.00001 && fabs(phi2+0.96534)>0.00001 && fabs(eta2+0.24780)>0.00001");
+      // MC
       t->Project("hLayer2Hit", "phi2:eta2:r2");
    }
    if (addL3Bck) {
       cout << "Projecting...3" << endl;
+      // Run 285517
+      // t->Project("hLayer3Hit", "phi3:eta3:r3", "fabs(phi3-0.01456)>0.00001 && fabs(eta3+0.06655)>0.00001");
+      // Run 285832
+      // t->Project("hLayer3Hit", "phi3:eta3:r3", "nLumi>164 && fabs(phi3-0.01456)>0.00001 && fabs(eta3+0.06675)>0.00001 && fabs(phi3+0.72997)>0.00001 && fabs(eta3+0.62795)>0.00001");
+      // MC
       t->Project("hLayer3Hit", "phi3:eta3:r3");
    }
    cout << "Projecting...done" << endl;
@@ -173,6 +187,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    uint64_t nentries = t->GetEntries();
    // Main loop ===============================================================
    for (uint64_t i=start_entry; i<nentries && i<end_entry; i+=nPUEvents) {
+      hltTree->GetEntry(i);
+      if (!HLT_MB_path)
+         continue;
+
       t->GetEntry(i);
       if (i % 1000 == 0) {
          cout << "Run " << par.nRun << " Event " << i << " "
@@ -182,8 +200,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
               << endl;
       }
 
-      hltTree->GetEntry(i);
-      if (!HLT_MB_path)
+      if (par.nRun == 285832 && par.nLumi <= 164)
          continue;
 
       // Reweight MC vertex distribution to match data
@@ -201,7 +218,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
          // 5 TeV pPb Run 285090
          // double DataPdf = TMath::Gaus(myVz, 1.09219, 6.27013, 1);
          // 8 TeV pPb Run 285517
-         double DataPdf = TMath::Gaus(myVz, -0.3164, 4.7283, 1);
+         // double DataPdf = TMath::Gaus(myVz, -0.3164, 4.7283, 1);
+         // 8 TeV pPb Run 285832
+         double DataPdf = TMath::Gaus(myVz, 1.0222, 4.6507, 1);
 
          // PixelTree-EPOS-5TeV-HLT.root
          // double MCPdf = TMath::Gaus(myVz, -1.79326, 6.50467, 1);
@@ -240,9 +259,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       tdata23.vz[0] = par.vz[0];
 
       // Add background hits
-      int bckHits1 = par.nhits1 * BGfrac;
-      int bckHits2 = par.nhits2 * BGfrac;
-      int bckHits3 = par.nhits3 * BGfrac;
+      int bckHits1 = par.nhits1 * addL1Bck;
+      int bckHits2 = par.nhits2 * addL2Bck;
+      int bckHits3 = par.nhits3 * addL3Bck;
 
       if (addL1Bck!=0) {
          for (int i=par.nhits1; i<par.nhits1+bckHits1; i++) {
@@ -307,9 +326,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
             t->GetEntry(i+p);
             vzPileUp[p] = par.vz[0];
 
-            bckHits1 = par.nhits1 * BGfrac;
-            bckHits2 = par.nhits2 * BGfrac;
-            bckHits3 = par.nhits3 * BGfrac;
+            bckHits1 = par.nhits1 * addL1Bck;
+            bckHits2 = par.nhits2 * addL2Bck;
+            bckHits3 = par.nhits3 * addL3Bck;
 
             if (addL1Bck!=0) {
                for (int i=par.nhits1; i<par.nhits1+bckHits1; i++) {
@@ -817,7 +836,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
 
    inf->Close();
 
-   outf->Write("", TObject::kOverwrite);
+   trackletTree12->Write("", TObject::kOverwrite);
+   trackletTree13->Write("", TObject::kOverwrite);
+   trackletTree23->Write("", TObject::kOverwrite);
+
    outf->Close();
 
    return 0;
