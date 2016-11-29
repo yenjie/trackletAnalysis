@@ -11,8 +11,9 @@ void normalize(TH2F *hData, int nEtaBin, int nVzBin, bool reweight = 1) {
    for (int x=1; x<=nEtaBin; x++) {
       for (int y=1; y<=nVzBin; y++) {
          double myVz = hTmp->GetBinCenter(y);
-         double DataPdf = TMath::Gaus(myVz, -2.14145, 4.30854, 1);
-         if (!reweight) DataPdf=1;
+         // Run 285832
+         double DataPdf = TMath::Gaus(myVz, 1.0222, 4.6507, 1);
+         if (!reweight) DataPdf = 1;
          if (hData->GetBinContent(x, y)>0 && x!=0 && x<=nEtaBin && y!=0 && y<=nVzBin) {
             hData->SetBinContent(x, y, DataPdf);
          } else {
@@ -28,14 +29,14 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC="/data/bi
    TFile* fData = new TFile(fnData, "READ");
    TTree* tData = (TTree*)fData->Get(Form("TrackletTree%i", TrackletType));
 
-   int nEtaBin = 600;
-   int nVzBin = 550;
-   int VzRangeL = -13;
-   int VzRangeH = 9;
+   int nEtaBin = 1200;
+   int nVzBin = 1500;
+   int VzRangeL = -15;
+   int VzRangeH = 15;
 
    TFile *outfile = new TFile(Form("acceptance-%d.root", TrackletType), "recreate");
 
-   TCut myCut = "abs(deta)<0.1 && abs(dphi)<1 && vz[1]>-13 && vz[1]<9";
+   TCut myCut = "abs(deta)<0.1 && abs(dphi)<1 && vz[1]>-15 && vz[1]<15";
    TH2F *hData = new TH2F("hData", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
    TH2F *hMC = new TH2F("hMC", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
    TH2F *hAccData = new TH2F("hAccData", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
@@ -75,12 +76,12 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC="/data/bi
    TH2F *hDataAcc = (TH2F*)hData->Clone();
    hDataAcc->SetName("hDataAcc");
    hDataAcc->RebinX(nEtaBin/30);
-   hDataAcc->RebinY(nVzBin/11);
+   hDataAcc->RebinY(nVzBin/15);
 
    TH2F *hMCAcc = (TH2F*)hMC->Clone();
    hMCAcc->SetName("hMCAcc");
    hMCAcc->RebinX(nEtaBin/30);
-   hMCAcc->RebinY(nVzBin/11);
+   hMCAcc->RebinY(nVzBin/15);
 
    outfile->Write();
 }
