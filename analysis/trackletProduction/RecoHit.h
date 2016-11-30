@@ -56,41 +56,26 @@ class SelectionCriteria {
 
 class Parameters {
    public:
-      int nRun, nEv, nLumi, nHltBit, nL1ABit, nL1TBit, nBX, nHFn, nHFp, nHits;
-      bool hltBit[500], l1ABit[500], l1TBit[500];
-      int L1_BPTX_AND, L1_BPTX_OR, L1_BPTX_plus, L1_BPTX_minus;
+      int nRun, nEv, nLumi, nBX, nHFn, nHFp, nHits;
       float beamSpotX, beamSpotY, beamSpotZ;
       float vx[8], vy[8], vz[8];
       float eta1[maxEntry], phi1[maxEntry], r1[maxEntry], cs1[maxEntry], ch1[maxEntry];
       float eta2[maxEntry], phi2[maxEntry], r2[maxEntry], cs2[maxEntry], ch2[maxEntry];
       float eta3[maxEntry], phi3[maxEntry], r3[maxEntry], cs3[maxEntry], ch3[maxEntry];
-      float eta4[maxEntry], phi4[maxEntry], r4[maxEntry], cs4[maxEntry], ch4[maxEntry];
-      float eta5[maxEntry], phi5[maxEntry], r5[maxEntry], cs5[maxEntry], ch5[maxEntry];
       float eta[maxEntry], phi[maxEntry], pt[maxEntry];
-      int nhits1, nhits2, nhits3, nhits4, nhits5, mult, nv, npart, evtType, chg[maxEntry], pdg[maxEntry];
-      float xi;
-      bool passDS, passSingleTrack;
-      int ntrks, ntrksCut;
+      int nhits1, nhits2, nhits3, mult, nv, npart, evtType, chg[maxEntry], pdg[maxEntry];
 };
 
 class TrackletData {
    public:
-      int nRun, nEv, nLumi, nHltBit, nL1ABit, nL1TBit, nBX, nHFn, nHFp, nHits;
-      bool hltBit[500], l1ABit[500], l1TBit[500];
-      int L1_BPTX_AND, L1_BPTX_OR, L1_BPTX_plus, L1_BPTX_minus;
+      int nRun, nEv, nLumi, nBX, nHFn, nHFp, nHits;
       float eta1[maxEntry], phi1[maxEntry], r1[maxEntry], cs1[maxEntry], ch1[maxEntry];
       float eta2[maxEntry], phi2[maxEntry], r2[maxEntry], cs2[maxEntry], ch2[maxEntry];
       float deta[maxEntry], dphi[maxEntry];
       float vx[8], vy[8], vz[8];
       float eta[maxEntry2], phi[maxEntry2], pt[maxEntry2], nhad[12];
       int chg[maxEntry2], pdg[maxEntry2];
-      float pro2;
       int nTracklet, nhit1, nhit2, mult, mult2, nv, npart, evtType, trackletType;
-      float xi;
-      bool passDS, passSingleTrack;
-      int ntrks, ntrksCut;
-      int nPUEvents, recoPU;
-      float vzPU[12];
       float clusVtxQual1, clusVtxQual2, clusVtxQual3;
 };
 
@@ -154,7 +139,9 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
                fabs(par.phi1[ihit]-1.41582)>0.00001 && fabs(par.eta1[ihit]+0.66346)>0.00001 &&
                fabs(par.phi1[ihit]-1.42661)>0.00001 && fabs(par.eta1[ihit]+0.66445)>0.00001 &&
                fabs(par.phi1[ihit]-1.43093)>0.00001 && fabs(par.eta1[ihit]+0.66483)>0.00001 &&
-               fabs(par.phi1[ihit]-3.09539)>0.00001 && fabs(par.eta1[ihit]-2.08781)>0.00001)) continue;
+               fabs(par.phi1[ihit]-3.09539)>0.00001 && fabs(par.eta1[ihit]-2.08781)>0.00001 &&
+               fabs(par.phi1[ihit]-1.15823)>0.00001 && fabs(par.eta1[ihit]+2.09717)>0.00001 &&
+               fabs(par.phi1[ihit]-1.16068)>0.00001 && fabs(par.eta1[ihit]+2.09732)>0.00001)) continue;
          /**/
          if (gRandom->Rndm() < dropProb) continue;
          RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], par.ch1[ihit], 1);
@@ -209,7 +196,8 @@ void prepareHits(vector<RecoHit> &cleanedHits, Parameters par, SelectionCriteria
          // Run 285832
          /**/
          if (!(fabs(par.phi3[ihit]-0.01456)>0.00001 && fabs(par.eta3[ihit]+0.06675)>0.00001 &&
-               fabs(par.phi3[ihit]+0.72997)>0.00001 && fabs(par.eta3[ihit]+0.62795)>0.00001)) continue;
+               fabs(par.phi3[ihit]+0.72997)>0.00001 && fabs(par.eta3[ihit]+0.62795)>0.00001 &&
+               fabs(par.phi3[ihit]+1.97283)>0.00001 && fabs(par.eta3[ihit]-0.73149)>0.00001)) continue;
          /**/
          if (gRandom->Rndm() < dropProb) continue;
          RecoHit tmp(par.eta3[ihit], par.phi3[ihit], par.r3[ihit], par.cs3[ihit], par.ch3[ihit], 3);
@@ -300,21 +288,9 @@ void getPixelTreeBranch(TTree* t, Parameters &par) {
    t->SetBranchAddress("r3", par.r3);
    t->SetBranchAddress("cs3", par.cs3);
    t->SetBranchAddress("ch3", par.ch3);
-   t->SetBranchAddress("eta4", par.eta4);
-   t->SetBranchAddress("phi4", par.phi4);
-   t->SetBranchAddress("r4", par.r4);
-   t->SetBranchAddress("cs4", par.cs4);
-   t->SetBranchAddress("ch4", par.ch4);
-   t->SetBranchAddress("eta5", par.eta5);
-   t->SetBranchAddress("phi5", par.phi5);
-   t->SetBranchAddress("r5", par.r5);
-   t->SetBranchAddress("cs5", par.cs5);
-   t->SetBranchAddress("ch5", par.ch5);
    t->SetBranchAddress("nhits1", &par.nhits1);
    t->SetBranchAddress("nhits2", &par.nhits2);
    t->SetBranchAddress("nhits3", &par.nhits3);
-   t->SetBranchAddress("nhits4", &par.nhits4);
-   t->SetBranchAddress("nhits5", &par.nhits5);
 
    t->SetBranchAddress("vx", par.vx);
    t->SetBranchAddress("vy", par.vy);
@@ -330,9 +306,6 @@ void getPixelTreeBranch(TTree* t, Parameters &par) {
    t->SetBranchAddress("chg", &par.chg);
    t->SetBranchAddress("pdg", &par.pdg);
    t->SetBranchAddress("evtType", &par.evtType);
-
-   t->SetBranchAddress("ntrks", &par.ntrks);
-   t->SetBranchAddress("ntrksCut", &par.ntrksCut);
 }
 
 #endif /* RECHOHIT */

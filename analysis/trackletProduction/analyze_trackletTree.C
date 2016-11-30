@@ -127,29 +127,14 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    // Prepare hit spectra for random hit
    if (addL1Bck) {
       cout << "Projecting...1" << endl;
-      // Run 285517
-      // t->Project("hLayer1Hit", "phi1:eta1:r1", "fabs(phi1-1.78408)>0.00001 && fabs(eta1+1.16674)>0.00001");
-      // Run 285832
-      // t->Project("hLayer1Hit", "phi1:eta1:r1", "nLumi>164 && fabs(phi1-1.78421)>0.00001 && fabs(eta1+1.16703)>0.00001 && fabs(phi1-1.43093)>0.00001 && fabs(eta1+0.66483)>0.00001 && fabs(phi1-1.42661)>0.00001 && fabs(eta1+0.66445)>0.00001 && fabs(phi1-1.40936)>0.00001 && fabs(eta1+0.66284)>0.00001 && fabs(phi1-1.40721)>0.00001 && fabs(eta1+0.66262)>0.00001 && fabs(phi1-2.62996)>0.00001 && fabs(eta1+2.10101)>0.00001 && fabs(phi1-1.35537)>0.00001 && fabs(eta1+2.48903)>0.00001 && fabs(phi1-1.35055)>0.00001 && fabs(eta1+2.48966)>0.00001 && fabs(phi1-1.40721)>0.00001 && fabs(eta1+0.66262)>0.00001 && fabs(phi1-1.40936)>0.00001 && fabs(eta1+0.66284)>0.00001 && fabs(phi1-1.41582)>0.00001 && fabs(eta1+0.66346)>0.00001 && fabs(phi1-1.42661)>0.00001 && fabs(eta1+0.66445)>0.00001 && fabs(phi1-1.43093)>0.00001 && fabs(eta1+0.66483)>0.00001 && fabs(phi1-3.09539)>0.00001 && fabs(eta1-2.08781)>0.00001");
-      // MC
       t->Project("hLayer1Hit", "phi1:eta1:r1");
    }
    if (addL2Bck) {
       cout << "Projecting...2" << endl;
-      // Run 285517
-      // t->Project("hLayer2Hit", "phi2:eta2:r2", "fabs(phi2+2.02799)>0.00001 && (eta2-0.34798)>0.00001 && fabs(phi2+2.03061)>0.00001 && (eta2-0.34795)>0.00001 && fabs(phi2+2.29179)>0.00001 && (eta2-0.70377)>0.00001 && fabs(phi2-1.50481)>0.00001 && (eta2-1.41267)>0.00001 && fabs(phi2+1.91605)>0.00001 && (eta2-1.12815)>0.00001 && fabs(phi2-0.11765)>0.00001 && (eta2-0.43056)>0.00001");
-      // Run 285832
-      // t->Project("hLayer2Hit", "phi2:eta2:r2", "nLumi>164 && fabs(phi2+2.02809)>0.00001 && fabs(eta2-0.34774)>0.00001 && fabs(phi2+2.03070)>0.00001 && fabs(eta2-0.34771)>0.00001 && fabs(phi2+2.29325)>0.00001 && fabs(eta2-0.70344)>0.00001 && fabs(phi2+2.29048)>0.00001 && fabs(eta2-0.70358)>0.00001 && fabs(phi2-1.50475)>0.00001 && fabs(eta2-1.41259)>0.00001 && fabs(phi2+1.91616)>0.00001 && fabs(eta2-1.12794)>0.00001 && fabs(phi2+0.96467)>0.00001 && fabs(eta2-0.65614)>0.00001 && fabs(phi2+0.96730)>0.00001 && fabs(eta2-0.65611)>0.00001 && fabs(phi2+0.34368)>0.00001 && fabs(eta2-1.84190)>0.00001 && fabs(phi2+2.50245)>0.00001 && fabs(eta2-0.28293)>0.00001 && fabs(phi2+2.50521)>0.00001 && fabs(eta2-0.28301)>0.00001 && fabs(phi2+0.88593)>0.00001 && fabs(eta2-0.68248)>0.00001 && fabs(phi2+0.96467)>0.00001 && fabs(eta2-0.65614)>0.00001 && fabs(phi2+0.96730)>0.00001 && fabs(eta2-0.65611)>0.00001 && fabs(phi2+2.12876)>0.00001 && fabs(eta2+0.34704)>0.00001 && fabs(phi2+2.13015)>0.00001 && fabs(eta2+0.34905)>0.00001 && fabs(phi2+2.13154)>0.00001 && fabs(eta2+0.34711)>0.00001 && fabs(phi2+0.96534)>0.00001 && fabs(eta2+0.24780)>0.00001");
-      // MC
       t->Project("hLayer2Hit", "phi2:eta2:r2");
    }
    if (addL3Bck) {
       cout << "Projecting...3" << endl;
-      // Run 285517
-      // t->Project("hLayer3Hit", "phi3:eta3:r3", "fabs(phi3-0.01456)>0.00001 && fabs(eta3+0.06655)>0.00001");
-      // Run 285832
-      // t->Project("hLayer3Hit", "phi3:eta3:r3", "nLumi>164 && fabs(phi3-0.01456)>0.00001 && fabs(eta3+0.06675)>0.00001 && fabs(phi3+0.72997)>0.00001 && fabs(eta3+0.62795)>0.00001");
-      // MC
       t->Project("hLayer3Hit", "phi3:eta3:r3");
    }
    cout << "Projecting...done" << endl;
@@ -673,16 +658,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       tdata12.nHFn       = par.nHFp;
       tdata12.nHFp       = par.nHFn;
       tdata12.nHits      = layer1.size() + layer2.size() + layer3.size();
-      tdata12.ntrks      = par.ntrks;
-      tdata12.ntrksCut   = par.ntrksCut;
-      tdata12.nPUEvents  = nPUEvents;
-      tdata12.recoPU     = recoPU;
       tdata12.clusVtxQual1 = clusVtxQual1;
       tdata12.clusVtxQual2 = clusVtxQual2;
       tdata12.clusVtxQual3 = clusVtxQual3;
-
-      for (int j=0; j<nPUEvents; j++)
-         tdata12.vzPU[j] = vzPileUp[j];
 
       int ntracklet12s = 0;
       int ntracklet12b = 0;
@@ -722,27 +700,13 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       // }
       // if (reWeightMultDropFlag) continue;
 
-      double pro1 = 0;
-      double pro2 = 0;
       for (int j=0; j<12; j++) tdata12.nhad[j] = 0;
       for (int j=0; j<par.npart; j++) {
-         if (fabs(par.pdg[j])==2212) {
-            double momentum = par.pt[j] * cosh(par.eta[j]);
-            if (momentum>pro2) {
-               if (momentum>pro1) {
-                  pro2 = pro1;
-                  pro1 = momentum;
-               } else {
-                  pro2 = momentum;
-               }
-            }
-         }
          if (fabs(par.eta[j])>3 || par.chg[j]==0 || abs(par.pdg[j])==11 || abs(par.pdg[j])==13) continue;
          tdata12.eta[tdata12.npart] = par.eta[j];
          tdata12.phi[tdata12.npart] = par.phi[j];
          tdata12.chg[tdata12.npart] = par.chg[j];
          tdata12.pdg[tdata12.npart] = par.pdg[j];
-         if (abs(par.pdg[j]-11)<1) cout << "Oh no???" << endl;
          tdata12.pt[tdata12.npart] = par.pt[j];
          tdata12.npart++;
          int bin = (int)((par.eta[j]+3)*2);
@@ -751,7 +715,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       }
 
       tdata12.evtType = par.evtType;
-      tdata12.pro2 = pro2;
       for (int j=0; j<par.nv; j++)
          tdata12.vz[j] += vzShift;
 
@@ -769,16 +732,9 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    tdata##q##w.nHFn       = par.nHFp;                          \
    tdata##q##w.nHFp       = par.nHFn;                          \
    tdata##q##w.nHits      = tdata12.nHits;                     \
-   tdata##q##w.ntrks      = par.ntrks;                         \
-   tdata##q##w.ntrksCut   = par.ntrksCut;                      \
-   tdata##q##w.nPUEvents  = nPUEvents;                         \
-   tdata##q##w.recoPU     = recoPU;                            \
    tdata##q##w.clusVtxQual1 = clusVtxQual1;                    \
    tdata##q##w.clusVtxQual2 = clusVtxQual2;                    \
    tdata##q##w.clusVtxQual3 = clusVtxQual3;                    \
-                                                               \
-   for (int j=0; j<nPUEvents; j++)                             \
-      tdata##q##w.vzPU[j] = vzPileUp[j];                       \
                                                                \
    int ntracklet##q##w##s = 0;                                 \
    int ntracklet##q##w##b = 0;                                 \
@@ -824,7 +780,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    }                                                           \
                                                                \
    tdata##q##w.evtType = par.evtType;                          \
-   tdata##q##w.pro2 = pro2;                                    \
    for (int j=0; j<par.nv; j++)                                \
       tdata##q##w.vz[j] += vzShift;                            \
                                                                \

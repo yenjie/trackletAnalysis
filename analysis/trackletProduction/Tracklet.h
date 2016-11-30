@@ -476,11 +476,6 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("nHFp", &tdata.nHFp, "nHFp/I");
    trackletTree->Branch("nHits", &tdata.nHits, "nHits/I");
 
-   // trackletTree->Branch("L1_BPTX_AND", &tdata.L1_BPTX_AND, "L1_BPTX_AND/I");
-   // trackletTree->Branch("L1_BPTX_OR", &tdata.L1_BPTX_OR, "L1_BPTX_OR/I");
-   // trackletTree->Branch("L1_BPTX_plus", &tdata.L1_BPTX_plus, "L1_BPTX_plus/I");
-   // trackletTree->Branch("L1_BPTX_minus", &tdata.L1_BPTX_minus, "L1_BPTX_minus/I");
-
    trackletTree->Branch("nTracklets", &tdata.nTracklet, "nTracklets/I");
    trackletTree->Branch("nhit1", &tdata.nhit1, "nhit1/I");
    trackletTree->Branch("nhit2", &tdata.nhit2, "nhit2/I");
@@ -502,7 +497,6 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("ch2", tdata.ch1, "ch2[nTracklets]/F");
    trackletTree->Branch("deta", tdata.deta, "deta[nTracklets]/F");
    trackletTree->Branch("dphi", tdata.dphi, "dphi[nTracklets]/F");
-   trackletTree->Branch("recoPU", &tdata.recoPU, "recoPU/I");
 
    trackletTree->Branch("clusVtxQual1", &tdata.clusVtxQual1, "clusVtxQual1/F");
    trackletTree->Branch("clusVtxQual2", &tdata.clusVtxQual2, "clusVtxQual2/F");
@@ -516,13 +510,6 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData &tdata) {
    trackletTree->Branch("nhad", tdata.nhad, "nhad[12]/F");
    trackletTree->Branch("pt", tdata.pt, "pt[npart]/F");
    trackletTree->Branch("evtType", &tdata.evtType, "evtType/I");
-   trackletTree->Branch("pro2", &tdata.pro2, "evtType/F");
-
-   trackletTree->Branch("nPUEvents", &tdata.nPUEvents, "nPUEvents/I");
-   trackletTree->Branch("vzPU", tdata.vzPU, "vzPU[nPUEvents]/F");
-
-   trackletTree->Branch("ntrks", &tdata.ntrks, "ntrks/I");
-   trackletTree->Branch("ntrksCut", &tdata.ntrksCut, "ntrksCut/I");
 
    trackletTree->SetAlias("dR", "sqrt(deta*deta+dphi*dphi)");
    trackletTree->SetAlias("dRR", "sqrt(deta*deta+dphi*dphi+(r1-r2)*(r1-r2))") ;
