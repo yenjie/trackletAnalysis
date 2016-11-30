@@ -7,6 +7,8 @@
 // Standard library
 #include <math.h>
 #include <iostream>
+#include <fstream>
+#include <string>
 
 // ROOT Library
 #include <TROOT.h>
@@ -20,6 +22,7 @@
 #include <TCanvas.h>
 #include <TNtuple.h>
 #include <TTree.h>
+#include "TChain.h"
 #include <TLine.h>
 #include <TF1.h>
 #include <TCut.h>
@@ -35,38 +38,45 @@ void formatHist(TH1* h, int col = 1, double norm = 1, double msize = 1);
 // Main Routine
 // ============================================================================
 int plotFinalResult(int TrackletType,
-                    const char* filename,
-                    const char* plotTitle = "Default",              // plot title
-                    bool useCorrectionFile = 0,                     // use correction file
-                    const char* correctionName = "Default",         // correction file name
-                    int selection = 1,                              // MC selection
-                    int mult_selection = 0,                         // multiplicity
-                    bool doAcceptanceCorrection = 0,                // do acceptance correction
-                    bool doTriggerCorrection = 1,                   // do trigger eff correction
-                    bool verbose = 0,                               // set verbose level
-                    bool plotAlphaBeta = 0,                         // make alpha plots
-                    bool useExternalBetaCorr = 0,                   // do beta correction
-                    bool useDR = 0) {
-   TFile* f = new TFile(filename);
+                    std::string file_name,
+                    const char* title,       // plot title
+                    bool useCorrectionFile,  // use correction file
+                    const char* corr_name,   // correction file name
+                    int selection = 1,       // MC selection
+                    int mult_selection = 0,  // multiplicity
+                    bool doAccepCorr = 0,    // do acceptance correction
+                    bool doTriggerCorr = 1,  // do trigger eff correction
+                    bool verbose = 0,        // set verbose level
+                    bool plotAlphaBeta = 0,  // make alpha/beta plots
+                    bool useExtBetaCorr = 0, // do beta correction
+                    bool useDR = 0)
+{
+   std::vector<std::string> file_list;
+   if (file_name.substr(file_name.find_last_of(".") + 1) == "root") {
+      file_list.push_back(file_name);
+   } else {
+      ifstream file_stream(file_name);
+      if (!file_stream) return 1;
+      std::string line;
+      while (std::getline(file_stream, line))
+         file_list.push_back(line);
+   }
 
    // Input trackletTree
-   TTree* TrackletTree = (TTree*)f->Get(Form("TrackletTree%d", TrackletType));
-
-   TTree* TrackletTree12 = (TTree*)f->Get("TrackletTree12");
-   TTree* TrackletTree23 = (TTree*)f->Get("TrackletTree23");
-   TrackletTree->AddFriend(TrackletTree12);
-   TrackletTree->AddFriend(TrackletTree23);
+   TChain* TrackletTree = new TChain(Form("TrackletTree%d", TrackletType));
+   for (std::size_t n=0; n<file_list.size(); ++n)
+      TrackletTree->Add(file_list[n].c_str());
 
    bool isMC = false;
    if (TrackletTree->GetEntries("npart!=0")!=0) {
       isMC = true;
       cout << "This is a Monte Carlo study." << endl;
-      doAcceptanceCorrection = 0;
+      doAccepCorr = 0;
    } else {
       cout << "This is a data analysis." << endl;
    }
 
-   if (!doTriggerCorrection)
+   if (!doTriggerCorr)
       cout << "Trigger correction off!!!" << endl;
 
    // Choose multiplicity handle
@@ -87,13 +97,13 @@ int plotFinalResult(int TrackletType,
    // Read alpha, beta, geometry correction from file.
    TFile* fCorrection = 0;
    if (useCorrectionFile) {
-      const char* correctionfname = Form("correction/correction-%d-%s.root", TrackletType, correctionName);
+      const char* correctionfname = Form("correction/correction-%d-%s.root", TrackletType, corr_name);
       fCorrection = new TFile(correctionfname);
       printf("Use correction file: %s\n", correctionfname);
    }
 
    TFile* fAcceptance = 0;
-   if (useCorrectionFile && doAcceptanceCorrection) {
+   if (useCorrectionFile && doAccepCorr) {
       const char* acceptancefname = Form("correction/acceptance-%d.root", TrackletType);
       fAcceptance = new TFile(acceptancefname);
       printf("Use acceptance file: %s\n", acceptancefname);
@@ -101,7 +111,7 @@ int plotFinalResult(int TrackletType,
 
    TH3F* hAlphaA = 0;
    TH3F* hAlphaB = 0;
-   if (useExternalBetaCorr) {
+   if (useExtBetaCorr) {
       TFile* myFile = new TFile(Form("correction/alphaBetaCoeff-%d.root", TrackletType));
       hAlphaA = (TH3F*)myFile->FindObjectAny("hAlphaA");
       hAlphaB = (TH3F*)myFile->FindObjectAny("hAlphaB");
@@ -140,7 +150,6 @@ int plotFinalResult(int TrackletType,
    TCut MCSelection;
    TString offlineSelection;
    TCut evtSelection;
-   // TString vtxComp = "(clusVtxQual1>0.013*TrackletTree12.nhit1||TrackletTree12.nhit1<150)&&(clusVtxQual2>0.008*TrackletTree12.nhit2||TrackletTree12.nhit2<130)&&(clusVtxQual3>(0.85+0.0045*TrackletTree23.nhit2)||TrackletTree23.nhit2<50)";
 
    switch (selection) {
       case 0:
@@ -151,7 +160,6 @@ int plotFinalResult(int TrackletType,
       case 1:
          MCSelection = "(evtType!=102&&evtType!=103&&evtType!=104)";
          offlineSelection = "1"; // effectively HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1
-         // offlineSelection = "(nHFp>0 && nHFn>0)";
          printf("---------------- NSD definition\n");
          break;
    }
@@ -159,7 +167,7 @@ int plotFinalResult(int TrackletType,
    evtSelection = TCut(vtxCut + "&&" + offlineSelection);
 
    // Output file =============================================================
-   TFile* outf = new TFile(Form("correction-%i-%s.root", TrackletType, plotTitle), "recreate");
+   TFile* outf = new TFile(Form("correction-%i-%s.root", TrackletType, title), "recreate");
 
    TNtuple* betas = new TNtuple("betas", "", "eta:nTracklet:vz:beta:betaErr");
    TNtuple* alphas = new TNtuple("alphas", "", "eta:nTracklet:vz:alpha:alphaErr");
@@ -243,7 +251,7 @@ int plotFinalResult(int TrackletType,
    hVz->Fit("gaus");
    hVz->SetXTitle("v_{z} (cm)");
    hVz->Draw();
-   // cVz->SaveAs(Form("figs/vz/vz-%s-%d.pdf", plotTitle, TrackletType));
+   // cVz->SaveAs(Form("figs/vz/vz-%s-%d.pdf", title, TrackletType));
 
    // Define the acceptance region to avoid large correction factors
    // End point in z (cm)
@@ -310,7 +318,7 @@ int plotFinalResult(int TrackletType,
    hReproducedBackground->Sumw2();
 
    // Read Acceptance =========================================================
-   if (doAcceptanceCorrection) {
+   if (doAccepCorr) {
       hMCAcc = (TH2F*)fAcceptance->FindObjectAny("hMCAcc");
       hDataAcc = (TH2F*)fAcceptance->FindObjectAny("hDataAcc");
    }
@@ -435,7 +443,7 @@ int plotFinalResult(int TrackletType,
       hTrigEffNoCut->Sumw2();
       hTrigEff->Divide(hTrigEffNoCut);
       // hTrigEff->Draw();
-      // cTrigEff->SaveAs(Form("figs/TrigEff-%s-%d.png", plotTitle, TrackletType));
+      // cTrigEff->SaveAs(Form("figs/TrigEff-%s-%d.png", title, TrackletType));
 
       // Calculate SD'/IN'
       // TCanvas *cSDFrac = new TCanvas("cSDFrac", "SD Fraction After Cut", canvasSizeX, canvasSizeY);
@@ -445,7 +453,7 @@ int plotFinalResult(int TrackletType,
       hSD->Sumw2();
       hSDFrac->Divide(hSD);
       // hSDFrac->Draw();
-      // cSDFrac->SaveAs(Form("figs/SDFrac-%s-%d.png", plotTitle, TrackletType));
+      // cSDFrac->SaveAs(Form("figs/SDFrac-%s-%d.png", title, TrackletType));
 
       // Calculate Vertexed dN/deta
       // TCanvas *cdNdEtaVertexed = new TCanvas("cdNdEtaVertexed", "dNdEta after vertexing", canvasSizeX, canvasSizeY);
@@ -479,7 +487,7 @@ int plotFinalResult(int TrackletType,
       hTriggerCorrection->Scale(1./neventWOSelection);
       hTriggerCorrection->Divide(hdNdetaWithEvtCut);
       // hTriggerCorrection->Draw();
-      // cTriggerCorrection->SaveAs(Form("figs/Xi-%s-%d.png", plotTitle, TrackletType));
+      // cTriggerCorrection->SaveAs(Form("figs/Xi-%s-%d.png", title, TrackletType));
    }
 
    // Make beta and alpha plot
@@ -522,7 +530,7 @@ int plotFinalResult(int TrackletType,
    //       }
    //       l1->Draw();
    //       l3->Draw();
-   //       cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.png", plotTitle, z, TrackletType));
+   //       cc->SaveAs(Form("figs/betaPlot/betaPlot-%s-%d-%d.png", title, z, TrackletType));
    //       cc->Close();
    //    }
 
@@ -567,7 +575,7 @@ int plotFinalResult(int TrackletType,
    //       }
    //       l1->Draw();
    //       l3->Draw();
-   //       cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.png", plotTitle, z, TrackletType));
+   //       cc->SaveAs(Form("figs/alphaPlot/alphaPlot-%s-%d-%d.png", title, z, TrackletType));
    //       cc->Close();
    //    }
    // }
@@ -592,7 +600,7 @@ int plotFinalResult(int TrackletType,
 
             double betaMC = betaMCPlots[x-1][z-1]->GetBinContent(y);
 
-            if (doAcceptanceCorrection) {
+            if (doAccepCorr) {
                double accData = hDataAcc->GetBinContent(x, z);
                double accMC = hMCAcc->GetBinContent(x, z);
                if (accData==0 && accMC==0) {
@@ -802,7 +810,7 @@ int plotFinalResult(int TrackletType,
    for (int y=1; y<=nTrackletBin; y++) {
       double SDFrac = hSDFrac->GetBinContent(y);
       double TrigEff = hTrigEff->GetBinContent(y);
-      if (!doTriggerCorrection) {
+      if (!doTriggerCorr) {
          SDFrac = 0;
          TrigEff = 1;
       }
@@ -823,7 +831,7 @@ int plotFinalResult(int TrackletType,
       for (int y=1; y<=nTrackletBin; y++) {
          double SDFrac = hSDFrac->GetBinContent(y);
          double TrigEff = hTrigEff->GetBinContent(y);
-         if (!doTriggerCorrection) {
+         if (!doTriggerCorr) {
             SDFrac = 0;
             TrigEff = 1;
          }
@@ -883,7 +891,7 @@ int plotFinalResult(int TrackletType,
    TH1F* hMeasuredFinal = (TH1F*)hMeasuredTrigEffCorrected->Clone();
    hMeasuredFinal->SetName("hMeasuredFinal");
    hMeasuredFinal->SetMarkerStyle(20);
-   if (doTriggerCorrection) {
+   if (doTriggerCorr) {
       for (int x=1; x<=nEtaBin; x++) {
          // double emptyCorrection = fEmptyEvt->Eval((EtaBins[x-1]+EtaBins[x])/2);
          double emptyCorrection = hEmptyEvtCorrection->GetBinContent(x);
@@ -911,7 +919,7 @@ int plotFinalResult(int TrackletType,
    l1->SetBorderSize(0);
    l1->SetTextFont(43);
    l1->SetTextSize(20);
-   l1->AddEntry(hTruth, Form("%s", plotTitle));
+   l1->AddEntry(hTruth, Form("%s", title));
    l1->AddEntry(hTruthWOSelection, "Truth", "l");
    l1->AddEntry(hMeasuredFinal, "Reconstructed", "pl");
    l1->Draw();
@@ -920,7 +928,7 @@ int plotFinalResult(int TrackletType,
    // text->Draw();
 
    cDNdEta->Draw();
-   cDNdEta->SaveAs(Form("figs/result/result-%s-%d.pdf", plotTitle, TrackletType));
+   cDNdEta->SaveAs(Form("figs/result/result-%s-%d.pdf", title, TrackletType));
 
    // Compare with Truth ======================================================
    TCanvas* cDNdEtaCompare = new TCanvas("cDNdEtaCompare", "Compare", canvasSizeX, canvasSizeY);
@@ -957,7 +965,7 @@ int plotFinalResult(int TrackletType,
    l2->SetBorderSize(0);
    l2->SetTextFont(43);
    l2->SetTextSize(15);
-   l2->AddEntry(hTruth, Form("%s", plotTitle));
+   l2->AddEntry(hTruth, Form("%s", title));
    l2->AddEntry(hTruthWOSelection, "Truth", "l");
    l2->AddEntry(hTruthTrigEffCorrected, "Truth corrected for trigger eff", "pl");
    l2->AddEntry(hUncorrected, "Raw tracklets", "pl");
@@ -968,7 +976,7 @@ int plotFinalResult(int TrackletType,
    l2->Draw();
 
    cDNdEtaCompare->Draw();
-   cDNdEtaCompare->SaveAs(Form("figs/compare/compare-%s-%i.png", plotTitle, TrackletType));
+   cDNdEtaCompare->SaveAs(Form("figs/compare/compare-%s-%i.png", title, TrackletType));
 
    if (isMC) {
       // Ratio between measured and truth =====================================
@@ -992,7 +1000,7 @@ int plotFinalResult(int TrackletType,
       l3->SetFillStyle(0);
       l3->SetFillColor(0);
       l3->SetBorderSize(0);
-      l3->AddEntry(hTruth, plotTitle);
+      l3->AddEntry(hTruth, title);
       l3->AddEntry(hRatio, "Reconstructed / MC Truth", "pl");
       l3->Draw();
 
@@ -1003,7 +1011,7 @@ int plotFinalResult(int TrackletType,
       // text2->Draw();
 
       cRatio->Draw();
-      cRatio->SaveAs(Form("figs/ratio/ratio-%s-%d.pdf", plotTitle, TrackletType));
+      cRatio->SaveAs(Form("figs/ratio/ratio-%s-%d.pdf", title, TrackletType));
 
       // TCanvas *cDNdnTracklet = new TCanvas("cDNdnTracklet", "Measured vs mult", canvasSizeX, canvasSizeY);
       TH1F* hTruthHit = (TH1F*)hHadronAccepted->Project3D("y");

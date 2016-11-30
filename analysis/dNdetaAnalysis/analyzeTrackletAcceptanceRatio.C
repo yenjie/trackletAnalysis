@@ -12,7 +12,7 @@ void normalize(TH2F *hData, int nEtaBin, int nVzBin, bool reweight = 1) {
       for (int y=1; y<=nVzBin; y++) {
          double myVz = hTmp->GetBinCenter(y);
          // Run 285832
-         double DataPdf = TMath::Gaus(myVz, 1.0222, 4.6507, 1);
+         double DataPdf = TMath::Gaus(myVz, 0.97423, 4.60961, 1);
          if (!reweight) DataPdf = 1;
          if (hData->GetBinContent(x, y)>0 && x!=0 && x<=nEtaBin && y!=0 && y<=nVzBin) {
             hData->SetBinContent(x, y, DataPdf);
@@ -23,7 +23,7 @@ void normalize(TH2F *hData, int nEtaBin, int nVzBin, bool reweight = 1) {
    }
 }
 
-void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC="/data/biran/trackletAnalysis/analysis/trackletProduction/TrackletTree-PYTHIA8-OFFICIAL-ACCEPTANCE.root", const char* fnData="/data/biran/trackletAnalysis/analysis/trackletProduction/TrackletTree-Run247324-PromptReco-ACCEPTANCE.root") {
+void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const char* fnData) {
    TFile* fMC = new TFile(fnMC, "READ");
    TTree* tMC = (TTree*)fMC->Get(Form("TrackletTree%i", TrackletType));
    TFile* fData = new TFile(fnData, "READ");

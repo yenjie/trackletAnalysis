@@ -194,7 +194,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
          if (myVz < -90) {
             // TF1* f = new TF1("f", "1", -20, 20);
             // TF1* f = new TF1("f", "gaus", -30, 30);
-            // f->SetParameters(1, -1.79326, 6.50467);
+            // f->SetParameters(1, -1.56743, 6.43514);
             // myVz = f->GetRandom();
             // delete f;
             myVz = par.vz[0];
@@ -205,12 +205,12 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
          // 8 TeV pPb Run 285517
          // double DataPdf = TMath::Gaus(myVz, -0.3164, 4.7283, 1);
          // 8 TeV pPb Run 285832
-         double DataPdf = TMath::Gaus(myVz, 1.0222, 4.6507, 1);
+         double DataPdf = TMath::Gaus(myVz, 0.97423, 4.60961, 1);
 
          // PixelTree-EPOS-5TeV-HLT.root
          // double MCPdf = TMath::Gaus(myVz, -1.79326, 6.50467, 1);
          // PixelTree-EPOS-8TeV-HLT.root
-         double MCPdf = TMath::Gaus(myVz, -1.5776, 6.4147, 1);
+         double MCPdf = TMath::Gaus(myVz, -1.56743, 6.43514, 1);
 
          double Ratio = DataPdf / MCPdf;
          double x = gRandom->Rndm()*3;
