@@ -29,8 +29,8 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
    TFile* fData = new TFile(fnData, "READ");
    TTree* tData = (TTree*)fData->Get(Form("TrackletTree%i", TrackletType));
 
-   int nEtaBin = 1200;
-   int nVzBin = 1500;
+   int nEtaBin = 6000;
+   int nVzBin = 6000;
    int VzRangeL = -15;
    int VzRangeH = 15;
 

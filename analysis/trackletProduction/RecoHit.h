@@ -69,6 +69,7 @@ class Parameters {
 class TrackletData {
    public:
       int nRun, nEv, nLumi, nBX, nHFn, nHFp, nHits;
+      int passHLT;
       float eta1[maxEntry], phi1[maxEntry], r1[maxEntry], cs1[maxEntry], ch1[maxEntry];
       float eta2[maxEntry], phi2[maxEntry], r2[maxEntry], cs2[maxEntry], ch2[maxEntry];
       float deta[maxEntry], dphi[maxEntry];

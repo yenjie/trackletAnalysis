@@ -44,7 +44,7 @@ int plotFinalResult(int TrackletType,
                     const char* corr_name,   // correction file name
                     int selection = 1,       // MC selection
                     int mult_selection = 0,  // multiplicity
-                    bool doAccepCorr = 0,    // do acceptance correction
+                    bool doAccepCorr = 1,    // do acceptance correction
                     bool doTriggerCorr = 1,  // do trigger eff correction
                     bool verbose = 0,        // set verbose level
                     bool plotAlphaBeta = 0,  // make alpha/beta plots
@@ -159,7 +159,7 @@ int plotFinalResult(int TrackletType,
          break;
       case 1:
          MCSelection = "(evtType!=102&&evtType!=103&&evtType!=104)";
-         offlineSelection = "1"; // effectively HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1
+         offlineSelection = "passHLT"; // HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1
          printf("---------------- NSD definition\n");
          break;
    }
@@ -251,7 +251,7 @@ int plotFinalResult(int TrackletType,
    hVz->Fit("gaus");
    hVz->SetXTitle("v_{z} (cm)");
    hVz->Draw();
-   // cVz->SaveAs(Form("figs/vz/vz-%s-%d.pdf", title, TrackletType));
+   cVz->SaveAs(Form("figs/vz/vz-%s-%d.pdf", title, TrackletType));
 
    // Define the acceptance region to avoid large correction factors
    // End point in z (cm)

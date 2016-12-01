@@ -47,8 +47,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
                          const char* outfile = "output.root",   // Ouptut Tracklet Tree
                          uint64_t start_entry = 0,              // Starting entry number in the PixelTree
                          uint64_t end_entry = 1000000000,       // Ending entry number in the PixelTree
-                         double pileUp = 0.005,                 // Artifically overlap event to mimic pile-up
-                         // Run 285090: 0.005, Run 285517: 0.2, Run 285832: 0.005
+                         double pileUp = 0.006,                 // Artifically overlap event to mimic pile-up
+                         // Run 285090: 0.003, Run 285832: 0.006
                          bool reWeight = 1,                     // Reweight vertex distribution to match data
                          bool useRandomVertex = 0,              // Use random vertex (instead of the reco one)
                          float addL1Bck = 0,                    // Add random background to first pixel layer
@@ -172,10 +172,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    uint64_t nentries = t->GetEntries();
    // Main loop ===============================================================
    for (uint64_t i=start_entry; i<nentries && i<end_entry; i+=nPUEvents) {
-      hltTree->GetEntry(i);
-      if (!HLT_MB_path)
-         continue;
-
       t->GetEntry(i);
       if (i % 1000 == 0) {
          cout << "Run " << par.nRun << " Event " << i << " "
@@ -186,6 +182,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       }
 
       if (par.nRun == 285832 && par.nLumi <= 164)
+         continue;
+
+      hltTree->GetEntry(i);
+      if (!HLT_MB_path && !isMC)
          continue;
 
       // Reweight MC vertex distribution to match data
@@ -208,9 +208,11 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
          double DataPdf = TMath::Gaus(myVz, 0.97423, 4.60961, 1);
 
          // PixelTree-EPOS-5TeV-HLT.root
-         // double MCPdf = TMath::Gaus(myVz, -1.79326, 6.50467, 1);
+         //double MCPdf = TMath::Gaus(myVz, -1.79326, 6.50467, 1);
          // PixelTree-EPOS-8TeV-HLT.root
          double MCPdf = TMath::Gaus(myVz, -1.56743, 6.43514, 1);
+         // PixelTree-HIJING-8TeV-HLT.root
+         // double MCPdf = TMath::Gaus(myVz, -1.61986, 6.46244, 1);
 
          double Ratio = DataPdf / MCPdf;
          double x = gRandom->Rndm()*3;
@@ -287,7 +289,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       vzPileUp[0] = par.vz[0];
       int recoPU = 0;
 
-      vector<RecoHit> layer1raw, layer2raw, layer3raw, layer4raw, layer5raw;
+      vector<RecoHit> layer1raw, layer2raw, layer3raw;
       prepareHits(layer1raw, par, cuts, 1, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       prepareHits(layer2raw, par, cuts, 2, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
       // prepareHits(layer3raw, par, cuts, 3, 0, 0, 0, splitProb, dropProb, cutOnClusterSize, par.nRun, par.nLumi, smearPixels);
@@ -632,13 +634,13 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       }
 
       // Cluster Vertex Compatibility =========================================
-      double clusVtxQual1 = 0;
-      double clusVtxQual2 = 0;
-      double clusVtxQual3 = 0;
+      // double clusVtxQual1 = 0;
+      // double clusVtxQual2 = 0;
+      // double clusVtxQual3 = 0;
 
-      // double clusVtxQual1 = getClusVtxCompat(layer1, 1);
-      // double clusVtxQual2 = getClusVtxCompat(layer2, 2);
-      // double clusVtxQual3 = getClusVtxCompat(layer3, 3);
+      double clusVtxQual1 = getClusVtxCompat(layer1, 1);
+      double clusVtxQual2 = getClusVtxCompat(layer2, 2);
+      double clusVtxQual3 = getClusVtxCompat(layer3, 3);
 
       // Move the Vertex back
       // if (smearVertex!=0) {
@@ -658,6 +660,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       tdata12.nHFn       = par.nHFp;
       tdata12.nHFp       = par.nHFn;
       tdata12.nHits      = layer1.size() + layer2.size() + layer3.size();
+      tdata12.passHLT    = HLT_MB_path;
       tdata12.clusVtxQual1 = clusVtxQual1;
       tdata12.clusVtxQual2 = clusVtxQual2;
       tdata12.clusVtxQual3 = clusVtxQual3;
@@ -720,7 +723,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
 
       trackletTree12->Fill();
 
-// IMPORTANT: Variable names MUST NOT contain q or w.
 #define fillTrackletTree(q, w) {                               \
    tdata##q##w.nTracklet  = recoTracklets##q##w.size();        \
    tdata##q##w.nhit1      = layer##q.size();                   \
@@ -732,6 +734,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    tdata##q##w.nHFn       = par.nHFp;                          \
    tdata##q##w.nHFp       = par.nHFn;                          \
    tdata##q##w.nHits      = tdata12.nHits;                     \
+   tdata##q##w.passHLT    = HLT_MB_path;                       \
    tdata##q##w.clusVtxQual1 = clusVtxQual1;                    \
    tdata##q##w.clusVtxQual2 = clusVtxQual2;                    \
    tdata##q##w.clusVtxQual3 = clusVtxQual3;                    \

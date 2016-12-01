@@ -15,9 +15,9 @@ Int_t getContainedHits(const std::vector<RecoHit> &hits, double z0, double &diff
 
 Double_t getClusVtxCompat(const std::vector<RecoHit> &hits, const Int_t layer = 1) {
 
-  const Double_t   minZ_ = -30.;          // beginning z-vertex position
-  const Double_t   maxZ_ = 30.;           // end z-vertex position
-  const Double_t   zStep_ = 0.01;         // size of steps in z-vertex test
+  const Double_t   minZ_ = -15.;          // beginning z-vertex position
+  const Double_t   maxZ_ = 15.;           // end z-vertex position
+  const Double_t   zStep_ = 0.05;         // size of steps in z-vertex test
 
   Double_t slope = 0.43;
   if(layer==1)      slope = 0.43;
