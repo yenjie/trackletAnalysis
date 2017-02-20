@@ -1,15 +1,7 @@
-#ifndef CLUSTERVERTEXCOMPAT
-#define CLUSTERVERTEXCOMPAT
+#ifndef _CLUSTERVERTEXCOMPAT_H
+#define _CLUSTERVERTEXCOMPAT_H
 
-#include <TFile.h>
-#include <TNtuple.h>
-#include <TTimeStamp.h>
-#include <TH2.h>
-#include <TH3.h>
-#include <TF1.h>
-#include <TString.h>
-
-#include "RecoHit.h"
+#include "recohit.h"
 
 Int_t getContainedHits(const std::vector<RecoHit> &hits, double z0, double &diff, double slope = 0.43);
 

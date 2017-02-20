@@ -23,16 +23,18 @@ void normalize(TH2F *hData, int nEtaBin, int nVzBin, bool reweight = 1) {
    }
 }
 
-void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const char* fnData) {
+int analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const char* fnData, int nbins = 6000) {
    TFile* fMC = new TFile(fnMC, "READ");
    TTree* tMC = (TTree*)fMC->Get(Form("TrackletTree%i", TrackletType));
    TFile* fData = new TFile(fnData, "READ");
    TTree* tData = (TTree*)fData->Get(Form("TrackletTree%i", TrackletType));
 
-   int nEtaBin = 6000;
-   int nVzBin = 6000;
+   int nEtaBin = nbins;
+   int nVzBin = nbins;
    int VzRangeL = -15;
    int VzRangeH = 15;
+
+   printf("with %i bins, %i < vz < %i\n", nEtaBin, VzRangeL, VzRangeH);
 
    TFile *outfile = new TFile(Form("acceptance-%d.root", TrackletType), "recreate");
 
@@ -41,6 +43,8 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
    TH2F *hMC = new TH2F("hMC", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
    TH2F *hAccData = new TH2F("hAccData", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
    TH2F *hAccMC = new TH2F("hAccMC", "", nEtaBin, -3, 3, nVzBin, VzRangeL, VzRangeH);
+
+   printf("projecting...\n");
    tData->Project("hData", Form("vz[1]:eta1"), myCut);
    tMC->Project("hMC", Form("vz[1]:eta1"), myCut);
 
@@ -84,4 +88,13 @@ void analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const ch
    hMCAcc->RebinY(nVzBin/15);
 
    outfile->Write();
+}
+
+int main(int argc, char* argv[]) {
+   if (argc == 4)
+      return analyzeTrackletAcceptanceRatio(atoi(argv[1]), argv[2], argv[3], 6000);
+   else if (argc == 5)
+      return analyzeTrackletAcceptanceRatio(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]));
+   else
+      return 1;
 }

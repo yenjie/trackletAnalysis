@@ -138,7 +138,7 @@ TGraph* GetErrorBand2(TH1F* hist, Double_t* ratio1, Double_t* ratio2, Double_t x
    }
    for (Int_t i=2; i<n-2; i++) {
       Double_t shiftedx = x[i];
-      cout << x[i] << endl;
+      printf("%f\n", x[i]);
       if (i == 2) shiftedx -= xoffset;
       if (i == n-3) shiftedx += xoffset;
       outg->SetPoint(i-1-1, shiftedx, y[i]*(1-ratio2[i]));
