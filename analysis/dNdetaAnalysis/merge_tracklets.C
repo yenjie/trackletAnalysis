@@ -9,7 +9,7 @@
 
 #include "GraphErrorsBand.h"
 
-int makeMergedPlot(const char* name, const char* title, const char* refname) {
+int merge_tracklets(const char* name, const char* title, const char* refname) {
    TFile* inf12 = new TFile(Form("correction/correction-12-%s.root", name));
    TH1F* h12 = (TH1F*)((TH1F*)inf12->FindObjectAny("hMeasuredFinal"))->Clone("h12");
 
@@ -23,7 +23,7 @@ int makeMergedPlot(const char* name, const char* title, const char* refname) {
    TH1F* href = (TH1F*)((TH1F*)infref->FindObjectAny("hTruthWOSelection"))->Clone("href");
    href->SetAxisRange(0, 30, "Y");
 
-   TFile* outfile = new TFile(Form("merged/merged-%s.root", name), "recreate");
+   TFile* outfile = new TFile(Form("rootfiles/merged-%s.root", name), "recreate");
    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
 
    h12->SetXTitle("#eta");
@@ -65,7 +65,7 @@ int makeMergedPlot(const char* name, const char* title, const char* refname) {
    l1->Draw();
 
    c1->Draw();
-   c1->SaveAs(Form("merged/merged-%s.pdf", name));
+   c1->SaveAs(Form("figs/merged/merged-%s.png", name));
 
    TCanvas* c2 = new TCanvas("c2", "", 600, 600);
    TH1F* hAvg = (TH1F*)h12->Clone();
@@ -81,7 +81,7 @@ int makeMergedPlot(const char* name, const char* title, const char* refname) {
       avg += h23->GetBinContent(i);
       avgErr += h23->GetBinError(i)*h23->GetBinError(i);
       avgErr = sqrt(avgErr);
-      if (i>6 && i<=24) {
+      if (i>5 && i<26) {
          avg /= 3.0;
          avgErr /= 3.0;
       }
@@ -107,7 +107,7 @@ int makeMergedPlot(const char* name, const char* title, const char* refname) {
    l2->Draw();
 
    c2->Draw();
-   c2->SaveAs(Form("merged/avg-%s.pdf", name));
+   c2->SaveAs(Form("figs/merged/avg-%s.png", name));
 
    TCanvas* c3 = new TCanvas("c3", "", 600, 600);
 
@@ -125,10 +125,10 @@ int makeMergedPlot(const char* name, const char* title, const char* refname) {
    hratio13->Draw("same");
    hratio23->Draw("same");
 
-   TLine* lup = new TLine(-3, 1.05, 3, 1.05);
+   TLine* lup = new TLine(-3, 1.03, 3, 1.03);
    lup->SetLineStyle(2);
    lup->Draw();
-   TLine* ldown = new TLine(-3, 0.95, 3, 0.95);
+   TLine* ldown = new TLine(-3, 0.97, 3, 0.97);
    ldown->SetLineStyle(2);
    ldown->Draw();
 
@@ -146,7 +146,7 @@ int makeMergedPlot(const char* name, const char* title, const char* refname) {
    l3->AddEntry("hratio23", "Reconstructed (2nd+3rd layers)", "pl");
    l3->Draw();
 
-   c3->SaveAs(Form("merged/ratio-%s.pdf", name));
+   c3->SaveAs(Form("figs/merged/ratio-%s.png", name));
 
    h12->Write();
    h13->Write();
@@ -157,4 +157,11 @@ int makeMergedPlot(const char* name, const char* title, const char* refname) {
    outfile->Close();
 
    return 0;
+}
+
+int main(int argc, char* argv[]) {
+   if (argc == 4)
+      return merge_tracklets(argv[1], argv[2], argv[3]);
+   else
+      return 1;
 }

@@ -23,7 +23,7 @@ void normalize(TH2F *hData, int nEtaBin, int nVzBin, bool reweight = 1) {
    }
 }
 
-int analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const char* fnData, int nbins = 6000) {
+int calc_tracklet_acceptances(int TrackletType, const char* fnMC, const char* fnData, int nbins = 6000) {
    TFile* fMC = new TFile(fnMC, "READ");
    TTree* tMC = (TTree*)fMC->Get(Form("TrackletTree%i", TrackletType));
    TFile* fData = new TFile(fnData, "READ");
@@ -92,9 +92,9 @@ int analyzeTrackletAcceptanceRatio(int TrackletType, const char* fnMC, const cha
 
 int main(int argc, char* argv[]) {
    if (argc == 4)
-      return analyzeTrackletAcceptanceRatio(atoi(argv[1]), argv[2], argv[3], 6000);
+      return calc_tracklet_acceptances(atoi(argv[1]), argv[2], argv[3], 6000);
    else if (argc == 5)
-      return analyzeTrackletAcceptanceRatio(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]));
+      return calc_tracklet_acceptances(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]));
    else
       return 1;
 }
