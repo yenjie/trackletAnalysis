@@ -134,7 +134,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    hltTree->SetBranchStatus("HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1", 1);
    hltTree->SetBranchAddress("HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1", &HLT_MB_path);
 
-   TH1F* hMultWeights23 = get_mult_weights(23);
+   TH1F* hmult_weights = get_mult_weights();
 
    printf(" # number of events: %lli\n", t->GetEntries());
 
@@ -154,6 +154,16 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       printf("$ using reco vertex\n");
    else
       printf("$ using tracklet vertex\n");
+
+#ifdef _POKE_HOLES
+   if (isMC) {
+      printf("$ poking holes into the pixels\n");
+   } else {
+      printf("  ! poking holes in data\n");
+      printf("  ! comment out '#define _POKE_HOLES' in recohit.h and try again\n");
+      return 1;
+   }
+#endif
    printf("................................................................\n");
 
    TF1* csfitf = new TF1("csfit", csfit, -4, 4, 1);
@@ -680,7 +690,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       fillTrackletTree(2, 3);
 
       if (reweight_mult)
-         event_weight = event_weight * hMultWeights23->GetBinContent(hMultWeights23->FindBin(tdata23.mult));
+         event_weight = event_weight * hmult_weights->GetBinContent(hmult_weights->FindBin(tdata23.mult));
 
       tdata12.weight = event_weight;
       tdata13.weight = event_weight;

@@ -1,11 +1,15 @@
 #ifndef _RECOHIT_H
 #define _RECOHIT_H
 
+#define _POKE_HOLES
+
 #define _MAX_ENTRY 4000
 
 #include <vector>
 
+#ifdef _POKE_HOLES
 #include "pdfs.h"
+#endif
 
 #include "TTree.h"
 #include "TRandom.h"
@@ -66,7 +70,9 @@ void prepareHits(std::vector<RecoHit>& cleaned_hits, Parameters par, Int_t layer
       y0 = 0.1687;
    }
 
+#ifdef _POKE_HOLES
    TH2D* hholes = get_holes();
+#endif
 
    std::vector<RecoHit> hits;
    if (layer == 1) {
@@ -93,6 +99,7 @@ void prepareHits(std::vector<RecoHit>& cleaned_hits, Parameters par, Int_t layer
                 (fabs(par.phi1[ihit] - 1.16068) < 0.00001 && fabs(par.eta1[ihit] + 2.09732) < 0.00001))
                continue;
          }
+#ifdef _POKE_HOLES
          // drop hits in MC to match hit distributions in data
          if (par.nRun < 10) {
             int hit_bin = hholes->FindBin(par.phi1[ihit], par.eta1[ihit]);
@@ -100,6 +107,7 @@ void prepareHits(std::vector<RecoHit>& cleaned_hits, Parameters par, Int_t layer
             if (hit_ratio != 0 && gRandom->Rndm() > hit_ratio)
                continue;
          }
+#endif
          if (gRandom->Rndm() < drop_prob)
             continue;
          RecoHit tmp(par.eta1[ihit], par.phi1[ihit], par.r1[ihit], par.cs1[ihit], par.ch1[ihit], 1);
@@ -169,7 +177,9 @@ void prepareHits(std::vector<RecoHit>& cleaned_hits, Parameters par, Int_t layer
       }
    }
 
+#ifdef _POKE_HOLES
    hholes->Delete();
+#endif
 
    sort(hits.begin(), hits.end(), comp_phi);
 
