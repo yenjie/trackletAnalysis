@@ -1,5 +1,3 @@
-#include <iostream>
-#include <fstream>
 #include <TFile.h>
 #include <TCanvas.h>
 #include <TH1F.h>
@@ -9,21 +7,21 @@
 
 #include "GraphErrorsBand.h"
 
-int merge_tracklets(const char* name, const char* title, const char* refname) {
-   TFile* inf12 = new TFile(Form("correction/correction-12-%s.root", name));
-   TH1F* h12 = (TH1F*)((TH1F*)inf12->FindObjectAny("hMeasuredFinal"))->Clone("h12");
+int merge_tracklets(const char* label, const char* ref) {
+   TFile* f12 = new TFile(Form("correction/correction-12-%s.root", label));
+   TH1F* h12 = (TH1F*)((TH1F*)f12->FindObjectAny("hMeasuredFinal"))->Clone("h12");
 
-   TFile* inf13 = new TFile(Form("correction/correction-13-%s.root", name));
-   TH1F* h13 = (TH1F*)((TH1F*)inf13->FindObjectAny("hMeasuredFinal"))->Clone("h13");
+   TFile* f13 = new TFile(Form("correction/correction-13-%s.root", label));
+   TH1F* h13 = (TH1F*)((TH1F*)f13->FindObjectAny("hMeasuredFinal"))->Clone("h13");
 
-   TFile* inf23 = new TFile(Form("correction/correction-23-%s.root", name));
-   TH1F* h23 = (TH1F*)((TH1F*)inf23->FindObjectAny("hMeasuredFinal"))->Clone("h23");
+   TFile* f23 = new TFile(Form("correction/correction-23-%s.root", label));
+   TH1F* h23 = (TH1F*)((TH1F*)f23->FindObjectAny("hMeasuredFinal"))->Clone("h23");
 
-   TFile* infref = new TFile(Form("correction/correction-12-%s.root", refname));
-   TH1F* href = (TH1F*)((TH1F*)infref->FindObjectAny("hTruthWOSelection"))->Clone("href");
+   TFile* fref = new TFile(Form("correction/correction-12-%s.root", ref));
+   TH1F* href = (TH1F*)((TH1F*)fref->FindObjectAny("hTruthWOSelection"))->Clone("href");
    href->SetAxisRange(0, 30, "Y");
 
-   TFile* outfile = new TFile(Form("rootfiles/merged-%s.root", name), "recreate");
+   TFile* fout = new TFile(Form("rootfiles/merged-%s.root", label), "recreate");
    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
 
    h12->SetXTitle("#eta");
@@ -58,40 +56,39 @@ int merge_tracklets(const char* name, const char* title, const char* refname) {
    l1->SetLineStyle(1);
    l1->SetLineWidth(1);
    l1->SetFillStyle(0);
-   l1->AddEntry("href", title, "p");
+   l1->AddEntry("href", label, "p");
    l1->AddEntry("h12", "Reconstructed (1st+2nd layers)", "pl");
    l1->AddEntry("h13", "Reconstructed (1st+3rd layers)", "pl");
    l1->AddEntry("h23", "Reconstructed (2nd+3rd layers)", "pl");
    l1->Draw();
 
    c1->Draw();
-   c1->SaveAs(Form("figs/merged/merged-%s.png", name));
+   c1->SaveAs(Form("figs/merged/merged-%s.png", label));
 
    TCanvas* c2 = new TCanvas("c2", "", 600, 600);
-   TH1F* hAvg = (TH1F*)h12->Clone();
-   hAvg->SetName("hAvg");
+   TH1F* havg = (TH1F*)h12->Clone("havg");
 
    for (int i=1; i<=30; i++) {
       double avg = 0;
-      double avgErr = 0;
+      double avg_err = 0;
       avg += h12->GetBinContent(i);
-      avgErr += h12->GetBinError(i)*h12->GetBinError(i);
+      avg_err += h12->GetBinError(i) * h12->GetBinError(i);
       avg += h13->GetBinContent(i);
-      avgErr += h13->GetBinError(i)*h13->GetBinError(i);
+      avg_err += h13->GetBinError(i) * h13->GetBinError(i);
       avg += h23->GetBinContent(i);
-      avgErr += h23->GetBinError(i)*h23->GetBinError(i);
-      avgErr = sqrt(avgErr);
+      avg_err += h23->GetBinError(i) * h23->GetBinError(i);
+      avg_err = sqrt(avg_err);
       if (i>5 && i<26) {
          avg /= 3.0;
-         avgErr /= 3.0;
+         avg_err /= 3.0;
       }
 
-      hAvg->SetBinContent(i, avg);
-      hAvg->SetBinError(i, avgErr);
+      havg->SetBinContent(i, avg);
+      havg->SetBinError(i, avg_err);
    }
 
    href->Draw("c hist");
-   hAvg->Draw("p same");
+   havg->Draw("p same");
 
    TLegend* l2 = new TLegend(0.2, 0.36, 0.8, 0.45);
    l2->SetBorderSize(0);
@@ -102,12 +99,12 @@ int merge_tracklets(const char* name, const char* title, const char* refname) {
    l2->SetLineWidth(1);
    l2->SetFillStyle(0);
 
-   l2->AddEntry("href", title, "p");
-   l2->AddEntry("hAvg", "Reconstructed Tracklets", "pl");
+   l2->AddEntry("href", label, "p");
+   l2->AddEntry("havg", "Reconstructed Tracklets", "pl");
    l2->Draw();
 
    c2->Draw();
-   c2->SaveAs(Form("figs/merged/avg-%s.png", name));
+   c2->SaveAs(Form("figs/merged/avg-%s.png", label));
 
    TCanvas* c3 = new TCanvas("c3", "", 600, 600);
 
@@ -115,9 +112,9 @@ int merge_tracklets(const char* name, const char* title, const char* refname) {
    TH1D* hratio13 = (TH1D*)h13->Clone("hratio13");
    TH1D* hratio23 = (TH1D*)h23->Clone("hratio23");
 
-   hratio12->Divide(hAvg);
-   hratio13->Divide(hAvg);
-   hratio23->Divide(hAvg);
+   hratio12->Divide(havg);
+   hratio13->Divide(havg);
+   hratio23->Divide(havg);
 
    hratio12->SetAxisRange(0.8, 1.2, "Y");
    hratio12->SetYTitle("Ratio");
@@ -140,28 +137,28 @@ int merge_tracklets(const char* name, const char* title, const char* refname) {
    l3->SetLineStyle(1);
    l3->SetLineWidth(1);
    l3->SetFillStyle(0);
-   l3->AddEntry(href, title, "p");
+   l3->AddEntry("href", label, "p");
    l3->AddEntry("hratio12", "Reconstructed (1st+2nd layers)", "pl");
    l3->AddEntry("hratio13", "Reconstructed (1st+3rd layers)", "pl");
    l3->AddEntry("hratio23", "Reconstructed (2nd+3rd layers)", "pl");
    l3->Draw();
 
-   c3->SaveAs(Form("figs/merged/ratio-%s.png", name));
+   c3->SaveAs(Form("figs/merged/ratio-%s.png", label));
 
    h12->Write();
    h13->Write();
    h23->Write();
    href->Write();
 
-   outfile->Write("", TObject::kOverwrite);
-   outfile->Close();
+   fout->Write("", TObject::kOverwrite);
+   fout->Close();
 
    return 0;
 }
 
 int main(int argc, char* argv[]) {
-   if (argc == 4)
-      return merge_tracklets(argv[1], argv[2], argv[3]);
+   if (argc == 3)
+      return merge_tracklets(argv[1], argv[2]);
    else
       return 1;
 }
