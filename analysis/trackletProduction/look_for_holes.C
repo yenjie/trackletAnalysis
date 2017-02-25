@@ -17,7 +17,7 @@ int compass[4] = {1, -202, -1, 202};
 int trace_hits(TH2D* hholes, int bin, int direction, std::vector<int>& trace, TH2D* htrace);
 int get_n_neighbours(TH2D* hhist, int bin);
 
-int find_holes(const char* mc_fname, const char* data_fname, int start, int end) {
+int look_for_holes(const char* mc_fname, const char* data_fname, int start, int end) {
     TFile* fmc = new TFile(mc_fname, "read");
     TTree* tmc = (TTree*)fmc->Get("ana/PixelTree");
     TH2D* hmc = new TH2D("hmc", "", 200, -3.5, 3.5, 200, -3, 3);
@@ -181,7 +181,7 @@ int get_n_neighbours(TH2D* hhist, int bin) {
 
 int main(int argc, char* argv[]) {
     if (argc == 5)
-        return find_holes(argv[1], argv[2], atoi(argv[3]), atoi(argv[4]));
+        return look_for_holes(argv[1], argv[2], atoi(argv[3]), atoi(argv[4]));
     else
         return 1;
 }

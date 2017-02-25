@@ -45,7 +45,7 @@ int plotFinalResult(int TrackletType,
                     const char* corr_name,       // correction file name
                     bool apply_accep_corr = 0,   // apply acceptance correction
                     bool verbose = 0,            // enable debug output
-                    bool apply_ext_accep = 1, // use pre-defined acceptance
+                    bool apply_ext_accep = 1,    // use pre-defined acceptance
                     int selection = 1,           // dn/deta selection in MC
                     int mult_selection = 0,      // multiplicity handle
                     bool apply_trigger_corr = 1) // do trigger eff correction
@@ -109,8 +109,8 @@ int plotFinalResult(int TrackletType,
    }
 
    // Definition of Vz, Eta, Hit bins
-   const int nTrackletBin = 15;
-   double TrackletBins[nTrackletBin+1] = {-10, 15, 25, 34, 43, 52, 60, 72, 80, 90, 100, 115, 125, 135, 150, 300};
+   const int nTrackletBin = 20;
+   double TrackletBins[nTrackletBin+1] = {-10, 8, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 66, 72, 80, 90, 100, 110, 130, 150, 300};
 
    const int nEtaBin = 30;
    double EtaBins[nEtaBin+1];
@@ -354,7 +354,7 @@ int plotFinalResult(int TrackletType,
                   if (verbose) printf("   | calculation - eta: %i, ntl: %i, vz: %i, val: %f, beta: %f, nsig: %f, truth: %f, alpha: %f, alphaErr: %f\n", x, y, z, val, beta, nsig, truth, alpha, alphaErr);
 
                   if (alpha > 10 || alpha < 0 || (beta > 0.5 && alpha > 5)) {
-                     if (TrackletBins[y] < 100) {
+                     if (TrackletBins[y] < 101) {
                         hAcceptance1D->SetBinContent(x, z, 0);
                         continue;
                      }
@@ -367,7 +367,7 @@ int plotFinalResult(int TrackletType,
                   } else {
                      printf("   |  ! warning: calculated alpha not used: %f, eta: %i, ntl: %i, vz: %i, beta: %f, alphaErr: %f\n", alpha, x, y, z, beta, alphaErr);
                   }
-               } else if (TrackletBins[y] < 100) {
+               } else if (TrackletBins[y] < 101) {
                   hAcceptance1D->SetBinContent(x, z, 0);
                }
             }
