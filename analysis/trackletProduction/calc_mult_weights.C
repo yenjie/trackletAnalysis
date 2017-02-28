@@ -30,3 +30,10 @@ int calc_mult_weights(const char* fnMC, const char* fnData) {
 
     return 0;
 }
+
+int main(int argc, char* argv[]) {
+    if (argc == 3)
+        return calc_mult_weights(argv[1], argv[2]);
+    else
+        return 1;
+}

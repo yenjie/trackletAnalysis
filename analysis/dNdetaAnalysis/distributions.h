@@ -344,7 +344,7 @@ TH2F* get_acceptance(int TrackletType) {
       haccep_13->SetBinContent(213,6);
       haccep_13->SetBinContent(214,6);
       haccep_13->SetBinContent(215,6);
-      haccep_13->SetBinContent(231,7);
+      // haccep_13->SetBinContent(231,7);
       haccep_13->SetBinContent(232,7);
       haccep_13->SetBinContent(233,7);
       haccep_13->SetBinContent(234,7);
@@ -640,7 +640,6 @@ TH2F* get_acceptance(int TrackletType) {
       haccep_12->SetBinContent(278,8);
       haccep_12->SetBinContent(279,8);
       haccep_12->SetBinContent(280,8);
-      haccep_12->SetBinContent(281,8);
       haccep_12->SetBinContent(293,9);
       haccep_12->SetBinContent(294,9);
       haccep_12->SetBinContent(295,9);
@@ -700,7 +699,7 @@ TH2F* get_acceptance(int TrackletType) {
       haccep_12->SetBinContent(373,11);
       haccep_12->SetBinContent(374,11);
       haccep_12->SetBinContent(375,11);
-      haccep_12->SetBinContent(376,11);
+      // haccep_12->SetBinContent(376,11);
       haccep_12->SetBinContent(388,12);
       haccep_12->SetBinContent(389,12);
       haccep_12->SetBinContent(390,12);
@@ -740,6 +739,7 @@ TH2F* get_acceptance(int TrackletType) {
       haccep_12->SetBinContent(436,13);
       haccep_12->SetBinContent(437,13);
       haccep_12->SetBinContent(438,13);
+      haccep_12->SetBinContent(439,13);
       haccep_12->SetBinContent(452,14);
       haccep_12->SetBinContent(453,14);
       haccep_12->SetBinContent(454,14);

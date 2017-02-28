@@ -1,9 +1,9 @@
 #ifndef _RECOHIT_H
 #define _RECOHIT_H
 
-#define _POKE_HOLES
-
 #define _MAX_ENTRY 4000
+
+#include "definitions.h"
 
 #include <vector>
 
@@ -71,7 +71,12 @@ void prepareHits(std::vector<RecoHit>& cleaned_hits, Parameters par, Int_t layer
    }
 
 #ifdef _POKE_HOLES
-   TH2D* hholes = get_holes();
+#ifdef _EPOS_5TEV
+   TH2D* hholes = get_holes_5tev();
+#endif
+#if defined(_EPOS_8TEV) || defined(_HIJING_8TEV)
+   TH2D* hholes = get_holes_8tev();
+#endif
 #endif
 
    std::vector<RecoHit> hits;

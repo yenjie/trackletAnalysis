@@ -48,6 +48,7 @@ int plotFinalResult(int TrackletType,
                     bool apply_ext_accep = 1,    // use pre-defined acceptance
                     int selection = 1,           // dn/deta selection in MC
                     int mult_selection = 0,      // multiplicity handle
+                    bool use_wide_dphi = 0,      // use wider dphi region
                     bool apply_trigger_corr = 1) // do trigger eff correction
 {
    std::vector<std::string> file_list;
@@ -81,8 +82,8 @@ int plotFinalResult(int TrackletType,
    // Choose multiplicity handle
    const char* multiplicity;
    if (mult_selection == 1) {
-      multiplicity = "mult2";
-      printf("$ event multiplicity handle: number of clusters\n");
+      multiplicity = "nhit1_cut";
+      printf("$ event multiplicity handle: number of clusters with cluster size cut\n");
    } else if (mult_selection == 2) {
       multiplicity = "nTracklets";
       printf("$ event multiplicity handle: number of tracklets\n");
@@ -128,6 +129,11 @@ int plotFinalResult(int TrackletType,
    double signal_region = 1.0;   // dphi cut for signal region
    double sideband_region = 2.0; // dphi cut for sideband region
    double deta_cut = 0.1;        // deta cut
+
+   if (use_wide_dphi) {
+      signal_region = 1.5;
+      sideband_region = 3.0;
+   }
 
    TCut signal_region_cut   = Form("abs(dphi)<%f && abs(deta)<%f", signal_region, deta_cut);
    TCut sideband_region_cut = Form("abs(dphi)>%f && abs(dphi)<%f && abs(deta)<%f", signal_region, sideband_region, deta_cut);
@@ -898,6 +904,8 @@ int main(int argc, char* argv[]) {
       return plotFinalResult(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]), argv[5], atoi(argv[6]));
    else if (argc == 8)
       return plotFinalResult(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
+   else if (argc == 13)
+      return plotFinalResult(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), atoi(argv[9]), atoi(argv[10]), atoi(argv[11]), atoi(argv[12]));
    else
       return -1;
 }

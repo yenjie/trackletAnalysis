@@ -104,7 +104,7 @@ int merge_tracklets(const char* label, const char* ref) {
    l2->Draw();
 
    c2->Draw();
-   c2->SaveAs(Form("figs/merged/avg-%s.png", label));
+   c2->SaveAs(Form("figs/merged/merged-%s-avg.png", label));
 
    TCanvas* c3 = new TCanvas("c3", "", 600, 600);
 
@@ -143,7 +143,7 @@ int merge_tracklets(const char* label, const char* ref) {
    l3->AddEntry("hratio23", "Reconstructed (2nd+3rd layers)", "pl");
    l3->Draw();
 
-   c3->SaveAs(Form("figs/merged/ratio-%s.png", label));
+   c3->SaveAs(Form("figs/merged/merged-%s-ratio.png", label));
 
    h12->Write();
    h13->Write();
