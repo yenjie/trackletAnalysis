@@ -211,7 +211,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
          double data_pdf = 0;
 #ifdef _EPOS_5TEV
          // 5 TeV pPb Run 285090
-         data_pdf = TMath::Gaus(myVz, 1.09219, 6.27013 - vzShift, 1);
+         data_pdf = TMath::Gaus(myVz, 1.07340 - vzShift, 6.30161, 1);
 #endif
          // 8 TeV pPb Run 285517
          // data_pdf = TMath::Gaus(myVz, -0.3164 - vzShift, 4.7283, 1);
