@@ -3,6 +3,6 @@
 
 #define _POKE_HOLES
 
-#define _EPOS_5TEV
+#define _EPOS_8TEV
 
 #endif

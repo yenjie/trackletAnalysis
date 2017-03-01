@@ -9,10 +9,10 @@ void draw_sys_unc(TGraph* gr, TH1* h1, TH1* h1_sys) {
         double val = h1->GetBinContent(i);
         double error = TMath::Abs(h1_sys->GetBinContent(sys_bin));
 
-        gr->SetPoint(0, x - (bin_width/2), std::max(val - error, h1->GetMinimum()));
-        gr->SetPoint(1, x + (bin_width/2), std::max(val - error, h1->GetMinimum()));
-        gr->SetPoint(2, x + (bin_width/2), std::min(val + error, h1->GetMaximum()));
-        gr->SetPoint(3, x - (bin_width/2), std::min(val + error, h1->GetMaximum()));
+        gr->SetPoint(0, x - (bin_width/2), val - error);
+        gr->SetPoint(1, x + (bin_width/2), val - error);
+        gr->SetPoint(2, x + (bin_width/2), val + error);
+        gr->SetPoint(3, x - (bin_width/2), val + error);
 
         gr->DrawClone("f");
     }
