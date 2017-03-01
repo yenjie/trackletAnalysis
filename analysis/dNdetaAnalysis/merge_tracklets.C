@@ -1,11 +1,12 @@
 #include <TFile.h>
 #include <TCanvas.h>
 #include <TH1F.h>
-#include <TH2D.h>
+#include "TGraph.h"
 #include <TLine.h>
 #include <TLegend.h>
 
-#include "GraphErrorsBand.h"
+#include "alice.h"
+#include "error_bands.h"
 
 int merge_tracklets(const char* label, const char* ref) {
    TFile* f12 = new TFile(Form("correction/correction-12-%s.root", label));
@@ -20,6 +21,9 @@ int merge_tracklets(const char* label, const char* ref) {
    TFile* fref = new TFile(Form("correction/correction-12-%s.root", ref));
    TH1F* href = (TH1F*)((TH1F*)fref->FindObjectAny("hTruthWOSelection"))->Clone("href");
    href->SetAxisRange(0, 30, "Y");
+
+   TH1F* halice = get_alice_5tev();
+   TH1F* halice_sys = get_alice_sys_5tev();
 
    TFile* fout = new TFile(Form("rootfiles/merged-%s.root", label), "recreate");
    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
@@ -87,7 +91,13 @@ int merge_tracklets(const char* label, const char* ref) {
       havg->SetBinError(i, avg_err);
    }
 
+   TGraph* gr = new TGraph();
+   gr->SetFillStyle(1001);
+   gr->SetFillColorAlpha(30, 0.7);
+
    href->Draw("c hist");
+   draw_sys_unc(gr, halice, halice_sys);
+   halice->Draw("p same");
    havg->Draw("p same");
 
    TLegend* l2 = new TLegend(0.2, 0.36, 0.8, 0.45);

@@ -3,8 +3,9 @@
 #define _PLOT_RANGE 30.0
 #define _SD_FACTOR 1
 
+#define _ENERGY 5
+
 // standard library
-//#include <math.h>
 #include <fstream>
 #include <string>
 
@@ -20,6 +21,7 @@
 #include "TH3.h"
 #include "TProfile.h"
 #include "TF1.h"
+#include "TGraph.h"
 #include "TStyle.h"
 #include "TCanvas.h"
 #include "TPad.h"
@@ -28,7 +30,7 @@
 #include "TText.h"
 
 // For plotting
-#include "GraphErrorsBand.h"
+#include "error_bands.h"
 
 // External histograms
 #include "distributions.h"
@@ -178,7 +180,7 @@ int plotFinalResult(int TrackletType,
 
    TH2F* hAcceptance1D = 0;
    if (apply_ext_accep)
-      hAcceptance1D = get_acceptance(TrackletType);
+      hAcceptance1D = get_acceptance(TrackletType, _ENERGY);
    else if (apply_correction)
       hAcceptance1D = (TH2F*)fCorrection->FindObjectAny("hAcceptance1D");
    else
