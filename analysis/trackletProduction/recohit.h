@@ -71,10 +71,10 @@ void prepareHits(std::vector<RecoHit>& cleaned_hits, Parameters par, Int_t layer
    }
 
 #ifdef _POKE_HOLES
-#ifdef _EPOS_5TEV
+#ifdef _HOLES_5TEV
    TH2D* hholes = get_holes_5tev();
 #endif
-#if defined(_EPOS_8TEV) || defined(_HIJING_8TEV)
+#ifdef _HOLES_8TEV
    TH2D* hholes = get_holes_8tev();
 #endif
 #endif

@@ -46,7 +46,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
                          uint64_t start_entry = 0,              // Starting entry number in the PixelTree
                          uint64_t end_entry = 1000000000,       // Ending entry number in the PixelTree
                          bool use_random_vertex = 0,            // Use random vertex (instead of the reco one)
-                         bool skip_cvqual = 0,                  // Skip calculation of the cluster-vertex compatibility
+                         bool skip_cvqual = 1,                  // Skip calculation of the cluster-vertex compatibility
                          double pileup = 0,                     // Artifically overlap event to mimic pile-up
                          bool reweight_vertex = 1,              // Reweight vertex distribution to match data
                          bool reweight_mult = 1,                // Reweight multiplicity distribution
@@ -86,14 +86,15 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    double vzShift = 0;
 
    if (t->GetEntries("nRun<10")!=0) {
+      printf("$ Monte Carlo analysis\n");
       isMC = true;
       vzShift = -0.551191;
-#if defined(_EPOS_5TEV)
-      pileup = 0.003;
-#elif defined(_EPOS_8TEV) || defined(_HIJING_8TEV)
-      pileup = 0.006;
+#ifdef _PILEUP
+      if (pileup == 0)
+         pileup = _PILEUP;
+      else
+         printf("  ! ignoring defined pileup\n");
 #endif
-      printf("$ Monte Carlo analysis\n");
       printf(" # vzShift: %f\n", vzShift);
    } else {
       pileup = 0;
@@ -133,15 +134,17 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    hltTree->SetBranchAddress("HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1", &HLT_MB_path);
 
    TH1F* hmult_weights = 0;
-#ifdef _EPOS_8TEV
-   hmult_weights = get_8tev_epos_mult_weights();
+   if (reweight_mult) {
+#ifdef _EPOS_MULTWGHT_5TEV
+      hmult_weights = get_5tev_epos_mult_weights();
 #endif
-#ifdef _HIJING_8TEV
-   hmult_weights = get_8tev_hijing_mult_weights();
+#ifdef _EPOS_MULTWGHT_8TEV
+      hmult_weights = get_8tev_epos_mult_weights();
 #endif
-#ifdef _EPOS_5TEV
-   hmult_weights = get_5tev_epos_mult_weights();
+#ifdef _HIJING_MULTWGHT_8TEV
+      hmult_weights = get_8tev_hijing_mult_weights();
 #endif
+   }
 
    printf(" # number of events: %lli\n", t->GetEntries());
 
@@ -194,48 +197,6 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       hltTree->GetEntry(i);
       if (!HLT_MB_path && !isMC)
          continue;
-
-      float event_weight = 1.;
-      // Reweight MC vertex distribution to match data
-      if (reweight_vertex) {
-         double myVz = par.vz[1];
-         if (myVz < -90) {
-            // TF1* f = new TF1("f", "1", -20, 20);
-            // TF1* f = new TF1("f", "gaus", -30, 30);
-            // f->SetParameters(1, -1.56743, 6.43514);
-            // myVz = f->GetRandom();
-            // delete f;
-            myVz = par.vz[0];
-         }
-
-         double data_pdf = 0;
-#ifdef _EPOS_5TEV
-         // 5 TeV pPb Run 285090
-         data_pdf = TMath::Gaus(myVz, 1.07340 - vzShift, 6.30161, 1);
-#endif
-         // 8 TeV pPb Run 285517
-         // data_pdf = TMath::Gaus(myVz, -0.3164 - vzShift, 4.7283, 1);
-#if defined(_EPOS_8TEV) || defined(_HIJING_8TEV)
-         // 8 TeV pPb Run 285832
-         data_pdf = TMath::Gaus(myVz, 0.97423 - vzShift, 4.60961, 1);
-#endif
-
-         double mc_pdf = 1;
-#ifdef _EPOS_5TEV
-         // PixelTree-EPOS-5TeV-HLT.root
-         mc_pdf = TMath::Gaus(myVz, -1.79326, 6.50467, 1);
-#endif
-#ifdef _EPOS_8TEV
-         // PixelTree-EPOS-8TeV-HLT.root
-         mc_pdf = TMath::Gaus(myVz, -1.56743, 6.43514, 1);
-#endif
-#ifdef _HIJING_8TEV
-         // PixelTree-HIJING-8TeV-HLT.root
-         mc_pdf = TMath::Gaus(myVz, -1.61986, 6.46244, 1);
-#endif
-
-         event_weight = event_weight * data_pdf / mc_pdf;
-      }
 
       // Fill reco vertex information
       tdata12.nv = par.nv+1;
@@ -635,6 +596,46 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       //    tdata13.vz[1] = trackletVertex - smear;
       //    tdata23.vz[1] = trackletVertex - smear;
       // }
+
+      float event_weight = 1.;
+      // Reweight MC vertex distribution to match data
+      if (reweight_vertex) {
+         double myVz = tdata12.vz[1];
+         if (myVz < -99) {
+            // TF1* f = new TF1("f", "1", -20, 20);
+            // TF1* f = new TF1("f", "gaus", -30, 30);
+            // f->SetParameters(1, -1.56743, 6.43514);
+            // myVz = f->GetRandom();
+            // delete f;
+            myVz = par.vz[0];
+         }
+
+         double data_pdf = 0;
+#ifdef _DATA_VTX_5TEV
+         // 5 TeV pPb Run 285090
+         data_pdf = TMath::Gaus(myVz, 1.07340 - vzShift, 6.30161, 1);
+#endif
+#ifdef _DATA_VTX_8TEV
+         // 8 TeV pPb Run 285832
+         data_pdf = TMath::Gaus(myVz, 1.00333 - vzShift, 4.65240, 1);
+#endif
+
+         double mc_pdf = 1;
+#ifdef _EPOS_VTX_5TEV
+         // PixelTree-EPOS-5TeV-HLT.root
+         mc_pdf = TMath::Gaus(myVz, -1.78102, 6.43280, 1);
+#endif
+#ifdef _EPOS_VTX_8TEV
+         // PixelTree-EPOS-8TeV-HLT.root
+         mc_pdf = TMath::Gaus(myVz, -1.76036, 6.42362, 1);
+#endif
+#ifdef _HIJING_VTX_8TEV
+         // PixelTree-HIJING-8TeV-HLT.root
+         mc_pdf = TMath::Gaus(myVz, -1.81360, 6.46245, 1);
+#endif
+
+         event_weight = event_weight * data_pdf / mc_pdf;
+      }
 
 #define fillTrackletTree(q, w) {                               \
    tdata##q##w.nTracklet  = recoTracklets##q##w.size();        \
