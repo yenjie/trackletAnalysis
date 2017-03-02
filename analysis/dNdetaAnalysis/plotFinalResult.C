@@ -3,7 +3,7 @@
 #define _PLOT_RANGE 30.0
 #define _SD_FACTOR 1
 
-#define _ENERGY 5
+#define _ENERGY 8
 
 // standard library
 #include <fstream>
@@ -19,7 +19,6 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "TProfile.h"
 #include "TF1.h"
 #include "TGraph.h"
 #include "TStyle.h"
@@ -45,7 +44,7 @@ int plotFinalResult(int TrackletType,
                     const char* title,           // plot title
                     bool apply_correction,       // apply external corrections
                     const char* corr_name,       // correction file name
-                    bool apply_accep_corr = 0,   // apply acceptance correction
+                    bool apply_accep_corr = 1,   // apply acceptance correction
                     bool verbose = 0,            // enable debug output
                     bool apply_ext_accep = 1,    // use pre-defined acceptance
                     int selection = 1,           // dn/deta selection in MC
@@ -77,6 +76,7 @@ int plotFinalResult(int TrackletType,
    } else {
       printf("$ data analysis\n");
    }
+   printf(" # at %iTeV\n", _ENERGY);
 
    if (!apply_trigger_corr)
       printf(" # no trigger correction applied\n");
@@ -286,11 +286,11 @@ int plotFinalResult(int TrackletType,
    hReproducedBackground->Sumw2();
 
    // Read Acceptance =========================================================
-   TH2F* hMCAcc = 0;
-   TH2F* hDataAcc = 0;
+   TH2F* haccep_mc = 0;
+   TH2F* haccep_data = 0;
    if (apply_accep_corr) {
-      hMCAcc = (TH2F*)fAcceptance->FindObjectAny("hMCAcc");
-      hDataAcc = (TH2F*)fAcceptance->FindObjectAny("hDataAcc");
+      haccep_mc = (TH2F*)fAcceptance->FindObjectAny("haccep_mc");
+      haccep_data = (TH2F*)fAcceptance->FindObjectAny("haccep_data");
    }
 
    TCanvas* c1 = new TCanvas("c1", "scratch", 400, 400);
@@ -496,13 +496,14 @@ int plotFinalResult(int TrackletType,
             double alphaErr = alphaPlots[x-1][z-1]->GetBinError(y);
 
             if (apply_accep_corr) {
-               double accData = hDataAcc->GetBinContent(x, z);
-               double accMC = hMCAcc->GetBinContent(x, z);
-               if (accData == 0 || accMC == 0) {
-                  printf(" # zero acceptance: eta: %i, vz: %i\n", x, z);
+               double accep_data = haccep_data->GetBinContent(x, z);
+               double accep_mc = haccep_mc->GetBinContent(x, z);
+               if (accep_data == 0 || accep_mc == 0) {
+                  if (hAcceptance1D->GetBinContent(x, z) != 0)
+                     printf("  ! acceptance correction error: eta: %i, vz: %i\n", x, z);
                } else {
-                  alpha = alpha * accMC / accData;
-                  alphaErr = alphaErr * accMC / accData;
+                  alpha = alpha * accep_mc / accep_data;
+                  alphaErr = alphaErr * accep_mc / accep_data;
                }
             }
 
@@ -906,6 +907,14 @@ int main(int argc, char* argv[]) {
       return plotFinalResult(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]), argv[5], atoi(argv[6]));
    else if (argc == 8)
       return plotFinalResult(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]));
+   else if (argc == 9)
+      return plotFinalResult(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]), atoi(argv[8]));
+   else if (argc == 10)
+      return plotFinalResult(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), atoi(argv[9]));
+   else if (argc == 11)
+      return plotFinalResult(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), atoi(argv[9]), atoi(argv[10]));
+   else if (argc == 12)
+      return plotFinalResult(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), atoi(argv[9]), atoi(argv[10]), atoi(argv[11]));
    else if (argc == 13)
       return plotFinalResult(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]), argv[5], atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), atoi(argv[9]), atoi(argv[10]), atoi(argv[11]), atoi(argv[12]));
    else
