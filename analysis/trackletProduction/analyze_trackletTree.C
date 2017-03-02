@@ -83,19 +83,19 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    setTrackletTreeBranch(trackletTree23, tdata23);
 
    bool isMC = 0;
-   double vzShift = 0;
+   double vz_shift = 0;
 
    if (t->GetEntries("nRun<10")!=0) {
       printf("$ Monte Carlo analysis\n");
       isMC = true;
-      vzShift = -0.551191;
+      vz_shift = -0.551191;
 #ifdef _PILEUP
       if (pileup == 0)
          pileup = _PILEUP;
       else
          printf("  ! ignoring defined pileup\n");
 #endif
-      printf(" # vzShift: %f\n", vzShift);
+      printf(" # vz_shift: %f\n", vz_shift);
    } else {
       pileup = 0;
       reweight_vertex = 0;
@@ -505,7 +505,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       // }
 
       if (use_random_vertex) {
-         tdata12.vz[1] = gRandom->Rndm() * 28 - 13 - vzShift;
+         tdata12.vz[1] = gRandom->Rndm() * 28 - 13 - vz_shift;
          tdata13.vz[1] = tdata12.vz[1];
          tdata23.vz[1] = tdata12.vz[1];
       } else if (use_kk_vertex) {
@@ -525,8 +525,8 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       }
 
       // Process hits with Vz constraint:
-      std::vector<RecoHit> layer1Cut;
-      prepareHits(layer1Cut, par, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], split_prob, drop_prob, 0, 1);
+      std::vector<RecoHit> layer1_cut;
+      prepareHits(layer1_cut, par, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], split_prob, drop_prob, 0, 1);
 
       std::vector<RecoHit> layer1, layer2, layer3, layer4, layer5;
       prepareHits(layer1, par, 1, tdata12.vx[1], tdata12.vy[1], tdata12.vz[1], split_prob, drop_prob, smear_pixels, cut_cluster_size);
@@ -600,38 +600,37 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       float event_weight = 1.;
       // Reweight MC vertex distribution to match data
       if (reweight_vertex) {
-         double myVz = tdata12.vz[1];
-         if (myVz < -99) {
-            // TF1* f = new TF1("f", "1", -20, 20);
+         double event_vz = tdata12.vz[1];
+         if (event_vz < -99) {
             // TF1* f = new TF1("f", "gaus", -30, 30);
-            // f->SetParameters(1, -1.56743, 6.43514);
-            // myVz = f->GetRandom();
+            // f->SetParameters(1, -1.76036 - vz_shift, 6.42362);
+            // event_vz = f->GetRandom();
             // delete f;
-            myVz = par.vz[0];
+            event_vz = par.vz[0];
          }
 
          double data_pdf = 0;
 #ifdef _DATA_VTX_5TEV
          // 5 TeV pPb Run 285090
-         data_pdf = TMath::Gaus(myVz, 1.07340 - vzShift, 6.30161, 1);
+         data_pdf = TMath::Gaus(event_vz, 1.07340 - vz_shift, 6.30161, 1);
 #endif
 #ifdef _DATA_VTX_8TEV
          // 8 TeV pPb Run 285832
-         data_pdf = TMath::Gaus(myVz, 1.00333 - vzShift, 4.65240, 1);
+         data_pdf = TMath::Gaus(event_vz, 1.00333 - vz_shift, 4.65240, 1);
 #endif
 
          double mc_pdf = 1;
 #ifdef _EPOS_VTX_5TEV
          // PixelTree-EPOS-5TeV-HLT.root
-         mc_pdf = TMath::Gaus(myVz, -1.78102, 6.43280, 1);
+         mc_pdf = TMath::Gaus(event_vz, -1.78102 - vz_shift, 6.43280, 1);
 #endif
 #ifdef _EPOS_VTX_8TEV
          // PixelTree-EPOS-8TeV-HLT.root
-         mc_pdf = TMath::Gaus(myVz, -1.76036, 6.42362, 1);
+         mc_pdf = TMath::Gaus(event_vz, -1.76036 - vz_shift, 6.42362, 1);
 #endif
 #ifdef _HIJING_VTX_8TEV
          // PixelTree-HIJING-8TeV-HLT.root
-         mc_pdf = TMath::Gaus(myVz, -1.81360, 6.46245, 1);
+         mc_pdf = TMath::Gaus(event_vz, -1.81360 - vz_shift, 6.46245, 1);
 #endif
 
          event_weight = event_weight * data_pdf / mc_pdf;
@@ -677,7 +676,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       }                                                        \
    }                                                           \
    tdata##q##w.mult = ntracklet##q##w##s - ntracklet##q##w##b; \
-   tdata##q##w.nhit1_cut = layer1Cut.size();                   \
+   tdata##q##w.nhit1_cut = layer1_cut.size();                  \
                                                                \
    tdata##q##w.npart = 0;                                      \
    for (int j=0; j<12; j++) tdata##q##w.nhad[j] = 0;           \
@@ -699,7 +698,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
                                                                \
    tdata##q##w.evtType = par.evtType;                          \
    for (int j=0; j<par.nv; j++)                                \
-      tdata##q##w.vz[j] += vzShift;                            \
+      tdata##q##w.vz[j] += vz_shift;                           \
 }
       fillTrackletTree(1, 2);
       fillTrackletTree(1, 3);

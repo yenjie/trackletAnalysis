@@ -903,7 +903,7 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_12->SetBinContent(247,7);
             haccep_12->SetBinContent(248,7);
             haccep_12->SetBinContent(249,7);
-            haccep_12->SetBinContent(261,8); // #
+            haccep_12->SetBinContent(261,8);
             haccep_12->SetBinContent(262,8);
             haccep_12->SetBinContent(263,8);
             haccep_12->SetBinContent(264,8);
@@ -923,7 +923,7 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_12->SetBinContent(278,8);
             haccep_12->SetBinContent(279,8);
             haccep_12->SetBinContent(280,8);
-            haccep_12->SetBinContent(281,8); // #
+            haccep_12->SetBinContent(281,8);
             haccep_12->SetBinContent(293,9);
             haccep_12->SetBinContent(294,9);
             haccep_12->SetBinContent(295,9);
@@ -964,7 +964,7 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_12->SetBinContent(342,10);
             haccep_12->SetBinContent(343,10);
             haccep_12->SetBinContent(344,10);
-            haccep_12->SetBinContent(356,11); // #
+            haccep_12->SetBinContent(356,11);
             haccep_12->SetBinContent(357,11);
             haccep_12->SetBinContent(358,11);
             haccep_12->SetBinContent(359,11);
@@ -984,7 +984,6 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_12->SetBinContent(373,11);
             haccep_12->SetBinContent(374,11);
             haccep_12->SetBinContent(375,11);
-            haccep_12->SetBinContent(376,11); // #
             haccep_12->SetBinContent(388,12);
             haccep_12->SetBinContent(389,12);
             haccep_12->SetBinContent(390,12);
@@ -1024,7 +1023,6 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_12->SetBinContent(436,13);
             haccep_12->SetBinContent(437,13);
             haccep_12->SetBinContent(438,13);
-            haccep_12->SetBinContent(439,13);
             haccep_12->SetBinContent(452,14);
             haccep_12->SetBinContent(453,14);
             haccep_12->SetBinContent(454,14);
@@ -1097,7 +1095,7 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_13->SetBinContent(118,3);
             haccep_13->SetBinContent(119,3);
             haccep_13->SetBinContent(120,3);
-            haccep_13->SetBinContent(121,3); // #
+            haccep_13->SetBinContent(121,3);
             haccep_13->SetBinContent(137,4);
             haccep_13->SetBinContent(138,4);
             haccep_13->SetBinContent(139,4);
@@ -1346,7 +1344,7 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_23->SetBinContent(150,4);
             haccep_23->SetBinContent(151,4);
             haccep_23->SetBinContent(152,4);
-            haccep_23->SetBinContent(153,4); // #
+            haccep_23->SetBinContent(153,4);
             haccep_23->SetBinContent(168,5);
             haccep_23->SetBinContent(169,5);
             haccep_23->SetBinContent(170,5);
@@ -1398,7 +1396,7 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_23->SetBinContent(245,7);
             haccep_23->SetBinContent(246,7);
             haccep_23->SetBinContent(247,7);
-            haccep_23->SetBinContent(248,7); // #
+            haccep_23->SetBinContent(248,7);
             haccep_23->SetBinContent(263,8);
             haccep_23->SetBinContent(264,8);
             haccep_23->SetBinContent(265,8);
@@ -1450,7 +1448,7 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_23->SetBinContent(340,10);
             haccep_23->SetBinContent(341,10);
             haccep_23->SetBinContent(342,10);
-            haccep_23->SetBinContent(343,10); // #
+            haccep_23->SetBinContent(343,10);
             haccep_23->SetBinContent(358,11);
             haccep_23->SetBinContent(359,11);
             haccep_23->SetBinContent(360,11);
@@ -1501,7 +1499,7 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_23->SetBinContent(435,13);
             haccep_23->SetBinContent(436,13);
             haccep_23->SetBinContent(437,13);
-            haccep_23->SetBinContent(438,13); // #
+            haccep_23->SetBinContent(438,13);
             haccep_23->SetBinContent(454,14);
             haccep_23->SetBinContent(455,14);
             haccep_23->SetBinContent(456,14);
