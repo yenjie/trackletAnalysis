@@ -20,7 +20,6 @@
 #include "TH2.h"
 #include "TH3.h"
 #include "TF1.h"
-#include "TGraph.h"
 #include "TStyle.h"
 #include "TCanvas.h"
 #include "TPad.h"
@@ -805,10 +804,6 @@ int plotFinalResult(int TrackletType,
    hTruthEvtCutCorrectedByXi->SetYTitle("dN/d#eta");
    // hTruthEvtCutCorrectedByXi->Draw("hist");
 
-   // double systematicError13TeV[30];
-   // TGraph* gErrorBand = GetErrorBand(hMeasuredFinal, systematicError13TeV, systematicError13TeV, 0.1);
-   // gErrorBand->Draw("F");
-
    TLegend* l1 = new TLegend(0.3, 0.3, 0.8, 0.48);
    l1->SetFillStyle(0);
    l1->SetFillColor(0);
@@ -819,9 +814,6 @@ int plotFinalResult(int TrackletType,
    l1->AddEntry(hTruthWOSelection, "Truth", "l");
    l1->AddEntry(hMeasuredFinal, "Reconstructed", "pl");
    l1->Draw();
-
-   // TText* text = new TText(-2.6, 5, "CMS Preliminary");
-   // text->Draw();
 
    cDNdEta->Draw();
    cDNdEta->SaveAs(Form("figs/result/result-%s-%d.png", title, TrackletType));

@@ -1,3 +1,8 @@
+#ifndef _ERROR_BANDS_H
+#define _ERROR_BANDS_H
+
+#include "TGraph.h"
+
 void draw_sys_unc(TGraph* gr, TH1* h1, TH1* h1_sys) {
     for (int i=1; i<=h1->GetNbinsX(); ++i) {
         if (h1->GetBinError(i) == 0) continue;
@@ -17,3 +22,5 @@ void draw_sys_unc(TGraph* gr, TH1* h1, TH1* h1_sys) {
         gr->DrawClone("f");
     }
 }
+
+#endif

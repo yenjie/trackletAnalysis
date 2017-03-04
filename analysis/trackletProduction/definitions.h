@@ -1,8 +1,7 @@
 #ifndef _DEFINITIONS_H
 #define _DEFINITIONS_H
 
-#define _POKE_HOLES
-
-#define _EPOS_8TEV
+#define _CONFIG_START
+#define _CONFIG_END
 
 #endif

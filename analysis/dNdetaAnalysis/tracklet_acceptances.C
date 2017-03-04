@@ -26,7 +26,7 @@ void normalize(TH2F* hdata, int nEtaBin, int nVzBin, bool reweight = 1) {
    hvz->Delete();
 }
 
-int calc_tracklet_acceptances(int TrackletType, const char* mc_file, const char* data_file, int nbins = 500) {
+int tracklet_acceptances(int TrackletType, const char* mc_file, const char* data_file, int nbins = 500) {
    TFile* fmc = new TFile(mc_file, "READ");
    TTree* tmc = (TTree*)fmc->Get(Form("TrackletTree%i", TrackletType));
    TFile* fdata = new TFile(data_file, "READ");
@@ -72,9 +72,9 @@ int calc_tracklet_acceptances(int TrackletType, const char* mc_file, const char*
 
 int main(int argc, char* argv[]) {
    if (argc == 4)
-      return calc_tracklet_acceptances(atoi(argv[1]), argv[2], argv[3]);
+      return tracklet_acceptances(atoi(argv[1]), argv[2], argv[3]);
    else if (argc == 5)
-      return calc_tracklet_acceptances(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]));
+      return tracklet_acceptances(atoi(argv[1]), argv[2], argv[3], atoi(argv[4]));
    else
       return 1;
 }
