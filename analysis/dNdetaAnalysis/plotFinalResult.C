@@ -194,7 +194,11 @@ int plotFinalResult(int TrackletType,
    TH1F* hDNDEtaVertexed = new TH1F("hDNDEtaVertexed", "", nEtaBin, EtaBins);
    TH1F* hDNDEtaNoVertexed = new TH1F("hDNDEtaNoVertexed", "", nEtaBin, EtaBins);
    TH1F* hdNdetaWithEvtCut = new TH1F("hdNdetaWithEvtCut", "", nEtaBin, EtaBins);
-   TH1F* hTrigEff = new TH1F("hTrigEff", "", nTrackletBin, TrackletBins);
+   TH1F* hTrigEff = 0;
+   if (apply_correction)
+      hTrigEff = (TH1F*)fCorrection->Get("hTrigEff");
+   else
+      hTrigEff = new TH1F("hTrigEff", "", nTrackletBin, TrackletBins);
    TH1F* hTrigEffNoCut = new TH1F("hTrigEffNoCut", "", nTrackletBin, TrackletBins);
    TH1F* hSD = new TH1F("hSD", "", nTrackletBin, TrackletBins);
    TH1F* hSDFrac = new TH1F("hSDFrac", "", nTrackletBin, TrackletBins);
@@ -763,10 +767,6 @@ int plotFinalResult(int TrackletType,
    if (!apply_correction) {
       hEmptyEvtCorrection = (TH1F*)hTruthWOSelection->Clone("hEmptyEvtCorrection");
       hEmptyEvtCorrection->Divide(hMeasuredTrigEffCorrected);
-      for (int x=1; x<=nEtaBin; x++)
-         hEmptyEvtCorrection->SetBinError(x, 0);
-
-      hEmptyEvtCorrection->Fit("pol2", "LL", "", -2.4, 2.4);
    } else {
       hEmptyEvtCorrection = (TH1F*)fCorrection->Get("hEmptyEvtCorrection");
    }
@@ -786,13 +786,7 @@ int plotFinalResult(int TrackletType,
    hMeasuredFinal->SetName("hMeasuredFinal");
    hMeasuredFinal->SetMarkerStyle(20);
    if (apply_trigger_corr) {
-      TF1* fEmptyEvt = hEmptyEvtCorrection->GetFunction("pol2");
-      for (int x=1; x<=nEtaBin; x++) {
-         // double emptyCorrection = fEmptyEvt->Eval((EtaBins[x-1]+EtaBins[x])/2);
-         double emptyCorrection = hEmptyEvtCorrection->GetBinContent(x);
-         hMeasuredFinal->SetBinContent(x, hMeasuredFinal->GetBinContent(x) * emptyCorrection);
-         hMeasuredFinal->SetBinError(x, hMeasuredFinal->GetBinError(x) * emptyCorrection);
-      }
+      hMeasuredFinal->Multiply(hEmptyEvtCorrection);
    }
    formatHist(hMeasuredFinal, 2, 1, 1.1);
    hMeasuredFinal->SetStats(0);

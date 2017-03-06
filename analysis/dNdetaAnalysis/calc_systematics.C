@@ -27,7 +27,7 @@ std::string fit_funcs[6] = {
 };
 
 int options[6] = {
-    2, 2, 0, 2, 4, 2
+    2, 2, 0, 2, 2, 4
 };
 
 int calc_systematics(const char* nominal_file, const char* list, const char* label) {

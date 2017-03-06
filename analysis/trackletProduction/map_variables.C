@@ -20,7 +20,8 @@ typedef struct twod_var_t {
 } twod_var_t;
 
 std::vector<twod_var_t> options = {
-   {"eta-phi", {"phi1", "phi2", "phi3"}, {"eta1", "eta2", "eta3"}, 200, 200, -3.5, -3, 3.5, 3, "(1)"}
+   {"eta-phi", {"phi1", "phi2", "phi3"}, {"eta1", "eta2", "eta3"}, 200, 200, -3.5, -3, 3.5, 3, "(1)"},
+   {"cs-eta", {"eta1", "eta2", "eta3"}, {"cs1", "cs2", "cs3"}, 200, 20, -3, 0, 3, 20, "(1)"}
 };
 
 std::string layer_cuts_5tev[3] = {
@@ -36,21 +37,6 @@ std::string layer_cuts_8tev[3] = {
 int map_variables(const char* fname, const char* label, int opt, int energy, int data = 0) {
    TFile* f = new TFile(fname, "r");
    TTree* t = (TTree*)f->Get("ana/PixelTree");
-
-   std::string layer_cuts[3];
-   if (data) {
-      switch (energy) {
-         case 5:
-            std::copy(layer_cuts_5tev, layer_cuts_5tev + 3, layer_cuts);
-            break;
-         case 8:
-            std::copy(layer_cuts_8tev, layer_cuts_8tev + 3, layer_cuts);
-            break;
-         default:
-            printf("check sqrt(snn) energy");
-            return 1;
-      }
-   }
 
    std::string layer_selections[3];
    for (std::size_t i=0; i<3; ++i) {
