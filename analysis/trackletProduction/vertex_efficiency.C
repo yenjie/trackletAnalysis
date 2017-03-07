@@ -8,7 +8,7 @@ int vertex_efficiency(const char* fname, int energy) {
    TFile* f = new TFile(fname);
    TTree* t = (TTree*)f->Get("TrackletTree12");
    TProfile *heff = new TProfile("heff", "", 40, 0, 40);
-   t->Draw("vz[1]>-99:nhit1>>heff", "weight * (vz[0]>-13 && vz[0]<15 && passHLT)", "goff");
+   t->Draw("vz[1]>-99:nhit1>>heff", "weight * (abs(vz[0])<20 && passHLT)", "goff");
 
    heff->SetMarkerStyle(8);
    heff->SetLineColor(4);

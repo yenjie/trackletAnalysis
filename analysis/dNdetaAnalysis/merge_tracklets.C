@@ -84,10 +84,6 @@ int merge_tracklets(const char* label, const char* ref) {
       havg->SetBinError(i, avg_err);
    }
 
-   TGraph* gr = new TGraph();
-   gr->SetFillStyle(1001);
-   gr->SetFillColorAlpha(30, 0.7);
-
    href->Draw("c hist");
    havg->Draw("p same");
 

@@ -8,7 +8,7 @@ int vertex_resolution(const char* fname, int energy) {
    TFile* f = new TFile(fname, "READ");
    TTree* t = (TTree*)f->Get("TrackletTree12");
    TH2D* h2d_vz_nhit1 = new TH2D("h2d_vz_nhit1", "", 40, 0, 40, 100, -2, 2);
-   t->Draw("vz[1]-vz[0]:nhit1>>h2d_vz_nhit1", "weight * (nhit1>0 && vz[1]>-13 && vz[1]<15 && vz[0]>-13 && vz[0]<15 && passHLT)", "goff colz");
+   t->Draw("vz[1]-vz[0]:nhit1>>h2d_vz_nhit1", "weight * (nhit1>0 && abs(vz[1])<20 && abs(vz[0])<20 && passHLT)", "goff colz");
    h2d_vz_nhit1->FitSlicesY();
    TH1D* hres = (TH1D*)gDirectory->Get("h2d_vz_nhit1_2");
 
