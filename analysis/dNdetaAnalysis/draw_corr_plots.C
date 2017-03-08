@@ -11,13 +11,13 @@ int draw_corr_plots(const char* label) {
     for (int i=0; i<3; ++i) {
         TFile* finput = new TFile(Form("correction/correction-%i-%s.root", TrackletType[i], label), "read");
 
-        TH1F* hxi = (TH1F*)((TH1F*)finput->Get("hTriggerCorrection"))->Clone("hxi");
+        TH1F* hxi = (TH1F*)((TH1F*)finput->Get("hTrigEff"))->Clone("hxi");
         TH1F* hsdfrac = (TH1F*)((TH1F*)finput->Get("hSDFrac"))->Clone("hsdfrac");
         TH1F* hempty = (TH1F*)((TH1F*)finput->Get("hEmptyEvtCorrection"))->Clone("hempty");
 
         TCanvas* c1 = new TCanvas(Form("c1_%i", TrackletType[i]), "", 600, 600);
         hxi->SetStats(0);
-        hxi->SetAxisRange(0.9, 1, "Y");
+        hxi->SetAxisRange(0, 1.2, "Y");
         hxi->SetTitle("");
         hxi->Draw();
         draw_legend(hxi, label);
