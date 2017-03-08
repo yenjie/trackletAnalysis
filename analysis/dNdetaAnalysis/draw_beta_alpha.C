@@ -15,7 +15,7 @@ int draw_beta_alpha(const char* label) {
         TH2F* haccep = (TH2F*)finput->Get("hAcceptance1D");
 
         TH3F* hbeta = (TH3F*)((TH3F*)finput->Get("hbeta"))->Clone();
-        TH3F* halpha = (TH3F*)((TH3F*)finput->Get("halpha"))->Clone();
+        TH3F* halpha = (TH3F*)((TH3F*)finput->Get("halpha_applied"))->Clone();
 
         TH2F* hbeta_xz = (TH2F*)hbeta->Project3D("zx");
         TH2F* halpha_xz = (TH2F*)halpha->Project3D("zx");

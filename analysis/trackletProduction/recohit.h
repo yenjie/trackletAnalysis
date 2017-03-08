@@ -194,9 +194,9 @@ void prepareHits(std::vector<RecoHit>& cleaned_hits, Parameters par, Int_t layer
       double z = hits[ihit].r / tan(atan(exp(-hits[ihit].eta)) * 2);
 
       if (smear_pixels) {
-         x += gRandom->Gaus(0, 0.005);
-         y += gRandom->Gaus(0, 0.005);
-         z += gRandom->Gaus(0, 0.005);
+         x += gRandom->Gaus(0, 0.0005);
+         y += gRandom->Gaus(0, 0.0005);
+         z += gRandom->Gaus(0, 0.003);
       }
 
       ROOT::Math::XYZVector rel_vector(x - x0, y - y0, z - vz);

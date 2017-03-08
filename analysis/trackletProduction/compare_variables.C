@@ -112,7 +112,7 @@ int compare_variables(const char* data_file, std::string mc_list, int opt, int e
 
       hdata->DrawNormalized("p");
       for (std::size_t j=0; j<nfiles; ++j)
-         hmc[j]->DrawNormalized("same");
+         hmc[j]->DrawNormalized("hist e same");
       hdata->DrawNormalized("p same");
 
       TLegend* l1 = new TLegend(0.54, 0.56, 0.9, 0.7);

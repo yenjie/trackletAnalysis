@@ -19,15 +19,15 @@ std::string hist_labels[_NTYPES] = {
 };
 
 std::string sys_types[6] = {
-    "split", "drop", "smear", "dphi", "mult1", "mult2"
+    "split", "drop", "smear", "dphi", "mult1", "noise"
 };
 
 std::string fit_funcs[6] = {
-    "pol4", "pol2", "pol2", "pol2", "pol2", "pol4"
+    "pol4", "pol2", "pol4", "pol2", "pol2", "pol6"
 };
 
 int options[6] = {
-    2, 2, 0, 2, 2, 4
+    2, 2, 0, 2, 2, 2
 };
 
 int calc_systematics(const char* nominal_file, const char* list, const char* label) {
@@ -82,6 +82,7 @@ int calc_systematics(const char* nominal_file, const char* list, const char* lab
             c1[i]->cd(j+1);
             sys_vars[i][j]->get_diff_abs()->Draw();
         }
+
         c1[i]->SaveAs(Form("figs/systematics/%s-%s.png", c1[i]->GetName(), label));
     }
 

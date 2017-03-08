@@ -168,6 +168,7 @@ int plotFinalResult(int TrackletType,
    TNtuple* alphas = new TNtuple("alphas", "", "eta:ntl:vz:alpha:alphaErr");
    TH3F* hbeta = new TH3F("hbeta", "", nEtaBin, EtaBins, nTrackletBin, TrackletBins, nVzBin, VzBins);
    TH3F* halpha = new TH3F("halpha", "", nEtaBin, EtaBins, nTrackletBin, TrackletBins, nVzBin, VzBins);
+   TH3F* halpha_applied = new TH3F("halpha_applied", "", nEtaBin, EtaBins, nTrackletBin, TrackletBins, nVzBin, VzBins);
 
    TH3F* hEverything = new TH3F("hEverything", "", nEtaBin, EtaBins, nTrackletBin, TrackletBins, nVzBin, VzBins);
    TH3F* hReproducedBackground = new TH3F("hReproducedBackground", "", nEtaBin, EtaBins, nTrackletBin, TrackletBins, nVzBin, VzBins);
@@ -540,6 +541,9 @@ int plotFinalResult(int TrackletType,
                alpha = 1;
                if (verbose) printf("   |  ! alpha outside bounds: %f\n", alpha);
             }
+
+            halpha_applied->SetBinContent(x, y, z, alpha);
+            halpha_applied->SetBinError(x, y, z, alphaErr);
 
             double nCorrected = val*(1-beta)*alpha;
             double valErr = sqrt(alpha*alpha*(1-beta)*(1-beta)*val + betaErr*betaErr*alpha*alpha*val*val);

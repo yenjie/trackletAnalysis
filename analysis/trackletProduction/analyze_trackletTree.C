@@ -225,39 +225,51 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
       tdata23.vz[0] = par.vz[0];
 
       // Add background hits
-      int bckHits1 = par.nhits1 * add_bkg_l1;
-      int bckHits2 = par.nhits2 * add_bkg_l2;
-      int bckHits3 = par.nhits3 * add_bkg_l3;
+      int bckHits1 = 0;
+      int bckHits2 = 0;
+      int bckHits3 = 0;
+      if (add_bkg_l1)
+         for (int h=0; h<par.nhits1; ++h)
+            if (gRandom->Rndm() < add_bkg_l1)
+               ++bckHits1;
+      if (add_bkg_l2)
+         for (int h=0; h<par.nhits2; ++h)
+            if (gRandom->Rndm() < add_bkg_l2)
+               ++bckHits2;
+      if (add_bkg_l3)
+         for (int h=0; h<par.nhits3; ++h)
+            if (gRandom->Rndm() < add_bkg_l3)
+               ++bckHits3;
 
-      if (add_bkg_l1!=0) {
-         for (int i=par.nhits1; i<par.nhits1+bckHits1; i++) {
+      if (bckHits1!=0) {
+         for (int j=par.nhits1; j<par.nhits1+bckHits1; j++) {
             double eta, phi, r;
             hLayer1Hit->GetRandom3(r, eta, phi);
-            par.eta1[i] = eta;
-            par.phi1[i] = phi;
-            par.r1[i] = r;
+            par.eta1[j] = eta;
+            par.phi1[j] = phi;
+            par.r1[j] = r;
          }
          par.nhits1 += bckHits1;
       }
 
-      if (add_bkg_l2!=0) {
-         for (int i=par.nhits2; i<par.nhits2+bckHits2; i++) {
+      if (bckHits2!=0) {
+         for (int j=par.nhits2; j<par.nhits2+bckHits2; j++) {
             double eta, phi, r;
             hLayer2Hit->GetRandom3(r, eta, phi);
-            par.eta2[i] = eta;
-            par.phi2[i] = phi;
-            par.r2[i] = r;
+            par.eta2[j] = eta;
+            par.phi2[j] = phi;
+            par.r2[j] = r;
          }
          par.nhits2 += bckHits2;
       }
 
-      if (add_bkg_l3!=0) {
-         for (int i=par.nhits3; i<par.nhits3+bckHits3; i++) {
+      if (bckHits3!=0) {
+         for (int j=par.nhits3; j<par.nhits3+bckHits3; j++) {
             double eta, phi, r;
             hLayer3Hit->GetRandom3(r, eta, phi);
-            par.eta3[i] = eta;
-            par.phi3[i] = phi;
-            par.r3[i] = r;
+            par.eta3[j] = eta;
+            par.phi3[j] = phi;
+            par.r3[j] = r;
          }
          par.nhits3 += bckHits3;
       }
