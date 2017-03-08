@@ -881,6 +881,7 @@ TH2F* get_acceptance(int TrackletType, int energy) {
             haccep_12->SetBinContent(215,6);
             haccep_12->SetBinContent(216,6);
             haccep_12->SetBinContent(217,6);
+            haccep_12->SetBinContent(218,6);
             haccep_12->SetBinContent(230,7);
             haccep_12->SetBinContent(231,7);
             haccep_12->SetBinContent(232,7);
