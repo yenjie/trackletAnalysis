@@ -111,6 +111,8 @@ int plotFinalResult(int TrackletType,
    }
 
    // Definition of Vz, Eta, Hit bins
+   // const int nTrackletBin = 14;
+   // double TrackletBins[nTrackletBin+1] = {-20, 10, 16, 24, 32, 40, 48, 56, 64, 72, 80, 90, 100, 120, 252};
    const int nTrackletBin = 20;
    double TrackletBins[nTrackletBin+1] = {-10, 8, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 66, 72, 80, 90, 100, 110, 130, 150, 300};
 
@@ -151,7 +153,7 @@ int plotFinalResult(int TrackletType,
          break;
       case 1:
          // HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1
-         offline_selection = "(HLT_HF_OR && nHFp>0 && nHFn>0)";
+         offline_selection = "passHLT";
          gen_selection = "(evtType!=102&&evtType!=103&&evtType!=104)";
          printf("$ NSD definition\n");
          break;
@@ -409,10 +411,10 @@ int plotFinalResult(int TrackletType,
             if (i < 7 || i > 22) alphaPlots[i][j]->SetAxisRange(2.5, 12.5, "y");
             formatHist(alphaPlots[i][j], 2, 1);
 
-            funAlpha[i][j] = new TF1(Form("funAlpha%dVz%d", i, j), "[1]/(x+[3]+0.5)+[2]/(x+0.5)/(x+0.5)+[0]", 0, 150);
-            funAlphaErr[i][j] = new TF1(Form("funAlphaErr%dVz%d", i, j), "[0]+[1]/(x+0.5)+[2]*exp([3]*x)", 0, 150);
-            alphaPlots[i][j]->Fit(Form("funAlpha%dVz%d", i, j), "M E Q", "", 0, 150);
-            alphaErrPlots[i][j]->Fit(Form("funAlphaErr%dVz%d", i, j), "M E Q", "", 0, 150);
+            funAlpha[i][j] = new TF1(Form("funAlpha%dVz%d", i, j), "[1]/(x+[3])+[2]/(x+1)/(x+1)+[0]", 8, 150);
+            funAlphaErr[i][j] = new TF1(Form("funAlphaErr%dVz%d", i, j), "[0]+[1]/x+[2]*exp([3]*x)", 8, 150);
+            alphaPlots[i][j]->Fit(Form("funAlpha%dVz%d", i, j), "M E Q", "", 8, 150);
+            alphaErrPlots[i][j]->Fit(Form("funAlphaErr%dVz%d", i, j), "M E Q", "", 8, 150);
 
             fAlpha[i][j] = alphaPlots[i][j]->GetFunction(Form("funAlpha%dVz%d", i, j));
             fAlphaErr[i][j] = alphaErrPlots[i][j]->GetFunction(Form("funAlphaErr%dVz%d", i, j));
@@ -500,7 +502,7 @@ int plotFinalResult(int TrackletType,
             if (verbose) printf("   | application - eta: %i, ntl: %i, vz: %i, val: %f, beta: %f, nsig: %f, alpha: %f, alphaErr: %f\n", x, y, z, val, beta, val*(1-beta), alpha, alphaErr);
             // Use extrapolated value if alpha is not available
             if (alpha == 0 && fAlpha[x-1][z-1] != 0) {
-               alpha = fAlpha[x-1][z-1]->Eval(TrackletBins[y]);
+               alpha = fAlpha[x-1][z-1]->Eval((TrackletBins[y]+TrackletBins[y-1])/2);
                if (verbose) printf("   |  ! extrapolated alpha: %f\n", alpha);
             }
             if (alpha == 0) {
@@ -842,11 +844,18 @@ int plotFinalResult(int TrackletType,
    cDNdEtaCompare->Draw();
    cDNdEtaCompare->SaveAs(Form("figs/compare/compare-%s-%i.png", title, TrackletType));
 
-   for (int i=0; i<nEtaBin; i++) {
-      for (int j=0; j<nVzBin; j++) {
-         if (fAlpha[i][j]) fAlpha[i][j]->Write();
-         if (fAlphaErr[i][j]) fAlphaErr[i][j]->Write();
+   if (isMC) {
+      TCanvas* c_fits = new TCanvas("c_fits", "", 12000, 6000);
+      c_fits->Divide(nEtaBin, nVzBin, 0, 0);
+      for (int i=0; i<nEtaBin; i++) {
+         for (int j=0; j<nVzBin; j++) {
+            c_fits->cd(j*nEtaBin+i+1);
+            if (alphaPlots[i][j]) alphaPlots[i][j]->Draw();
+            if (fAlpha[i][j]) fAlpha[i][j]->Write();
+            if (fAlphaErr[i][j]) fAlphaErr[i][j]->Write();
+         }
       }
+      c_fits->SaveAs(Form("figs/alpha-fits/alpha-fits-%s-%i.png", title, TrackletType));
    }
 
    outf->Write("", TObject::kOverwrite);
