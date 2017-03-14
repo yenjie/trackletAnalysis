@@ -153,7 +153,7 @@ std::vector<Tracklet> recoTracklets(std::vector<RecoHit> allhits, int l1, int l2
 class TrackletData {
    public:
       int nRun, nEv, nLumi, nBX, nHFn, nHFp, nHits;
-      int passHLT;
+      int HLT_HF_OR, HLT_HF_AND;
       float eta1[_MAX_ENTRY], phi1[_MAX_ENTRY], r1[_MAX_ENTRY], cs1[_MAX_ENTRY], ch1[_MAX_ENTRY];
       float eta2[_MAX_ENTRY], phi2[_MAX_ENTRY], r2[_MAX_ENTRY], cs2[_MAX_ENTRY], ch2[_MAX_ENTRY];
       float deta[_MAX_ENTRY], dphi[_MAX_ENTRY];
@@ -174,7 +174,8 @@ void setTrackletTreeBranch(TTree* trackletTree, TrackletData& tdata) {
    trackletTree->Branch("nHFp", &tdata.nHFp, "nHFp/I");
    trackletTree->Branch("nHits", &tdata.nHits, "nHits/I");
 
-   trackletTree->Branch("passHLT", &tdata.passHLT, "passHLT/I");
+   trackletTree->Branch("HLT_HF_OR", &tdata.HLT_HF_OR, "HLT_HF_OR/I");
+   trackletTree->Branch("HLT_HF_AND", &tdata.HLT_HF_AND, "HLT_HF_AND/I");
 
    trackletTree->Branch("nTracklets", &tdata.nTracklet, "nTracklets/I");
    trackletTree->Branch("nhit1", &tdata.nhit1, "nhit1/I");
