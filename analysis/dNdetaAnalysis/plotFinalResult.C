@@ -151,7 +151,7 @@ int plotFinalResult(int TrackletType,
          break;
       case 1:
          // HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1
-         offline_selection = "(HLT_HF_OR && nHFp>0 && nHFn>0)";
+         offline_selection = "(passHLT)";
          gen_selection = "(evtType!=102&&evtType!=103&&evtType!=104)";
          printf("$ NSD definition\n");
          break;

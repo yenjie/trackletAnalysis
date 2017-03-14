@@ -128,13 +128,10 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    Parameters par;
    getPixelTreeBranch(t, par);
 
-   int HLT_HF_AND = 0;
-   int HLT_HF_OR = 0;
+   int HLT_MB_path = 0;
    hltTree->SetBranchStatus("*", 0);
    hltTree->SetBranchStatus("HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1", 1);
-   hltTree->SetBranchAddress("HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1", &HLT_HF_AND);
-   hltTree->SetBranchStatus("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_v1", 1);
-   hltTree->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_v1", &HLT_HF_OR);
+   hltTree->SetBranchAddress("HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1", &HLT_MB_path);
 
    TH1F* hmult_weights = 0;
    if (reweight_mult) {
@@ -198,7 +195,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
          continue;
 
       hltTree->GetEntry(i);
-      if (!HLT_HF_OR && !isMC)
+      if (!HLT_MB_path && !isMC)
          continue;
 
       // Fill reco vertex information
@@ -662,8 +659,7 @@ int analyze_trackletTree(const char* infile = "PixelTree.root", // Input PixelTr
    tdata##q##w.nHFn       = par.nHFp;                          \
    tdata##q##w.nHFp       = par.nHFn;                          \
    tdata##q##w.nHits      = tdata12.nHits;                     \
-   tdata##q##w.HLT_HF_OR  = HLT_HF_OR;                         \
-   tdata##q##w.HLT_HF_AND = HLT_HF_AND;                        \
+   tdata##q##w.passHLT    = HLT_MB_path;                       \
    tdata##q##w.clusVtxQual1 = clusVtxQual1;                    \
    tdata##q##w.clusVtxQual2 = clusVtxQual2;                    \
    tdata##q##w.clusVtxQual3 = clusVtxQual3;                    \
