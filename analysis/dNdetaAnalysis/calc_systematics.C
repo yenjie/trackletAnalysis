@@ -18,16 +18,16 @@ std::string hist_labels[_NTYPES] = {
     "h12", "h13", "h23", "havg"
 };
 
-std::string sys_types[6] = {
-    "split", "drop", "smear", "dphi", "mult1", "noise"
+std::string sys_types[7] = {
+    "split", "drop", "smear", "dphi", "mult1", "mult2", "noise"
 };
 
-std::string fit_funcs[6] = {
-    "pol4", "pol2", "pol4", "pol2", "pol2", "pol6"
+std::string fit_funcs[7] = {
+    "pol4", "pol2", "pol4", "pol2", "pol2", "pol4", "pol6"
 };
 
-int options[6] = {
-    2, 2, 0, 2, 2, 2
+int options[7] = {
+    2, 2, 0, 2, 4, 2, 2
 };
 
 int calc_systematics(const char* nominal_file, const char* list, const char* label) {
@@ -77,13 +77,13 @@ int calc_systematics(const char* nominal_file, const char* list, const char* lab
     for (int i=0; i<_NTYPES; ++i) {
         c1[i] = new TCanvas(Form("sys_%s", hist_labels[i].c_str()), "", 900, 600);
 
-        c1[i]->Divide(3, 2);
+        c1[i]->Divide(3, 3);
         for (std::size_t j=0; j<nfiles; ++j) {
             c1[i]->cd(j+1);
             sys_vars[i][j]->get_diff_abs()->Draw();
         }
 
-        c1[i]->SaveAs(Form("figs/systematics/%s-%s.png", c1[i]->GetName(), label));
+        c1[i]->SaveAs(Form("figs/systematics/sys_%s-%s.png", hist_labels[i].c_str(), label));
     }
 
     fout->Close();
