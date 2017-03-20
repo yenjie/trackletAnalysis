@@ -10,4 +10,4 @@ g++ calc_systematics.C -o calc_systematics -O2 -Wall `root-config --cflags --lib
 ./calc_systematics rootfiles/merged-285090-latest.root 5tev.list 5tev
 ./calc_systematics rootfiles/merged-285832-latest.root 8tev.list 8tev
 
-./make_final_plots results.list rootfiles/results.root
+./make_final_plots results.list rootfiles/results.root gen.list

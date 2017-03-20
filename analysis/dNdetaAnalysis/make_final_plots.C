@@ -18,10 +18,11 @@
 #include "error_bands.h"
 
 void set_style(TH1F* h1, int style, float size, int colour);
+void set_mc_style(TH1F* h1, int colour);
 void draw_legend(int nhists, ...);
 void draw_cms_prelim();
 
-int make_final_plots(const char* list, const char* output_file) {
+int make_final_plots(const char* list, const char* output_file, const char* gen_list) {
     TH1::AddDirectory(kFALSE);
 
     std::vector<std::string> file_list;
@@ -33,6 +34,25 @@ int make_final_plots(const char* list, const char* output_file) {
 
     std::size_t nfiles = file_list.size();
     if (nfiles != 4) {return 1;}
+
+    std::vector<std::string> gen_file_list;
+    std::ifstream gen_file_stream(gen_list);
+    if (!gen_file_stream) return 1;
+    std::string gen_line;
+    while (std::getline(gen_file_stream, gen_line))
+        gen_file_list.push_back(gen_line);
+
+    TFile* f5tev_gen = new TFile(gen_file_list[0].c_str(), "read");
+    TH1F* hgen_5tev = (TH1F*)f5tev_gen->Get("hTruthWOSelection")->Clone("hgen_5tev");
+    f5tev_gen->Close();
+
+    TFile* f8tev_gen = new TFile(gen_file_list[1].c_str(), "read");
+    TH1F* hgen_8tev = (TH1F*)f8tev_gen->Get("hTruthWOSelection")->Clone("hgen_8tev");
+    f8tev_gen->Close();
+
+    TFile* f8tev_hijing = new TFile(gen_file_list[2].c_str(), "read");
+    TH1F* hhj_8tev = (TH1F*)f8tev_hijing->Get("hTruthWOSelection")->Clone("hhj_8tev");
+    f8tev_hijing->Close();
 
     TFile* f5tev = new TFile(file_list[0].c_str(), "read");
     TH1F* havg_5tev = (TH1F*)f5tev->Get("havg")->Clone("havg_5tev");
@@ -50,6 +70,10 @@ int make_final_plots(const char* list, const char* output_file) {
     TH1F* hsys_8tev = (TH1F*)f8tev_sys->Get("havg_systematics")->Clone("hsys_8tev");
     f8tev_sys->Close();
 
+    set_mc_style(hgen_5tev, 46);
+    set_mc_style(hgen_8tev, 46);
+    set_mc_style(hhj_8tev, 40);
+
     set_style(havg_5tev, 21, 0.72, 38);
     set_style(havg_8tev, 21, 0.72, 42);
 
@@ -64,20 +88,23 @@ int make_final_plots(const char* list, const char* output_file) {
     TCanvas* c1 = new TCanvas("c1", "", 500, 500);
     gPad->SetTicky();
     havg_5tev->Draw();
+    hgen_5tev->Draw("same hist c");
     gr->SetFillColorAlpha(38, 0.7);
     draw_sys_unc(gr, havg_5tev, hsys_5tev);
     havg_5tev->Draw("p same");
-    draw_legend(1, havg_5tev);
+    draw_legend(2, havg_5tev, hgen_5tev);
     draw_cms_prelim();
     c1->SaveAs("figs/final/CMS-5TeV.png");
 
     TCanvas* c2 = new TCanvas("c2", "", 500, 500);
     gPad->SetTicky();
     havg_8tev->Draw();
+    hgen_8tev->Draw("same hist c");
+    hhj_8tev->Draw("same hist c");
     gr->SetFillColorAlpha(42, 0.7);
     draw_sys_unc(gr, havg_8tev, hsys_8tev);
     havg_8tev->Draw("p same");
-    draw_legend(1, havg_8tev);
+    draw_legend(3, havg_8tev, hgen_8tev, hhj_8tev);
     draw_cms_prelim();
     c2->SaveAs("figs/final/CMS-8TeV.png");
 
@@ -97,13 +124,14 @@ int make_final_plots(const char* list, const char* output_file) {
     TCanvas* c4 = new TCanvas("c4", "", 500, 500);
     gPad->SetTicky();
     havg_5tev->Draw();
+    hgen_5tev->Draw("same hist c");
     gr->SetFillColorAlpha(30, 0.7);
     draw_sys_unc(gr, halice, halice_sys);
     halice->Draw("p same");
     gr->SetFillColorAlpha(38, 0.7);
     draw_sys_unc(gr, havg_5tev, hsys_5tev);
     havg_5tev->Draw("p same");
-    draw_legend(2, havg_5tev, halice);
+    draw_legend(3, havg_5tev, halice, hgen_5tev);
     draw_cms_prelim();
     c4->SaveAs("figs/final/CMS-5TeV-ALICE.png");
 
@@ -156,19 +184,25 @@ void set_style(TH1F* h1, int style, float size, int colour) {
     h1->SetFillColor(colour);
 }
 
-std::string get_label(std::string name) {
-    std::string labels[3] = {
-        "ALICE 5.02 TeV pPb 2013",
-        "CMS 5.02 TeV pPb",
-        "CMS 8.16 TeV pPb"
-    };
+void set_mc_style(TH1F* h1, int colour) {
+    h1->SetLineColor(colour);
+    h1->SetLineWidth(2);
+    h1->SetMarkerSize(0);
+}
 
+std::string get_label(std::string name) {
     if (name == "halice")
-        return labels[0];
+        return "ALICE 5.02 TeV pPb 2013";
     else if (name == "havg_5tev")
-        return labels[1];
+        return "CMS 5.02 TeV pPb";
     else if (name == "havg_8tev")
-        return labels[2];
+        return "CMS 8.16 TeV pPb";
+    else if (name == "hgen_5tev")
+        return "EPOS LHC 5.02 TeV";
+    else if (name == "hgen_8tev")
+        return "EPOS LHC 8.16 TeV";
+    else if (name == "hhj_8tev")
+        return "HIJING 8.16 TeV";
     else
         return {};
 }
@@ -184,7 +218,10 @@ void draw_legend(int nhists, ...) {
     l1->SetTextSize(16);
     for (int i=0; i<nhists; ++i) {
         TH1F* h1 = va_arg(hist_list, TH1F*);
-        l1->AddEntry(h1, get_label(h1->GetName()).c_str(), "pf");
+        if (strstr(h1->GetName(), "ha") != NULL)
+            l1->AddEntry(h1, get_label(h1->GetName()).c_str(), "pf");
+        else
+            l1->AddEntry(h1, get_label(h1->GetName()).c_str(), "l");
     }
     l1->Draw();
 
@@ -204,8 +241,8 @@ void draw_cms_prelim() {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc == 3)
-        return make_final_plots(argv[1], argv[2]);
+    if (argc == 4)
+        return make_final_plots(argv[1], argv[2], argv[3]);
     else
         return 1;
 }
