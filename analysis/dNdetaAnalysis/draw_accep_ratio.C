@@ -16,6 +16,7 @@ int draw_accep_ratio(int energy) {
         TCanvas* c1 = new TCanvas(Form("c1_%i", TrackletType[i]), "", 600, 600);
         hratio->SetStats(0);
         hratio->SetAxisRange(0, 2, "Z");
+        hratio->SetTitle(";#eta;v_{z}");
         hratio->Draw("colz");
         c1->SaveAs(Form("figs/corrs/accep-ratio-%i-%itev.png", TrackletType[i], energy));
 

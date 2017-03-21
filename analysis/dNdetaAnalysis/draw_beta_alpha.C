@@ -30,26 +30,26 @@ int draw_beta_alpha(const char* label) {
         halpha_y->Scale(1./get_scale_factor(haccep));
 
         TCanvas* c1 = new TCanvas(Form("c1_%i", TrackletType[i]), "", 600, 600);
-        hbeta_xz->SetTitle("beta");
+        hbeta_xz->SetTitle("beta;#eta;v_{z}");
         hbeta_xz->SetStats(0);
         hbeta_xz->Draw("colz");
         c1->SaveAs(Form("figs/beta-alpha/beta-%i-%s.png", TrackletType[i], label));
 
         TCanvas* c2 = new TCanvas(Form("c2_%i", TrackletType[i]), "", 600, 600);
-        halpha_xz->SetTitle("alpha");
+        halpha_xz->SetTitle("alpha;#eta;v_{z}");
         halpha_xz->SetStats(0);
         halpha_xz->Draw("colz");
         c2->SaveAs(Form("figs/beta-alpha/alpha-%i-%s.png", TrackletType[i], label));
 
         TCanvas* c3 = new TCanvas(Form("c3_%i", TrackletType[i]), "", 600, 600);
-        hbeta_y->SetTitle("beta");
+        hbeta_y->SetTitle("beta;multiplicity;#beta");
         hbeta_y->SetAxisRange(0, 0.4, "Y");
         hbeta_y->SetStats(0);
         hbeta_y->Draw();
         c3->SaveAs(Form("figs/beta-alpha/beta-mult-%i-%s.png", TrackletType[i], label));
 
         TCanvas* c4 = new TCanvas(Form("c4_%i", TrackletType[i]), "", 600, 600);
-        halpha_y->SetTitle("alpha");
+        halpha_y->SetTitle("alpha;multiplicity;#alpha");
         halpha_y->SetAxisRange(0.5, 2, "Y");
         halpha_y->SetStats(0);
         halpha_y->Draw();

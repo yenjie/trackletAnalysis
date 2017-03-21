@@ -18,7 +18,7 @@ int draw_corr_plots(const char* label) {
         TCanvas* c1 = new TCanvas(Form("c1_%i", TrackletType[i]), "", 600, 600);
         hxi->SetStats(0);
         hxi->SetAxisRange(0, 1.2, "Y");
-        hxi->SetTitle("");
+        hxi->SetTitle("xi;multiplicity;#xi");
         hxi->Draw();
         draw_legend(hxi, label);
         c1->SaveAs(Form("figs/corrs/xi-%s-%i.png", label, TrackletType[i]));
@@ -26,6 +26,7 @@ int draw_corr_plots(const char* label) {
         TCanvas* c2 = new TCanvas(Form("c2_%i", TrackletType[i]), "", 600, 600);
         hsdfrac->SetStats(0);
         hsdfrac->SetAxisRange(-0.01, 0.25, "Y");
+        hsdfrac->SetTitle("SD fraction;multiplicity;SD_{frac}");
         hsdfrac->Draw();
         draw_legend(hsdfrac, label);
         c2->SaveAs(Form("figs/corrs/sdfrac-%s-%i.png", label, TrackletType[i]));
@@ -33,6 +34,7 @@ int draw_corr_plots(const char* label) {
         TCanvas* c3 = new TCanvas(Form("c3_%i", TrackletType[i]), "", 600, 600);
         hempty->SetStats(0);
         hempty->SetAxisRange(0.8, 1.2, "Y");
+        hempty->SetTitle(";#eta;Empty Event correction");
         hempty->Draw();
         draw_legend(hempty, label);
         c3->SaveAs(Form("figs/corrs/empty-event-%s-%i.png", label, TrackletType[i]));
