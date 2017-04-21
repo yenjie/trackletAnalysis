@@ -4,6 +4,7 @@
 #include <TH1D.h>
 #include <TCanvas.h>
 #include <TLegend.h>
+#include <TLatex.h>
 
 #include <vector>
 #include <string>
@@ -35,6 +36,8 @@ std::string data_legend;
 std::string legends[2] = {"EPOS LHC ", "HIJING "};
 
 int TrackletType[3] = {12, 13, 23};
+
+void draw_latex();
 
 int compare_variables(const char* data_file, std::string mc_list, int opt, int energy) {
    switch (energy) {
@@ -108,14 +111,16 @@ int compare_variables(const char* data_file, std::string mc_list, int opt, int e
          min_y /= 2;
       }
 
-      hdata->SetAxisRange(min_y, max_y * 1.2 , "Y");
+      hdata->SetAxisRange(min_y, max_y * 1.5 , "Y");
 
       hdata->DrawNormalized("p");
       for (std::size_t j=0; j<nfiles; ++j)
-         hmc[j]->DrawNormalized("hist e same");
+         hmc[j]->DrawNormalized("hist same");
       hdata->DrawNormalized("p same");
 
-      TLegend* l1 = new TLegend(0.54, 0.56, 0.9, 0.7);
+      draw_latex();
+
+      TLegend* l1 = new TLegend(0.5, 0.7, 0.9, 0.84);
       l1->SetBorderSize(0);
       for (std::size_t j=0; j<nfiles; ++j)
          l1->AddEntry(hmc[j], legends[j].c_str());
@@ -126,6 +131,23 @@ int compare_variables(const char* data_file, std::string mc_list, int opt, int e
    }
 
    return 0;
+}
+
+void draw_latex() {
+    TLatex* latexCMS = new TLatex();
+    latexCMS->SetTextFont(63);
+    latexCMS->SetTextSize(25);
+    latexCMS->DrawLatexNDC(0.16, 0.84, "CMS");
+
+    TLatex* latexPrelim = new TLatex();
+    latexPrelim->SetTextFont(53);
+    latexPrelim->SetTextSize(20);
+    latexPrelim->DrawLatexNDC(0.16, 0.79, "Preliminary");
+
+    TLatex* latexSystem = new TLatex();
+    latexSystem->SetTextFont(43);
+    latexSystem->SetTextSize(20);
+    latexSystem->DrawLatexNDC(0.12, 0.92, "pPb #sqrt{s_{NN}} = 8.16 TeV");
 }
 
 int main(int argc, char* argv[]) {
