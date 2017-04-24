@@ -307,7 +307,7 @@ int pAdNdetaVsCMSE() {
     leg_pp_INEL->SetTextSize(15);
     leg_pp_INEL->SetFillColor(0);
     leg_pp_INEL->SetFillStyle(0);
-    leg_pp_INEL->SetHeader("pp (p#bar{p}) INEL");
+    leg_pp_INEL->SetHeader("pp (p#bar{p}) Inel.");
     leg_pp_INEL->AddEntry(Graph_pp_INEL_CMS, "CMS", "P");
     leg_pp_INEL->AddEntry(Graph_pp_INEL_ALICE, "ALICE", "P");
     leg_pp_INEL->AddEntry(Graph_pp_INEL_UA5, "UA5", "P");
@@ -557,36 +557,6 @@ int pAdNdetaVsCMSE() {
     leg_pA->AddEntry(Graph_dAu_PHOBOS, "dAu PHOBOS", "P");
     leg_pA->Draw();
 
-    // E178 p+Pb
-    // PHYSICAL REVIEW D Volume 22, Number 1 (1980), 13-35
-    // J. E. Elias et al.
-    // p momentum | y shift | <N_part> |
-    // 50 GeV/c   | 2.312   | 4.743    |
-    // 100 GeV/c  | 2.658   | 4.784    |
-    // 200 GeV/c  | 2.998   | 4.832    |
-    Double_t gen_corr = 0.807607;
-    Double_t gen_relerr = 1.1;
-    Double_t v_pA_E178[3] = {0};
-    Double_t e_pA_E178[3] = {0};
-    v_pA_E178[0] = 2 * gen_corr * (0.89 + 1.36) / (2.76 - 1.99);
-    e_pA_E178[0] = 2 * gen_corr * gen_relerr * TMath::Sqrt(0.12 * 0.12 + 0.16 * 0.16) / 2;
-    v_pA_E178[1] = 2 * gen_corr * (1.05 + 1.76 + 1.00) / (3.08 - 1.99);
-    e_pA_E178[1] = 2 * gen_corr * gen_relerr * TMath::Sqrt(0.10 * 0.10 + 0.12 * 0.12 + 0.09 * 0.09) / 3;
-    v_pA_E178[2] = 2 * gen_corr * (1.25 + 1.09) / (3.38 - 2.76);
-    e_pA_E178[2] = 2 * gen_corr * gen_relerr * TMath::Sqrt(0.09 * 0.09 + 0.08 * 0.08) / 2;
-    TGraphErrors* Graph_pA_E178 = new TGraphErrors(3);
-    Graph_pA_E178->SetName("Graph_pA_E178");
-    Graph_pA_E178->SetMarkerStyle(23);
-    Graph_pA_E178->SetMarkerSize(1.0);
-    Graph_pA_E178->SetMarkerColor(_PA_INEL_COLOUR);
-    Graph_pA_E178->SetPoint(0, 9.69, v_pA_E178[0] / 5.421);
-    Graph_pA_E178->SetPointError(0, 0.0, e_pA_E178[0] / 5.421);
-    Graph_pA_E178->SetPoint(1, 13.7, v_pA_E178[1] / 5.437);
-    Graph_pA_E178->SetPointError(1, 0.0, e_pA_E178[1] / 5.437);
-    Graph_pA_E178->SetPoint(2, 19.4, v_pA_E178[2] / 5.434);
-    Graph_pA_E178->SetPointError(2, 0.0, e_pA_E178[2] / 5.434);
-    Graph_pA_E178->Draw("E1P");
-
     // NA35 p+Au
     // THE EUROPEAN PHYSICAL JOURNAL C Volume 2, Number 4 (1998), 643-659, DOI: 10.1007/s100529800867
     // http://www.springerlink.com/content/nxjfa4v8gg6yhpdx/
@@ -614,13 +584,44 @@ int pAdNdetaVsCMSE() {
     Graph_pA_NA35->SetPointError(0, 0.0, e_pA_NA35);
     Graph_pA_NA35->Draw("E1P");
 
+    // E178 p+Pb
+    // PHYSICAL REVIEW D Volume 22, Number 1 (1980), 13-35
+    // J. E. Elias et al.
+    // p momentum | y shift | <N_part> |
+    // 50 GeV/c   | 2.312   | 4.743    |
+    // 100 GeV/c  | 2.658   | 4.784    |
+    // 200 GeV/c  | 2.998   | 4.832    |
+    Double_t gen_corr = 0.95;
+    Double_t gen_relerr = 1.1;
+    Double_t nu = 4;
+    Double_t v_pA_E178[3] = {0};
+    Double_t e_pA_E178[3] = {0};
+    v_pA_E178[0] = 2 * gen_corr * ((0.16 + 0.22 * nu) / (2.25 - 1.99) + (0.26 + 0.60 * nu - 0.08 * nu * nu) / (2.76 - 2.25)) / 2 / (nu + 1);
+    e_pA_E178[0] = 2 * gen_corr * gen_relerr * TMath::Sqrt(0.12 * 0.12 + 0.16 * 0.16) / 2;
+    v_pA_E178[1] = 2 * gen_corr * ((0.41 + 0.49 * nu - 0.02 * nu * nu) / (2.76 - 2.25) + (0.32 + 0.30 * nu - 0.03 * nu * nu) / (3.08 - 2.76)) / 2 / (nu + 1);
+    e_pA_E178[1] = 2 * gen_corr * gen_relerr * TMath::Sqrt(0.10 * 0.10 + 0.12 * 0.12 + 0.09 * 0.09) / 3;
+    v_pA_E178[2] = 2 * gen_corr * ((0.18 + 0.43 * nu - 0.04 * nu * nu) / (3.08 - 2.76) + (0.08 + 0.51 * nu - 0.07 * nu * nu) / (3.38 - 3.08)) / 2 / (nu + 1);
+    e_pA_E178[2] = 2 * gen_corr * gen_relerr * TMath::Sqrt(0.09 * 0.09 + 0.08 * 0.08) / 2;
+    TGraphErrors* Graph_pA_E178 = new TGraphErrors(3);
+    Graph_pA_E178->SetName("Graph_pA_E178");
+    Graph_pA_E178->SetMarkerStyle(23);
+    Graph_pA_E178->SetMarkerSize(1.0);
+    Graph_pA_E178->SetMarkerColor(_PA_INEL_COLOUR);
+    Graph_pA_E178->SetPoint(0, 9.69, v_pA_E178[0]);
+    Graph_pA_E178->SetPointError(0, 0.0, e_pA_E178[0] / (nu + 1));
+    Graph_pA_E178->SetPoint(1, 13.7, v_pA_E178[1]);
+    Graph_pA_E178->SetPointError(1, 0.0, e_pA_E178[1] / (nu + 1));
+    Graph_pA_E178->SetPoint(2, 19.4, v_pA_E178[2]);
+    Graph_pA_E178->SetPointError(2, 0.0, e_pA_E178[2] / (nu + 1));
+    Graph_pA_E178->Draw("E1P");
+
     TLegend* leg_pA_INEL = new TLegend(0.49, 0.64, 0.64, 0.76, NULL, "brNDC");
     leg_pA_INEL->SetBorderSize(0);
     leg_pA_INEL->SetTextFont(43);
     leg_pA_INEL->SetTextSize(15);
     leg_pA_INEL->SetFillColor(0);
-    leg_pA_INEL->SetHeader("pA Inclusive");
-    leg_pA_INEL->AddEntry(Graph_pA_E178, "pPb E178", "P");
+    leg_pA_INEL->SetHeader("pA Inel.");
+    leg_pA_INEL->AddEntry(Graph_pA_E178, "pA E178", "P");
     leg_pA_INEL->AddEntry(Graph_pA_NA35, "pAu NA35", "P");
     leg_pA_INEL->Draw();
 
