@@ -154,14 +154,14 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     havg_8tev->Draw("p e x0");
     hgen_8tev->Draw("same hist c");
     hhj_8tev->Draw("same hist c");
-    hdpmjet_8tev->Draw("same hist c");
+    hdpmjet_8tev_nsd->Draw("same hist c");
     gHIJING->Draw("same l z");
     gHIJING_nosh->Draw("same l z");
     gCGC->Draw("same l z");
     gr->SetFillColorAlpha(42, 0.7);
     draw_sys_unc(gr, havg_8tev, hsys_8tev);
     havg_8tev->Draw("same p e x0");
-    draw_legend(4, havg_8tev, hgen_8tev, hhj_8tev, hdpmjet_8tev);
+    draw_legend(4, havg_8tev, hgen_8tev, hhj_8tev, hdpmjet_8tev_nsd);
     draw_predictions_legend(3, gHIJING, gHIJING_nosh, gCGC);
     draw_cms_prelim();
     c2->SaveAs("figs/final/CMS-8TeV-predictions.pdf");
@@ -190,13 +190,14 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     havg_5tev->Draw("p e x0");
     hgen_5tev->Draw("same hist c");
     hdpmjet_5tev->Draw("same hist c");
+    hdpmjet_5tev_nsd->Draw("same hist c");
     gr->SetFillColorAlpha(30, 0.7);
     draw_sys_unc(gr, halice, halice_sys);
     halice->Draw("same p e x0");
     gr->SetFillColorAlpha(38, 0.7);
     draw_sys_unc(gr, havg_5tev, hsys_5tev);
     havg_5tev->Draw("same p e x0");
-    draw_legend(4, havg_5tev, halice, hgen_5tev, hdpmjet_5tev);
+    draw_legend(5, havg_5tev, halice, hgen_5tev, hdpmjet_5tev, hdpmjet_5tev_nsd);
     draw_cms_prelim();
     c4->SaveAs("figs/final/CMS-5TeV-ALICE.pdf");
 
@@ -272,8 +273,12 @@ std::string get_label(std::string name) {
         return "HIJING 1.3 8.16 TeV";
     else if (name == "hdpmjet_5tev")
         return "DPMJET 3.0-5 5.02 TeV";
+    else if (name == "hdpmjet_5tev_nsd")
+        return "DPMJET 3.0-5 NSD 5.02 TeV";
     else if (name == "hdpmjet_8tev")
         return "DPMJET 3.0-5 8.16 TeV";
+    else if (name == "hdpmjet_8tev_nsd")
+        return "DPMJET 3.0-5 NSD 8.16 TeV";
     else if (name == "gHIJING")
         return "HIJING 2.1 8.16 TeV";
     else if (name == "gHIJING_nosh")
