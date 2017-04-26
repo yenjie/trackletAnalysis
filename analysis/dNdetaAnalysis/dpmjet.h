@@ -70,6 +70,7 @@ TH1F* get_dpmjet_8tev_nsd() {
    hdpmjet_8tev_nsd->SetEntries(1.396e+07);
 
    return hdpmjet_8tev_nsd;
+}
 
 TH1F* get_dpmjet_5tev() {
    TH1F *hdpmjet_5tev = new TH1F("hdpmjet_5tev", "", 30, -3, 3);
