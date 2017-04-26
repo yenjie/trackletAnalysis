@@ -571,9 +571,9 @@ int pAdNdetaVsCMSE() {
     // from the paper itself: <N_wounded> = 4.7
     Double_t hijcorr = 0.807607;
     Double_t hijrele = 0.1;
-    Double_t v_pA_NA35 = hijcorr * 2.*(1.7959 + 1.6415 + 1.4367) / 3.0 / (0.5 * 4.623);
+    Double_t v_pA_NA35 = hijcorr * 2. * (1.7959 + 1.6415 + 1.4367) / 3.0 / (0.5 * 4.623);
     // 0.807607 factor from HIJING simulation, 2.0 for h-
-    Double_t e_pA_NA35 = hijcorr * 2.*TMath::Sqrt(0.0580 * 0.0580 + 0.0557 * 0.0557 + 0.0507 * 0.0507) / 3.0 / (0.5 * 4.623);
+    Double_t e_pA_NA35 = hijcorr * 2. * TMath::Sqrt(0.0580 * 0.0580 + 0.0557 * 0.0557 + 0.0507 * 0.0507) / 3.0 / (0.5 * 4.623);
     e_pA_NA35 = e_pA_NA35 * (1 + hijrele);
     TGraphErrors* Graph_pA_NA35 = new TGraphErrors(1);
     Graph_pA_NA35->SetName("Graph_pA_NA35");
@@ -593,26 +593,26 @@ int pAdNdetaVsCMSE() {
     // 200 GeV/c  | 2.998   | 4.832    |
     Double_t gen_corr = 0.95;
     Double_t gen_relerr = 1.1;
-    Double_t nu = 4;
+    Double_t nu = 3.8;
     Double_t v_pA_E178[3] = {0};
     Double_t e_pA_E178[3] = {0};
     v_pA_E178[0] = 2 * gen_corr * ((0.16 + 0.22 * nu) / (2.25 - 1.99) + (0.26 + 0.60 * nu - 0.08 * nu * nu) / (2.76 - 2.25)) / 2 / (nu + 1);
-    e_pA_E178[0] = 2 * gen_corr * gen_relerr * TMath::Sqrt(0.12 * 0.12 + 0.16 * 0.16) / 2;
+    e_pA_E178[0] = TMath::Sqrt(0.09 * 0.09 + 0.11 * 0.11) / 2;
     v_pA_E178[1] = 2 * gen_corr * ((0.41 + 0.49 * nu - 0.02 * nu * nu) / (2.76 - 2.25) + (0.32 + 0.30 * nu - 0.03 * nu * nu) / (3.08 - 2.76)) / 2 / (nu + 1);
-    e_pA_E178[1] = 2 * gen_corr * gen_relerr * TMath::Sqrt(0.10 * 0.10 + 0.12 * 0.12 + 0.09 * 0.09) / 3;
+    e_pA_E178[1] = TMath::Sqrt(0.06 * 0.06 + 0.06 * 0.06) / 2;
     v_pA_E178[2] = 2 * gen_corr * ((0.18 + 0.43 * nu - 0.04 * nu * nu) / (3.08 - 2.76) + (0.08 + 0.51 * nu - 0.07 * nu * nu) / (3.38 - 3.08)) / 2 / (nu + 1);
-    e_pA_E178[2] = 2 * gen_corr * gen_relerr * TMath::Sqrt(0.09 * 0.09 + 0.08 * 0.08) / 2;
+    e_pA_E178[2] = TMath::Sqrt(0.06 * 0.06 + 0.06 * 0.06) / 2;
     TGraphErrors* Graph_pA_E178 = new TGraphErrors(3);
     Graph_pA_E178->SetName("Graph_pA_E178");
     Graph_pA_E178->SetMarkerStyle(23);
     Graph_pA_E178->SetMarkerSize(1.0);
     Graph_pA_E178->SetMarkerColor(_PA_INEL_COLOUR);
     Graph_pA_E178->SetPoint(0, 9.69, v_pA_E178[0]);
-    Graph_pA_E178->SetPointError(0, 0.0, e_pA_E178[0] / (nu + 1));
+    Graph_pA_E178->SetPointError(0, 0.0, e_pA_E178[0] * 0.1);
     Graph_pA_E178->SetPoint(1, 13.7, v_pA_E178[1]);
-    Graph_pA_E178->SetPointError(1, 0.0, e_pA_E178[1] / (nu + 1));
+    Graph_pA_E178->SetPointError(1, 0.0, e_pA_E178[1] * 0.06);
     Graph_pA_E178->SetPoint(2, 19.4, v_pA_E178[2]);
-    Graph_pA_E178->SetPointError(2, 0.0, e_pA_E178[2] / (nu + 1));
+    Graph_pA_E178->SetPointError(2, 0.0, e_pA_E178[2] * 0.06);
     Graph_pA_E178->Draw("E1P");
 
     TLegend* leg_pA_INEL = new TLegend(0.49, 0.64, 0.64, 0.76, NULL, "brNDC");
@@ -621,7 +621,7 @@ int pAdNdetaVsCMSE() {
     leg_pA_INEL->SetTextSize(15);
     leg_pA_INEL->SetFillColor(0);
     leg_pA_INEL->SetHeader("pA Inel.");
-    leg_pA_INEL->AddEntry(Graph_pA_E178, "pA E178", "P");
+    leg_pA_INEL->AddEntry(Graph_pA_E178, "pPb E178", "P");
     leg_pA_INEL->AddEntry(Graph_pA_NA35, "pAu NA35", "P");
     leg_pA_INEL->Draw();
 

@@ -19,6 +19,7 @@
 
 #include "predictions_hijing.h"
 #include "predictions_cgc.h"
+#include "dpmjet.h"
 
 void set_style(TH1F* h1, int style, float size, int colour);
 void set_mc_style(TH1F* h1, int colour);
@@ -104,6 +105,12 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     gCGC->SetLineWidth(2);
     gCGC->SetMarkerSize(0);
 
+    TH1F* hdpmjet_5tev = get_dpmjet_5tev();
+    TH1F* hdpmjet_8tev = get_dpmjet_8tev();
+
+    set_mc_style(hdpmjet_5tev, kTeal+9);
+    set_mc_style(hdpmjet_8tev, kTeal+9);
+
     TGraph* gr = new TGraph();
     gr->SetFillStyle(1001);
 
@@ -143,13 +150,14 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     havg_8tev->Draw("p e x0");
     hgen_8tev->Draw("same hist c");
     hhj_8tev->Draw("same hist c");
+    hdpmjet_8tev->Draw("same hist c");
     gHIJING->Draw("same l z");
     gHIJING_nosh->Draw("same l z");
     gCGC->Draw("same l z");
     gr->SetFillColorAlpha(42, 0.7);
     draw_sys_unc(gr, havg_8tev, hsys_8tev);
     havg_8tev->Draw("same p e x0");
-    draw_legend(3, havg_8tev, hgen_8tev, hhj_8tev);
+    draw_legend(4, havg_8tev, hgen_8tev, hhj_8tev, hdpmjet_8tev);
     draw_predictions_legend(3, gHIJING, gHIJING_nosh, gCGC);
     draw_cms_prelim();
     c2->SaveAs("figs/final/CMS-8TeV-predictions.pdf");
@@ -177,13 +185,14 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     gPad->SetTicky();
     havg_5tev->Draw("p e x0");
     hgen_5tev->Draw("same hist c");
+    hdpmjet_5tev->Draw("same hist c");
     gr->SetFillColorAlpha(30, 0.7);
     draw_sys_unc(gr, halice, halice_sys);
     halice->Draw("same p e x0");
     gr->SetFillColorAlpha(38, 0.7);
     draw_sys_unc(gr, havg_5tev, hsys_5tev);
     havg_5tev->Draw("same p e x0");
-    draw_legend(3, havg_5tev, halice, hgen_5tev);
+    draw_legend(4, havg_5tev, halice, hgen_5tev, hdpmjet_5tev);
     draw_cms_prelim();
     c4->SaveAs("figs/final/CMS-5TeV-ALICE.pdf");
 
@@ -257,6 +266,10 @@ std::string get_label(std::string name) {
         return "EPOS LHC 8.16 TeV";
     else if (name == "hhj_8tev")
         return "HIJING 1.3 8.16 TeV";
+    else if (name == "hdpmjet_5tev")
+        return "DPMJET 3.0-5 5.02 TeV";
+    else if (name == "hdpmjet_8tev")
+        return "DPMJET 3.0-5 8.16 TeV";
     else if (name == "gHIJING")
         return "HIJING 2.1 8.16 TeV";
     else if (name == "gHIJING_nosh")
@@ -271,7 +284,7 @@ void draw_legend(int nhists, ...) {
     va_list hist_list;
     va_start(hist_list, nhists);
 
-    TLegend* l1 = new TLegend(0.3, 0.45-nhists*0.05, 0.6, 0.45);
+    TLegend* l1 = new TLegend(0.3, 0.5-nhists*0.05, 0.6, 0.5);
     l1->SetBorderSize(0);
     l1->SetFillStyle(0);
     l1->SetTextFont(43);
