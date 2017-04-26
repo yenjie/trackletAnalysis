@@ -106,10 +106,14 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     gCGC->SetMarkerSize(0);
 
     TH1F* hdpmjet_5tev = get_dpmjet_5tev();
+    TH1F* hdpmjet_5tev_nsd = get_dpmjet_5tev_nsd();
     TH1F* hdpmjet_8tev = get_dpmjet_8tev();
+    TH1F* hdpmjet_8tev_nsd = get_dpmjet_8tev_nsd();
 
     set_mc_style(hdpmjet_5tev, kTeal+9);
+    set_mc_style(hdpmjet_5tev_nsd, kTeal+9);
     set_mc_style(hdpmjet_8tev, kTeal+9);
+    set_mc_style(hdpmjet_8tev_nsd, kTeal+9);
 
     TGraph* gr = new TGraph();
     gr->SetFillStyle(1001);
