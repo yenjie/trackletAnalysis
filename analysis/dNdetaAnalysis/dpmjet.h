@@ -72,6 +72,43 @@ TH1F* get_dpmjet_8tev_nsd() {
    return hdpmjet_8tev_nsd;
 }
 
+TH1F* get_dpmjet_8tev_nscd() {
+   TH1F* hdpmjet_8tev_nscd = new TH1F("hdpmjet_8tev_nscd", "", 30, -3, 3);
+   hdpmjet_8tev_nscd->SetBinContent(1,18.7813);
+   hdpmjet_8tev_nscd->SetBinContent(2,19.5587);
+   hdpmjet_8tev_nscd->SetBinContent(3,20.301);
+   hdpmjet_8tev_nscd->SetBinContent(4,20.9957);
+   hdpmjet_8tev_nscd->SetBinContent(5,21.3933);
+   hdpmjet_8tev_nscd->SetBinContent(6,21.8844);
+   hdpmjet_8tev_nscd->SetBinContent(7,22.2337);
+   hdpmjet_8tev_nscd->SetBinContent(8,22.3761);
+   hdpmjet_8tev_nscd->SetBinContent(9,22.6435);
+   hdpmjet_8tev_nscd->SetBinContent(10,22.4592);
+   hdpmjet_8tev_nscd->SetBinContent(11,22.4486);
+   hdpmjet_8tev_nscd->SetBinContent(12,22.3392);
+   hdpmjet_8tev_nscd->SetBinContent(13,22.1619);
+   hdpmjet_8tev_nscd->SetBinContent(14,21.9987);
+   hdpmjet_8tev_nscd->SetBinContent(15,21.789);
+   hdpmjet_8tev_nscd->SetBinContent(16,22.4979);
+   hdpmjet_8tev_nscd->SetBinContent(17,22.6101);
+   hdpmjet_8tev_nscd->SetBinContent(18,23.1346);
+   hdpmjet_8tev_nscd->SetBinContent(19,23.7191);
+   hdpmjet_8tev_nscd->SetBinContent(20,24.2684);
+   hdpmjet_8tev_nscd->SetBinContent(21,24.8468);
+   hdpmjet_8tev_nscd->SetBinContent(22,25.3455);
+   hdpmjet_8tev_nscd->SetBinContent(23,25.7069);
+   hdpmjet_8tev_nscd->SetBinContent(24,25.9997);
+   hdpmjet_8tev_nscd->SetBinContent(25,26.0861);
+   hdpmjet_8tev_nscd->SetBinContent(26,26.1468);
+   hdpmjet_8tev_nscd->SetBinContent(27,26.1239);
+   hdpmjet_8tev_nscd->SetBinContent(28,25.8707);
+   hdpmjet_8tev_nscd->SetBinContent(29,25.5293);
+   hdpmjet_8tev_nscd->SetBinContent(30,25.1935);
+   hdpmjet_8tev_nscd->SetEntries(6.96444e+06);
+
+   return hdpmjet_8tev_nscd;
+}
+
 TH1F* get_dpmjet_5tev() {
    TH1F *hdpmjet_5tev = new TH1F("hdpmjet_5tev", "", 30, -3, 3);
    hdpmjet_5tev->SetBinContent(1,15.2997);
@@ -144,4 +181,41 @@ TH1F* get_dpmjet_5tev_nsd() {
    hdpmjet_5tev_nsd->SetEntries(1.24237e+07);
 
    return hdpmjet_5tev_nsd;
+}
+
+TH1F* get_dpmjet_5tev_nscd() {
+   TH1F* hdpmjet_5tev_nscd = new TH1F("hdpmjet_5tev_nscd", "", 30, -3, 3);
+   hdpmjet_5tev_nscd->SetBinContent(1,16.3381);
+   hdpmjet_5tev_nscd->SetBinContent(2,17.01);
+   hdpmjet_5tev_nscd->SetBinContent(3,17.8259);
+   hdpmjet_5tev_nscd->SetBinContent(4,18.4416);
+   hdpmjet_5tev_nscd->SetBinContent(5,18.9445);
+   hdpmjet_5tev_nscd->SetBinContent(6,19.4603);
+   hdpmjet_5tev_nscd->SetBinContent(7,19.7176);
+   hdpmjet_5tev_nscd->SetBinContent(8,19.9206);
+   hdpmjet_5tev_nscd->SetBinContent(9,20.0963);
+   hdpmjet_5tev_nscd->SetBinContent(10,19.9872);
+   hdpmjet_5tev_nscd->SetBinContent(11,20.0332);
+   hdpmjet_5tev_nscd->SetBinContent(12,19.9283);
+   hdpmjet_5tev_nscd->SetBinContent(13,19.8093);
+   hdpmjet_5tev_nscd->SetBinContent(14,19.8465);
+   hdpmjet_5tev_nscd->SetBinContent(15,19.693);
+   hdpmjet_5tev_nscd->SetBinContent(16,20.2824);
+   hdpmjet_5tev_nscd->SetBinContent(17,20.3025);
+   hdpmjet_5tev_nscd->SetBinContent(18,20.7561);
+   hdpmjet_5tev_nscd->SetBinContent(19,21.3373);
+   hdpmjet_5tev_nscd->SetBinContent(20,21.8113);
+   hdpmjet_5tev_nscd->SetBinContent(21,22.3311);
+   hdpmjet_5tev_nscd->SetBinContent(22,22.8037);
+   hdpmjet_5tev_nscd->SetBinContent(23,23.1235);
+   hdpmjet_5tev_nscd->SetBinContent(24,23.3364);
+   hdpmjet_5tev_nscd->SetBinContent(25,23.4112);
+   hdpmjet_5tev_nscd->SetBinContent(26,23.5535);
+   hdpmjet_5tev_nscd->SetBinContent(27,23.3432);
+   hdpmjet_5tev_nscd->SetBinContent(28,23.1516);
+   hdpmjet_5tev_nscd->SetBinContent(29,22.9151);
+   hdpmjet_5tev_nscd->SetBinContent(30,22.6649);
+   hdpmjet_5tev_nscd->SetEntries(6.22176e+06);
+
+   return hdpmjet_5tev_nscd;
 }
