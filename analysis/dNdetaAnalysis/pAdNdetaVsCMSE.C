@@ -23,20 +23,18 @@ int pAdNdetaVsCMSE() {
     TCanvas* c = new TCanvas("c", "", 600, 600);
     gStyle->SetOptStat(0);
     c->Range(0.6363689, -1.758823, 4.003324, 11.77059);
-    c->SetFillColor(10);
-    c->SetBorderMode(0);
-    c->SetBorderSize(0);
     c->SetLogx();
     c->SetRightMargin(0.05);
     c->SetTopMargin(0.06);
     c->SetBottomMargin(0.12);
     c->SetLeftMargin(0.12);
-    c->SetFrameFillColor(0);
-    c->SetFrameBorderMode(0);
-    c->SetFrameFillColor(0);
-    c->SetFrameBorderMode(0);
     c->SetTickx();
     c->SetTicky();
+    c->SetFillColor(10);
+    c->SetBorderMode(0);
+    c->SetBorderSize(0);
+    c->SetFrameFillColor(0);
+    c->SetFrameBorderMode(0);
 
     TH2D* frame = new TH2D("frame", "", 1, 5.0, 20000.0, 240, 0.0, 12.0);
     frame->SetStats(0);

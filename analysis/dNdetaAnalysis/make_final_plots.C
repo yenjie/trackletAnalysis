@@ -130,6 +130,7 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     draw_legend(2, havg_5tev, hgen_5tev);
     draw_cms_prelim();
     c1->SaveAs("figs/final/CMS-5TeV.pdf");
+    c1->SaveAs("figs/final/CMS-5TeV.png");
 
     TCanvas* c2a = new TCanvas("c2a", "", 500, 500);
     c2a->SetLeftMargin(0.12);
@@ -144,6 +145,7 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     draw_legend(3, havg_8tev, hgen_8tev, hhj_8tev);
     draw_cms_prelim();
     c2a->SaveAs("figs/final/CMS-8TeV.pdf");
+    c2a->SaveAs("figs/final/CMS-8TeV.png");
 
     havg_8tev->SetAxisRange(0, 35, "Y");
 
@@ -165,6 +167,7 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     draw_predictions_legend(3, gHIJING, gHIJING_nosh, gCGC);
     draw_cms_prelim();
     c2->SaveAs("figs/final/CMS-8TeV-predictions.pdf");
+    c2->SaveAs("figs/final/CMS-8TeV-predictions.png");
 
     havg_8tev->SetAxisRange(0, 30, "Y");
 
@@ -182,6 +185,7 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     draw_legend(2, havg_8tev, havg_5tev);
     draw_cms_prelim();
     c3->SaveAs("figs/final/CMS-58TeV.pdf");
+    c3->SaveAs("figs/final/CMS-58TeV.png");
 
     TCanvas* c4 = new TCanvas("c4", "", 500, 500);
     c4->SetLeftMargin(0.12);
@@ -200,6 +204,7 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     draw_legend(5, havg_5tev, halice, hgen_5tev, hdpmjet_5tev, hdpmjet_5tev_nsd);
     draw_cms_prelim();
     c4->SaveAs("figs/final/CMS-5TeV-ALICE.pdf");
+    c4->SaveAs("figs/final/CMS-5TeV-ALICE.png");
 
     TCanvas* c5 = new TCanvas("c5", "", 500, 500);
     c5->SetLeftMargin(0.12);
@@ -218,6 +223,7 @@ int make_final_plots(const char* list, const char* output_file, const char* gen_
     draw_legend(3, havg_8tev, havg_5tev, halice);
     draw_cms_prelim();
     c5->SaveAs("figs/final/CMS-58TeV-ALICE.pdf");
+    c5->SaveAs("figs/final/CMS-58TeV-ALICE.png");
 
     TFile* foutput = new TFile(output_file, "recreate");
     foutput->Write("", TObject::kOverwrite);
