@@ -33,7 +33,7 @@ std::vector<var_t> options = {
 };
 
 std::string data_legend;
-std::string legends[2] = {"EPOS LHC ", "HIJING "};
+std::string legends[2] = {"HIJING 1.3 ", "EPOS LHC "};
 
 int TrackletType[3] = {12, 13, 23};
 
@@ -83,7 +83,10 @@ int compare_variables(const char* data_file, std::string mc_list, int opt, int e
          tmc[j]->Draw(Form("%s>>hmc_%zu", options[opt].variable.c_str(), j), final_selection, "goff");
 
          hmc[j]->SetStats(0);
-         hmc[j]->SetLineColor(4+j);
+         if (j == 0)
+             hmc[j]->SetLineColor(2);
+         if (j == 1)
+             hmc[j]->SetLineColor(4);
       }
 
       TFile* fdata = new TFile(data_file, "READ");
@@ -93,6 +96,10 @@ int compare_variables(const char* data_file, std::string mc_list, int opt, int e
 
       hdata->SetStats(0);
       hdata->SetMarkerStyle(21);
+
+      hdata->Scale(1./hdata->Integral());
+      for (std::size_t j=0; j<nfiles; ++j)
+          hmc[j]->Scale(1./hmc[j]->Integral());
 
       TCanvas* c1 = new TCanvas(Form("c_%i", TrackletType[i]), "", 600, 600);
       if (options[opt].log_scale) c1->SetLogy();
@@ -113,21 +120,22 @@ int compare_variables(const char* data_file, std::string mc_list, int opt, int e
 
       hdata->SetAxisRange(min_y, max_y * 1.5 , "Y");
 
-      hdata->DrawNormalized("p");
+      hdata->DrawNormalized("p hist");
       for (std::size_t j=0; j<nfiles; ++j)
          hmc[j]->DrawNormalized("hist same");
-      hdata->DrawNormalized("p same");
+      hdata->DrawNormalized("p hist same");
 
       draw_latex();
 
-      TLegend* l1 = new TLegend(0.5, 0.7, 0.9, 0.84);
+      TLegend* l1 = new TLegend(0.5, 0.7, 0.85, 0.85);
       l1->SetBorderSize(0);
+      l1->AddEntry(hdata, data_legend.c_str(), "p");
       for (std::size_t j=0; j<nfiles; ++j)
          l1->AddEntry(hmc[j], legends[j].c_str());
-      l1->AddEntry(hdata, data_legend.c_str(), "p");
       l1->Draw();
 
       c1->SaveAs(Form("figs/%s-%i-%itev.png", options[opt].title.c_str(), TrackletType[i], energy));
+      c1->SaveAs(Form("figs/%s-%i-%itev.pdf", options[opt].title.c_str(), TrackletType[i], energy));
    }
 
    return 0;
@@ -137,17 +145,18 @@ void draw_latex() {
     TLatex* latexCMS = new TLatex();
     latexCMS->SetTextFont(63);
     latexCMS->SetTextSize(25);
-    latexCMS->DrawLatexNDC(0.16, 0.84, "CMS");
+    latexCMS->DrawLatexNDC(0.15, 0.84, "CMS");
 
     TLatex* latexPrelim = new TLatex();
     latexPrelim->SetTextFont(53);
     latexPrelim->SetTextSize(20);
-    latexPrelim->DrawLatexNDC(0.16, 0.79, "Preliminary");
+    latexPrelim->DrawLatexNDC(0.15, 0.79, "Preliminary");
 
     TLatex* latexSystem = new TLatex();
     latexSystem->SetTextFont(43);
     latexSystem->SetTextSize(20);
-    latexSystem->DrawLatexNDC(0.12, 0.92, "pPb #sqrt{s_{NN}} = 8.16 TeV");
+    latexSystem->SetTextAlign(31);
+    latexSystem->DrawLatexNDC(0.9, 0.92, "pPb #sqrt{s_{NN}} = 8.16 TeV");
 }
 
 int main(int argc, char* argv[]) {
