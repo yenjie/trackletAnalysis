@@ -15,9 +15,9 @@ process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 # Timing service
 #process.Timing = cms.Service("Timing")
 
-# MC Globaltag for 2015 dN/deta analysis
+# MC Globaltag for 2016 dN/deta analysis
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_Express_v15', '')
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
 process.GlobalTag.toGet.extend([
@@ -39,7 +39,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
                             fileNames = cms.untracked.vstring(
-'file:step3_RAW2DIGI_L1Reco_RECO.root'
+'___C___'
     )
 )
 
@@ -47,13 +47,13 @@ process.ana = cms.EDAnalyzer('PixelHitAnalyzer',
                              vertexSrc = cms.vstring('offlinePrimaryVerticesWithBS'),
                              trackSrc = cms.untracked.InputTag('generalTracks'),
                              doTracking = cms.untracked.bool(False),
-                             doMC = cms.untracked.bool(True),
+                             doMC = cms.untracked.bool(False),
                              )
 
 process.load('HeavyIonsAnalysis.EventAnalysis.hltanalysis_cff')
 
 process.TFileService = cms.Service('TFileService',
-                                   fileName = cms.string('PixelTree.root'))
+                                   fileName = cms.string('PixelTree-___D___.root'))
 
 process.analyze = cms.Path(process.hltanalysis *
                            process.siPixelRecHits *
