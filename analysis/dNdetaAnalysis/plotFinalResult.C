@@ -111,8 +111,8 @@ int plotFinalResult(int TrackletType,
    }
 
    // Definition of Vz, Eta, Hit bins
-   const int nTrackletBin = 20;
-   double TrackletBins[nTrackletBin+1] = {-10, 8, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 66, 72, 80, 90, 100, 110, 130, 150, 300};
+   const int nTrackletBin = 15;
+   double TrackletBins[nTrackletBin+1] = {-10, 10, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 150, 300};
 
    const int nEtaBin = 30;
    double EtaBins[nEtaBin+1];
@@ -150,8 +150,8 @@ int plotFinalResult(int TrackletType,
          printf("$ INELASTIC definition\n");
          break;
       case 1:
-         // HLT_PAL1MinimumBiasHF_AND_SinglePixelTrack_v1
-         offline_selection = "(passHLT)";
+         // HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part*_v1
+         offline_selection = "(HLT_HF_OR && nHFn>0 && nHFp>0)";
          gen_selection = "(evtType!=102&&evtType!=103&&evtType!=104)";
          printf("$ NSD definition\n");
          break;
